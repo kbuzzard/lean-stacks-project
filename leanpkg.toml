@@ -6,4 +6,4 @@ path = "src"
 
 [dependencies]
 mathlib = {git = "https://github.com/leanprover/mathlib", rev = "9b306b2eb7c2bc0e0e7243a7eb43b836d2c867b7"}
-lean-category-theory = {git = "https://github.com/semorrison/lean-category-theory", rev = "f1a17a234771426f532e00237365b0d271968e13"}
+lean-category-theory = {git = "https://github.com/semorrison/lean-category-theory", rev = "eadaac24b016bb9c357b5695a4aafcf68c59d1b3"}
