@@ -68,8 +68,12 @@ theorem is_submodule.univ_of_one_mem {α : Type u} [comm_ring α] (S : set α) [
 
 -- <move to ring_theory.ideals>
 
-class is_prime_ideal {α : Type u} [comm_ring α] (S : set α) extends is_submodule S : Prop :=
+class is_ideal {α : Type u} [comm_ring α] (S : set α) extends is_submodule S : Prop
+
+class is_proper_ideal {α : Type u} [comm_ring α] (S : set α) extends is_ideal S : Prop :=
 (ne_univ : S ≠ set.univ)
+
+class is_prime_ideal {α : Type u} [comm_ring α] (S : set α) extends is_proper_ideal S : Prop :=
 (mem_or_mem_of_mul_mem : ∀ {x y : α}, x * y ∈ S → x ∈ S ∨ y ∈ S)
 
 theorem mem_or_mem_of_mul_eq_zero {α : Type u} [comm_ring α] (S : set α) [is_prime_ideal S] :
@@ -77,9 +81,8 @@ theorem mem_or_mem_of_mul_eq_zero {α : Type u} [comm_ring α] (S : set α) [is_
 λ x y hxy, have x * y ∈ S, by rw hxy; from (@is_submodule.zero α α _ _ S _ : (0:α) ∈ S),
 is_prime_ideal.mem_or_mem_of_mul_mem this
 
-class is_maximal_ideal {α : Type u} [comm_ring α] (S : set α) extends is_submodule S : Prop :=
+class is_maximal_ideal {α : Type u} [comm_ring α] (S : set α) extends is_proper_ideal S : Prop :=
 mk' ::
-  (ne_univ : S ≠ set.univ)
   (eq_or_univ_of_subset : ∀ (T : set α) [is_submodule T], S ⊆ T → T = S ∨ T = set.univ)
 
 theorem is_maximal_ideal.mk {α : Type u} [comm_ring α] (S : set α) [is_submodule S] :
@@ -93,8 +96,8 @@ theorem is_maximal_ideal.mk {α : Type u} [comm_ring α] (S : set α) [is_submod
        ⟨λ hxt, classical.by_contradiction $ λ hxns, hnts ⟨x, hxns, hxt⟩,
         λ hxs, hst hxs⟩) }
 
-theorem not_unit_of_mem_maximal_ideal {α : Type u} [comm_ring α] (S : set α) [is_maximal_ideal S] : S ⊆ nonunits α :=
-λ x hx hxy, is_maximal_ideal.ne_univ S $ is_submodule.eq_univ_of_contains_unit S ⟨x, hx, hxy⟩
+theorem not_unit_of_mem_proper_ideal {α : Type u} [comm_ring α] (S : set α) [is_proper_ideal S] : S ⊆ nonunits α :=
+λ x hx hxy, is_proper_ideal.ne_univ S $ is_submodule.eq_univ_of_contains_unit S ⟨x, hx, hxy⟩
 
 class local_ring (α : Type u) [comm_ring α] :=
 (S : set α)
@@ -111,7 +114,7 @@ instance local_of_nonunits_ideal {α : Type u} [comm_ring α] : (0:α) ≠ 1 →
     λ x T ht hst hxns hxt, have hxu : _, from classical.by_contradiction hxns,
     let ⟨y, hxy⟩ := hxu in by rw [← hxy]; exact is_submodule.smul y hxt,
   unique := λ T hmt, or.cases_on (@@is_maximal_ideal.eq_or_univ_of_subset _ hmt (nonunits α) hi $
-      λ z hz, @@not_unit_of_mem_maximal_ideal _ T hmt hz) id $
+      λ z hz, @@not_unit_of_mem_proper_ideal _ T hmt.to_is_proper_ideal hz) id $
     (λ htu, false.elim $ ((set.set_eq_def _ _).1 htu 1).2 trivial ⟨1, mul_one 1⟩) }
 
 -- </move>
@@ -241,7 +244,7 @@ variables (P : set α) [is_prime_ideal P]
 
 instance prime.is_submonoid :
   is_submonoid α (set.compl P) :=
-{ one_mem := λ h, is_prime_ideal.ne_univ P $
+{ one_mem := λ h, is_proper_ideal.ne_univ P $
     is_submodule.univ_of_one_mem P h,
   mul_mem := λ x y hnx hny hxy, or.cases_on
     (is_prime_ideal.mem_or_mem_of_mul_mem hxy) hnx hny }
