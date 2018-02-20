@@ -54,8 +54,17 @@ parameters (α : Type u) [comm_ring α]
 
 def X := {P : set α // is_prime_ideal P}
 
-def V : set α → set X :=
+def Spec.V : set α → set X :=
 λ E, {P | E ⊆ P.val}
+
+def Spec.V' : α → set X :=
+λ f, {P | f ∈ P.val}
+
+def Spec.D : set α → set X := λ E, -Spec.V(E)
+
+def Spec.D' : α → set X := λ f, -Spec.V'(f)
+
+open Spec 
 
 theorem V_set_eq_V_generate (S : set α) : V S = V (generate S) :=
 set.ext $ λ P,
