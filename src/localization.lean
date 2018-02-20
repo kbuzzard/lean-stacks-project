@@ -135,7 +135,7 @@ namespace localization
 variables (α : Type u) [comm_ring α] (S : set α) [is_submonoid α S]
 
 def r : α × S → α × S → Prop :=
-λ ⟨r₁, s₁, hs₁⟩ ⟨r₂, s₂, hs₂⟩, ∃ t ∈ S, (s₁ * r₂ - s₂ * r₁) * t = 0
+λ x y, ∃ t ∈ S, (x.2.1 * y.1 - y.2.1 * x.1) * t = 0
 
 local infix ≈ := r α S
 
@@ -384,6 +384,7 @@ by refine
   apply quotient.sound,
   existsi (1:β),
   existsi is_submonoid.one_mem _,
+  dsimp,
   ring,
   exact non_zero_divisors.is_submonoid β }
 

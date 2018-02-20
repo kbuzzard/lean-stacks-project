@@ -629,7 +629,7 @@ instance is_prime_ideal.hom_preimage {α : Type u} {β : Type v} [comm_ring α] 
 (f : α → β) [is_hom f] (S : set β) [is_ideal β S] [is_prime_ideal S] :
   @is_prime_ideal α _ ((f)⁻¹' S) :=
 let ⟨hnu, hmul⟩ := _inst_7 in
-{ (is_ideal.hom_preimage f S : is_submodule (f ⁻¹' S)) with
+{ (is_submodule.hom_preimage f S : is_submodule (f ⁻¹' S)) with
   ne_univ := λ h, have (1:α) ∈ f ⁻¹' S, by rw h; trivial,
    hnu $ is_ideal.univ_of_one_mem S $ by simpa [is_hom.map_one f] using this,
   mem_or_mem_of_mul_mem := λ x y, by simpa [is_hom.map_mul f] using hmul,
