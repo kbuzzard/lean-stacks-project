@@ -20,27 +20,10 @@ instance que := Zariski α
 
 theorem Zariski.induced.continuous : continuous (Zariski.induced f) :=
 λ A ⟨E, ha⟩, ⟨f '' E, set.ext $ λ z,
-begin
-  split,
-  { intros h hz,
-    simp [Spec.V] at h,
-    simp [set.mem_preimage_eq] at hz,
-    simp [Zariski.induced] at hz,
-    suffices : (⟨f ⁻¹' z.val, _⟩ : X α) ∈ Spec.V α E,
-    { rw ha at this,
-      exact this hz },
-    simp [Spec.V],
-    intros x hx,
-    specialize @h (f x) ⟨x, hx, rfl⟩,
-    exact h },
-  { intros h x hz,
-    rcases hz with ⟨w, H, hw⟩,
-    rw ← hw,
-    simp [Zariski.induced] at h,
-    rw ← set.mem_compl_iff at h,
-    rw ← ha at h,
-    simp [Spec.V] at h,
-    exact h H }
-end⟩
+⟨λ h hz, suffices (⟨f ⁻¹' z.val, _⟩ : X α) ∈ Spec.V α E, by rw ha at this; exact this hz,
+   λ x hx, h ⟨x, hx, rfl⟩,
+ λ h x ⟨w, H, hw⟩, have (⟨f ⁻¹' z.val, _⟩ : X α) ∈ Spec.V α E, by rw ha; exact h,
+   by rw ← hw; exact this H⟩⟩
 
--- to be continued
+theorem Zariski.induced.preimage_D (x : α) : Zariski.induced f ⁻¹' (Spec.D' α x) = Spec.D' β (f x) :=
+set.ext $ λ z, by simp [Spec.D', Zariski.induced, Spec.V']
