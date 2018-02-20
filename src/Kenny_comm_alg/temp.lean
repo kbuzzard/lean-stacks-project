@@ -104,3 +104,18 @@ instance local_of_nonunits_ideal {α : Type u} [comm_ring α] : (0:α) ≠ 1 →
   unique := λ T hmt, or.cases_on (@@is_maximal_ideal.eq_or_univ_of_subset _ hmt (nonunits' α) hi $
       λ z hz, @@not_unit_of_mem_maximal_ideal _ T hmt hz) id $
     (λ htu, false.elim $ ((set.set_eq_def _ _).1 htu 1).2 trivial ⟨1, mul_one 1⟩) }
+
+instance is_submodule.hom_preimage {α : Type u} {β : Type v} [comm_ring α] [comm_ring β]
+(f : α → β) [is_ring_hom f] (S : set β) [is_submodule S] : is_submodule (f ⁻¹' S) :=
+{ zero_ := by simpa [is_ring_hom.map_zero f]; exact @is_submodule.zero β β _ _ S _,
+  add_  := λ x y (hx : f x ∈ S) hy, by simp [is_ring_hom.map_add f, is_submodule.add hx hy],
+  smul  := λ x y (hy : f y ∈ S), by simp [is_ring_hom.map_mul f]; exact is_submodule.smul _ hy }
+
+instance is_prime_ideal.hom_preimage {α : Type u} {β : Type v} [comm_ring α] [comm_ring β]
+(f : α → β) [is_ring_hom f] (S : set β) [is_prime_ideal S] :
+  @is_prime_ideal α _ ((f)⁻¹' S) :=
+{ (is_submodule.hom_preimage f S : is_submodule (f ⁻¹' S)) with
+  ne_univ := λ h, have (1:α) ∈ f ⁻¹' S, by rw h; trivial,
+   is_proper_ideal.ne_univ S $ is_submodule.univ_of_one_mem S $ by simpa [is_ring_hom.map_one f] using this,
+  mem_or_mem_of_mul_mem := λ x y, by simpa [is_ring_hom.map_mul f] using @@is_prime_ideal.mem_or_mem_of_mul_mem _ _inst_4,
+  .. is_submodule.hom_preimage f S }
