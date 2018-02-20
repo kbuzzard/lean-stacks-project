@@ -54,6 +54,8 @@ parameters (α : Type u) [comm_ring α]
 
 def X := {P : set α // is_prime_ideal P}
 
+parameter {α}
+
 def Spec.V : set α → set X :=
 λ E, {P | E ⊆ P.val}
 
@@ -64,6 +66,8 @@ def Spec.D : set α → set X := λ E, -Spec.V(E)
 
 def Spec.D' : α → set X := λ f, -Spec.V'(f)
 
+parameter (α)
+
 open Spec 
 
 theorem V_set_eq_V_generate (S : set α) : V S = V (generate S) :=
@@ -71,7 +75,7 @@ set.ext $ λ P,
 ⟨λ hp z hz, @hz P.val P.property.to_is_submodule hp,
  λ hp z hz, hp $ subset_generate S hz⟩
 
-def Zariski : topological_space X :=
+instance Zariski : topological_space X :=
 topological_space.of_closed {A | ∃ E, V E = A}
   ⟨{(1:α)}, set.ext $ λ ⟨P, hp⟩,
      ⟨λ h, @@is_prime_ideal.one_not_mem _ P hp $ by simpa [V] using h,
