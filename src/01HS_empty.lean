@@ -17,4 +17,3 @@ Recall that D(f) is quasi-compact, see tag 00F6. Hence the second statement foll
 
 The third statement follows directly from tag 00E0. 
 -/
-
