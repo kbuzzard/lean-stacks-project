@@ -13,6 +13,34 @@ quotient.lift_on (quotient.mk x) f h = f x := rfl
 def nonunits (α : Type u) [comm_ring α] : set α := { x | ¬∃ y, x * y = 1 }
 def nonunits' (α : Type u) [comm_ring α] : set α := { x | ¬∃ y, y * x = 1 }
 
+class is_ring_hom {α : Type u} {β : Type v} [comm_ring α] [comm_ring β] (f : α → β) : Prop :=
+(map_add : ∀ {x y}, f (x + y) = f x + f y)
+(map_mul : ∀ {x y}, f (x * y) = f x * f y)
+(map_one : f 1 = 1)
+
+namespace is_ring_hom
+
+variables {α : Type u} {β : Type v} [comm_ring α] [comm_ring β]
+variables (f : α → β) [is_ring_hom f] {x y : α}
+
+lemma map_zero : f 0 = 0 :=
+calc f 0 = f (0 + 0) - f 0 : by rw [map_add f]; simp
+     ... = 0 : by simp
+
+lemma map_neg : f (-x) = -f x :=
+calc f (-x) = f (-x + x) - f x : by rw [map_add f]; simp
+        ... = -f x : by simp [map_zero f]
+
+lemma map_sub : f (x - y) = f x - f y :=
+by simp [map_add f, map_neg f]
+
+end is_ring_hom
+
+class is_ideal {α : Type u} [comm_ring α] (S : set α) extends is_submodule S : Prop
+
+class is_proper_ideal {α : Type u} [comm_ring α] (S : set α) extends is_ideal S : Prop :=
+(ne_univ : S ≠ set.univ)
+
 theorem is_submodule.smul' {α : Type u} [comm_ring α] {p : set α} [c : is_submodule p]
   {x : α} (y : α) : x ∈ p → x * y ∈ p :=
 λ h, calc x * y = y * x : mul_comm _ _
@@ -29,9 +57,10 @@ theorem is_submodule.univ_of_one_mem {α : Type u} [comm_ring α] (S : set α) [
 (1:α) ∈ S → S = set.univ :=
 λ h, set.ext $ λ z, ⟨λ hz, trivial, λ hz, by simpa using (is_submodule.smul z h : z * 1 ∈ S)⟩
 
+theorem not_unit_of_mem_proper_ideal {α : Type u} [comm_ring α] (S : set α) [is_proper_ideal S] : S ⊆ nonunits' α :=
+λ x hx hxy, is_proper_ideal.ne_univ S $ is_submodule.eq_univ_of_contains_unit S ⟨x, hx, hxy⟩
 
-class is_prime_ideal {α : Type u} [comm_ring α] (S : set α) extends is_submodule S : Prop :=
-(ne_univ : S ≠ set.univ)
+class is_prime_ideal {α : Type u} [comm_ring α] (S : set α) extends is_proper_ideal S : Prop :=
 (mem_or_mem_of_mul_mem : ∀ {x y : α}, x * y ∈ S → x ∈ S ∨ y ∈ S)
 
 theorem mem_or_mem_of_mul_eq_zero {α : Type u} [comm_ring α] (S : set α) [is_prime_ideal S] :
