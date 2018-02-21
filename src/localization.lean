@@ -172,6 +172,9 @@ quotient.lift f h (mk α S x) = f x := rfl
 @[simp] lemma quotient.lift_on_beta {β : Sort v} (f : α × S → β) (h : ∀ a b, a ≈ b → f a = f b) (x : α × S) :
 quotient.lift_on (mk α S x) f h = f x := rfl
 
+@[simp] lemma div_self {y : S} : mk α S (y.1,y) = 1 := quotient.sound (sorry) 
+-- dammit
+
 end simp_lemmas
 
 local infix ^ := monoid.pow
