@@ -142,6 +142,38 @@ instance : is_ring_hom (of_comm_ring α S) :=
   map_mul := λ x y, quotient.sound $ by simp,
   map_one := rfl }
 
+section simp_lemmas
+
+variables (f f₁ f₂ : α × S)
+
+def mk : loc α S := ⟦f₁⟧
+lemma mk_eq : ⟦f₁⟧ = mk α S f₁ := rfl
+@[simp] lemma add_frac : mk α S f₁ + mk α S f₂ =
+  mk α S ⟨f₁.2.1 * f₂.1 + f₂.2.1 * f₁.1, f₁.2.1 * f₂.2.1,
+    is_submonoid.mul_mem f₁.2.2 f₂.2.2⟩ :=
+by cases f₁; cases f₂; cases f₁_snd; cases f₂_snd; refl
+@[simp] lemma neg_frac : -mk α S f =
+  mk α S ⟨-f.1, f.2⟩ :=
+by cases f; cases f_snd; refl
+@[simp] lemma sub_frac : mk α S f₁ - mk α S f₂ =
+  mk α S ⟨f₂.2.1 * f₁.1 - f₁.2.1 * f₂.1, f₁.2.1 * f₂.2.1,
+    is_submonoid.mul_mem f₁.2.2 f₂.2.2⟩ :=
+by simp; refl
+@[simp] lemma mul_frac : mk α S f₁ * mk α S f₂ =
+  mk α S ⟨f₁.1 * f₂.1, f₁.2.1 * f₂.2.1,
+    is_submonoid.mul_mem f₁.2.2 f₂.2.2⟩ :=
+by cases f₁; cases f₂; cases f₁_snd; cases f₂_snd; refl
+@[simp] lemma one_frac : 1 = mk α S ⟨1, 1, is_submonoid.one_mem S⟩ := rfl
+@[simp] lemma zero_frac : 0 = mk α S ⟨0, 1, is_submonoid.one_mem S⟩ := rfl
+
+@[simp] lemma quotient.lift_beta {β : Sort v} (f : α × S → β) (h : ∀ a b, a ≈ b → f a = f b) (x : α × S) :
+quotient.lift f h (mk α S x) = f x := rfl
+
+@[simp] lemma quotient.lift_on_beta {β : Sort v} (f : α × S → β) (h : ∀ a b, a ≈ b → f a = f b) (x : α × S) :
+quotient.lift_on (mk α S x) f h = f x := rfl
+
+end simp_lemmas
+
 local infix ^ := monoid.pow
 
 variable {α}
