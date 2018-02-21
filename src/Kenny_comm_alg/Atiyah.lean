@@ -1,4 +1,4 @@
-import algebra.ring algebra.field data.set.basic order.zorn tactic.norm_num tactic.ring
+import algebra.ring algebra.field data.set.basic order.zorn tactic.norm_num tactic.ring Kenny_comm_alg.temp
 
 universes u v w
 
@@ -224,6 +224,12 @@ instance is_ideal.hom_preimage {α : Type u} {β : Type v} [comm_ring α] [comm_
   add_mem  := λ x y (hx : f x ∈ S) hy, by simp [is_hom.map_add f, is_ideal.add_mem hx hy],
   mul_mem  := λ x y (hx : f x ∈ S), by simp [is_hom.map_mul f, is_ideal.mul_mem hx] }
 
+instance is_submodule.hom_preimage {α : Type u} {β : Type v} [comm_ring α] [comm_ring β]
+(f : α → β) [is_hom f] (S : set β) [is_submodule S] : is_submodule (f ⁻¹' S) :=
+{ zero_ := by simpa [is_hom.map_zero f]; exact @is_submodule.zero β β _ _ S _,
+  add_  := λ x y (hx : f x ∈ S) hy, by simp [is_hom.map_add f, is_submodule.add hx hy],
+  smul  := λ x y (hy : f y ∈ S), by simp [is_hom.map_mul f]; exact is_submodule.smul _ hy }
+
 -- Proposition 1.1 start
 
 section prop_1_1
@@ -306,12 +312,6 @@ structure isomorphism (α : Type u) (β : Type v) [comm_ring α] [comm_ring β] 
 
 infix `≅`:70 := isomorphism
 
-@[simp] lemma quotient.lift_beta {α : Sort u} {β : Sort v} [s : setoid α] (f : α → β) (h : ∀ (a b : α), a ≈ b → f a = f b) (x : α):
-quotient.lift f h (quotient.mk x) = f x := rfl
-
-@[simp] lemma quotient.lift_on_beta {α : Sort u} {β : Sort v} [s : setoid α] (f : α → β) (h : ∀ (a b : α), a ≈ b → f a = f b) (x : α):
-quotient.lift_on (quotient.mk x) f h = f x := rfl
-
 noncomputable def first_isom (α : Type u) (β : Type v) [comm_ring α] [comm_ring β] (f : α → β) [is_hom f] :
 (α / (is_hom.ker f)) ≅ (is_hom.im f) :=
 { f := λ x, quotient.lift_on x (λ x, ⟨f x, x, rfl⟩ : α → is_hom.im f) (λ x y hxy, subtype.eq $ calc
@@ -368,7 +368,6 @@ local infix `^` := monoid.pow
 
 def nilpotents (α : Type u) [comm_ring α] : set α := { x | ∃ n, x^(nat.succ n) = 0 }
 def is_unit {α : Type u} [comm_ring α] (x : α) := ∃ y, x * y = 1
-def nonunits (α : Type u) [comm_ring α] : set α := { x | ¬∃ y, x * y = 1 }
 
 
 -- page 3
@@ -509,15 +508,7 @@ end prop_1_2
 
 section prime_ideals_and_maximal_ideals
 
-variables {α : Type u} [comm_ring α] (S : set α) [is_ideal α S]
-
-class is_prime_ideal : Prop :=
-(ne_univ_ideal : S ≠ univ_ideal α)
-(mem_or_mem_of_mul_mem : ∀ {x y : α}, x * y ∈ S → x ∈ S ∨ y ∈ S)
-
-class is_maximal_ideal : Prop :=
-(ne_univ_ideal : S ≠ univ_ideal α)
-(no_between : ∀ (T : set α) [is_ideal α T], S ⊆ T → T = S ∨ T = univ_ideal α)
+variables {α : Type u} [comm_ring α] (S : set α) [is_submodule S]
 
 variable α
 
@@ -529,7 +520,7 @@ variable {α}
 
 theorem prime_iff_quotient_integral_domain : is_prime_ideal S ↔ is_integral_domain (α/S) :=
 ⟨λ ⟨hne, hmul⟩,
-   ⟨λ hzo, hne $ is_ideal.univ_of_one_mem S 
+   ⟨λ hzo, hne $ is_submodule.univ_of_one_mem S 
       (by simpa [is_ideal.mem_iff_coset_zero S] using hzo.symm),
     λ x y, let ⟨m, hm⟩ := is_ideal.coset_rep x,
                ⟨n, hn⟩ := is_ideal.coset_rep y in
@@ -545,14 +536,14 @@ begin
   cases h,
   have zero_ne_one : (0:α/S) ≠ 1,
     intro hz,
-    apply h_ne_univ_ideal,
+    apply h_ne_univ,
     apply is_ideal.univ_of_one_mem S,
     exact is_ideal.mem_of_coset_zero S 1 hz.symm,
   apply hom_inj.to_is_field _ zero_ne_one,
   apply ideal_eq_zero_or_univ.to_hom_inj _ zero_ne_one,
   constructor,
   intros T _,
-  specialize h_no_between (quotient_to_ideal S T) (quotient_to_ideal.contains S T),
+  specialize h_eq_or_univ_of_subset (quotient_to_ideal S T) (quotient_to_ideal.contains S T),
   cases h_no_between with h h;
     rw [set.set_eq_def, quotient_to_ideal, set.preimage, set_of] at h,
   left,
@@ -636,11 +627,13 @@ def zero_prime_iff_integral_domain : is_prime_ideal (zero_ideal α) ↔ is_integ
 
 instance is_prime_ideal.hom_preimage {α : Type u} {β : Type v} [comm_ring α] [comm_ring β]
 (f : α → β) [is_hom f] (S : set β) [is_ideal β S] [is_prime_ideal S] :
-  @is_prime_ideal α _ ((f)⁻¹' S) (is_ideal.hom_preimage f S) :=
+  @is_prime_ideal α _ ((f)⁻¹' S) :=
 let ⟨hnu, hmul⟩ := _inst_7 in
-⟨λ h, have (1:α) ∈ f ⁻¹' S, by rw h; trivial,
+{ (is_submodule.hom_preimage f S : is_submodule (f ⁻¹' S)) with
+  ne_univ := λ h, have (1:α) ∈ f ⁻¹' S, by rw h; trivial,
    hnu $ is_ideal.univ_of_one_mem S $ by simpa [is_hom.map_one f] using this,
- λ x y, by simpa [is_hom.map_mul f] using hmul⟩
+  mem_or_mem_of_mul_mem := λ x y, by simpa [is_hom.map_mul f] using hmul,
+  .. is_ideal.hom_preimage f S }
 
 theorem is_field.to_is_integral_domain : is_field α → is_integral_domain α :=
 begin

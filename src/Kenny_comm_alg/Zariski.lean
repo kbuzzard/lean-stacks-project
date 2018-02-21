@@ -1,4 +1,4 @@
-import analysis.topology.topological_space
+import analysis.topology.topological_space Kenny_comm_alg.temp
 noncomputable theory
 
 local attribute [instance] classical.prop_decidable
@@ -7,21 +7,12 @@ universe u
 
 section is_prime_ideal
 
-class is_ideal (α : Type u) [comm_ring α] (S : set α) : Prop :=
-(zero_mem : (0 : α) ∈ S)
-(add_mem : ∀ {x y}, x ∈ S → y ∈ S → x + y ∈ S)
-(mul_mem : ∀ {x y}, x ∈ S → x * y ∈ S)
-
-class is_prime_ideal {α : Type u} [comm_ring α] (S : set α) extends is_ideal α S : Prop :=
-(ne_univ : S ≠ set.univ)
-(mem_or_mem_of_mul_mem : ∀ {x y : α}, x * y ∈ S → x ∈ S ∨ y ∈ S)
-
 theorem is_prime_ideal.one_not_mem {α : Type u} [comm_ring α] (S : set α) [is_prime_ideal S] :
   (1:α) ∉ S :=
-λ h, is_prime_ideal.ne_univ S $ set.ext $ λ z,
+λ h, is_proper_ideal.ne_univ S $ set.ext $ λ z,
 ⟨λ hz, trivial,
- λ hz, calc z = 1 * z : by simp
-          ... ∈ S : is_ideal.mul_mem h⟩
+ λ hz, calc z = z * 1 : by simp
+          ... ∈ S : is_submodule.smul z h⟩
 
 end is_prime_ideal
 
@@ -40,12 +31,12 @@ section generate
 variables {α : Type u} [comm_ring α] (S : set α)
 
 def generate : set α :=
-{ x | ∀ (T : set α) [is_ideal α T], S ⊆ T → x ∈ T }
+{ x | ∀ (T : set α) [is_submodule T], S ⊆ T → x ∈ T }
 
-instance generate.is_ideal : is_ideal α (generate S) :=
-{ zero_mem := λ T ht hst, @@is_ideal.zero_mem _ T ht,
-  add_mem  := λ x y hx hy T ht hst, @@is_ideal.add_mem _ ht (@hx T ht hst) (@hy T ht hst),
-  mul_mem  := λ x y hx T ht hst, @@is_ideal.mul_mem _ ht (@hx T ht hst) }
+instance generate.is_ideal : is_submodule (generate S) :=
+{ zero_ := λ T ht hst, @is_submodule.zero _ _ _ _ T ht,
+  add_  := λ x y hx hy T ht hst, @@is_submodule.add _ _ ht (@hx T ht hst) (@hy T ht hst),
+  smul  := λ x y hy T ht hst, @@is_submodule.smul _ _ ht _ (@hy T ht hst) }
 
 theorem subset_generate : S ⊆ generate S :=
 λ x hx T ht hst, hst hx
@@ -63,15 +54,28 @@ parameters (α : Type u) [comm_ring α]
 
 def X := {P : set α // is_prime_ideal P}
 
-def V : set α → set X :=
+parameter {α}
+
+def Spec.V : set α → set X :=
 λ E, {P | E ⊆ P.val}
+
+def Spec.V' : α → set X :=
+λ f, {P | f ∈ P.val}
+
+def Spec.D : set α → set X := λ E, -Spec.V(E)
+
+def Spec.D' : α → set X := λ f, -Spec.V'(f)
+
+parameter (α)
+
+open Spec 
 
 theorem V_set_eq_V_generate (S : set α) : V S = V (generate S) :=
 set.ext $ λ P,
-⟨λ hp z hz, @hz P.val P.property.to_is_ideal hp,
+⟨λ hp z hz, @hz P.val P.property.to_is_submodule hp,
  λ hp z hz, hp $ subset_generate S hz⟩
 
-def Zariski : topological_space X :=
+instance Zariski : topological_space X :=
 topological_space.of_closed {A | ∃ E, V E = A}
   ⟨{(1:α)}, set.ext $ λ ⟨P, hp⟩,
      ⟨λ h, @@is_prime_ideal.one_not_mem _ P hp $ by simpa [V] using h,
@@ -106,9 +110,9 @@ topological_space.of_closed {A | ∃ E, V E = A}
          cases not_imp.1 hwb with hwb1 hwb2,
          have : wa * wb ∈ generate Ea ∩ generate Eb,
          { split,
-           { apply is_ideal.mul_mem (subset_generate Ea hwa1) },
            { rw mul_comm,
-             apply is_ideal.mul_mem (subset_generate Eb hwb1) } },
+             apply is_submodule.smul _ (subset_generate Ea hwa1) },
+           { apply is_submodule.smul _ (subset_generate Eb hwb1) } },
          cases is_prime_ideal.mem_or_mem_of_mul_mem (hz this) with hwap hwbp,
          exact hwa (λ h, hwap),
          exact hwb (λ h, hwbp),

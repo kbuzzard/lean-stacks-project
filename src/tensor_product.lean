@@ -1,5 +1,5 @@
 import algebra.group_power algebra.linear_algebra.prod_module algebra.module
-import data.finsupp data.set.basic tactic.ring
+import data.finsupp data.set.basic tactic.ring Kenny_comm_alg.temp
 noncomputable theory
 
 universes u u₁ v v₁ w w₁
@@ -50,11 +50,7 @@ def equiv_singleton : equiv α β :=
 
 end type_singleton
 
-@[simp] lemma quotient.lift_beta {α : Sort u} {β : Sort v} [s : setoid α] (f : α → β) (h : ∀ (a b : α), a ≈ b → f a = f b) (x : α):
-quotient.lift f h (quotient.mk x) = f x := rfl
-
-@[simp] lemma quotient.lift_on_beta {α : Sort u} {β : Sort v} [s : setoid α] (f : α → β) (h : ∀ (a b : α), a ≈ b → f a = f b) (x : α):
-quotient.lift_on (quotient.mk x) f h = f x := rfl
+-- (moved to temp)
 
 section bilinear
 
@@ -1385,29 +1381,6 @@ have h2 : is_bilinear_map h1 :=
 universal_property.factor h2
 
 end tensor_product
-
-class is_ring_hom {α : Type u} {β : Type v} [comm_ring α] [comm_ring β] (f : α → β) : Prop :=
-(map_add : ∀ {x y}, f (x + y) = f x + f y)
-(map_mul : ∀ {x y}, f (x * y) = f x * f y)
-(map_one : f 1 = 1)
-
-namespace is_ring_hom
-
-variables {α : Type u} {β : Type v} [comm_ring α] [comm_ring β]
-variables (f : α → β) [is_ring_hom f] {x y : α}
-
-lemma map_zero : f 0 = 0 :=
-calc f 0 = f (0 + 0) - f 0 : by rw [map_add f]; simp
-     ... = 0 : by simp
-
-lemma map_neg : f (-x) = -f x :=
-calc f (-x) = f (-x + x) - f x : by rw [map_add f]; simp
-        ... = -f x : by simp [map_zero f]
-
-lemma map_sub : f (x - y) = f x - f y :=
-by simp [map_add f, map_neg f]
-
-end is_ring_hom
 
 instance is_ring_hom.to_module {α : Type u} {β : Type v} 
   [comm_ring α] [comm_ring β]
