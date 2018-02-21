@@ -46,13 +46,17 @@ lemma lemma_standard_open_1a (R : Type u) [comm_ring R] (f : R) (g : R) (H : Spe
 lemma lemma_standard_open_1b (R : Type u) [comm_ring R] (f : R) (g : R) (H : Spec.D'(g) ⊆ Spec.D'(f)) :
   ∃ e : ℕ, ∃ a : R, e ≥ 1 ∧ g^e = a*f := sorry 
 
+#check localization.div_self
 def lemma_standard_open_1c (R : Type u) [comm_ring R] (f : R) (g : R) (H : Spec.D'(g) ⊆ Spec.D'(f)) :
   localization.loc R (powers f) → localization.loc R (powers g) :=
   have im_f_is_unit : is_unit (localization.of_comm_ring R (powers g) f) := begin
     cases lemma_standard_open_1b R f g H with e He,
     cases He with a Ha,
     existsi ⟦(a,(⟨g^e,⟨e,rfl⟩⟩:powers g))⟧,
-    admit, -- should be easy but I can't do it
+    unfold localization.of_comm_ring,
+    suffices : localization.mk R (powers g) (f * a, ⟨f * a, _⟩) = localization.mk R (powers g) (1, ⟨1, _⟩),
+      simpa [Ha.2,mul_comm,localization.mk_eq],
+    admit, -- dammit, this should be easy but I can't do it
   end,
   sorry -- regardless of my incompetence above, I now need that
   -- if p:R->S is a ring hom and image of f is a unit then there's a unique q:R[1/f]->S
