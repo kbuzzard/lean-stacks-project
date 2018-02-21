@@ -147,5 +147,3 @@ noncomputable def to_be_named : α [1/S] /ᵣ (S⁻¹ I) ≃ᵣ (α /ᵣ I) [1/(
 (to_be_named_aux5 S I).trans $
 (first_isom _ _ $ to_be_named_aux3 S I).trans $
 to_be_named_aux6 S I
-
--- to be continued
