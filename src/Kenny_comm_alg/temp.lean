@@ -1,6 +1,6 @@
 -- storing intersections of definitions in different file temporarily
 
-import algebra.module algebra.linear_algebra.quotient_module tactic.ring
+import algebra.module algebra.linear_algebra.quotient_module tactic.ring analysis.topology.topological_space
 
 universes u v w
 
@@ -309,3 +309,100 @@ noncomputable def first_isom (α : Type u) (β : Type v)
       simp [is_submodule.quotient_rel_eq, is_ring_hom.map_add f, hz, is_ring_hom.map_neg f]
     end,
   right_inv := λ ⟨x, hx⟩, subtype.eq (by simp [first_isom._match_1]; simpa using classical.some_spec hx) }
+
+def topological_space.is_topological_basis' {α : Type u} [t : topological_space α] (s : set (set α)) :=
+(∀ U : set α, U ∈ s → t.is_open U) ∧ 
+(∀ U : set α, t.is_open U → (∀ x, x ∈ U → ∃ V : set α, V ∈ s ∧ x ∈ V ∧ V ⊆ U))
+
+lemma topological_space.generate_from_apply {α : Type u} [t : topological_space α] (s : set (set α)) (U : set α) :
+  topological_space.is_open (topological_space.generate_from s) U ↔ topological_space.generate_open s U := iff.rfl
+
+lemma basis_is_basis' {α : Type u} [t : topological_space α] (s : set (set α)) : 
+  topological_space.is_topological_basis s ↔ topological_space.is_topological_basis' s :=
+begin
+  split,
+  { intro H,
+    split,
+    { intros U HU,
+      rw H.2.2,
+      exact topological_space.generate_open.basic U HU },
+    { intros U HU x Hx,
+      rw H.2.2 at HU,
+      induction HU with U4 H5 U6 U7 H8 H9 H10 H11 UU12 H13 H14,
+      { exact ⟨U4, H5, Hx, set.subset.refl U4⟩ },
+      { have H5 : x ∈ ⋃₀ s,
+        { rw H.2.1, trivial },
+        rcases H5 with ⟨V, H6, H7⟩,
+        exact ⟨V, H6, H7, set.subset_univ V⟩
+      },
+      { specialize H10 (set.inter_subset_left U6 U7 Hx),
+        specialize H11 (set.inter_subset_right U6 U7 Hx),
+        cases H10 with V12 H12,
+        cases H11 with V13 H13,
+        have H14 := H.1 V12 H12.1 V13 H13.1 x ⟨H12.2.1, H13.2.1⟩,
+        rcases H14 with ⟨V, H15, H16⟩,
+        refine ⟨V, H15, H16.1, _⟩,
+        refine set.subset.trans H16.2 _,
+        intro z,
+        apply and.imp,
+        { intro hz, exact H12.2.2 hz },
+        { intro hz, exact H13.2.2 hz }
+      },
+      { rcases Hx with ⟨V, H15, H16⟩,
+        rcases H14 V H15 H16 with ⟨W, H17, H18, H19⟩,
+        exact ⟨W, H17, H18, λ z hz, ⟨V, H15, H19 hz⟩⟩
+      }
+    }
+  },
+  { intro H,
+    split,
+    { intros U1 H1 U2 H2 x H3,
+      have H4 := H.1 U1 H1,
+      have H5 := H.1 U2 H2,
+      have H6 := H.2 (U1 ∩ U2) (topological_space.is_open_inter t U1 U2 H4 H5) x H3,
+      rcases H6 with ⟨V, H7, H8, H9⟩,
+      exact ⟨V, H7, H8, H9⟩
+    },
+    split,
+    { apply set.ext,
+      intro x,
+      rw iff_true_right (set.mem_univ x),
+      have H1 := H.2 set.univ (topological_space.is_open_univ t) x trivial,
+      rcases H1 with ⟨V, H2, H3, H4⟩,
+      existsi V,
+      existsi H2,
+      exact H3
+    },
+    { apply topological_space_eq,
+      apply funext,
+      intro U,
+      apply propext,
+      rw topological_space.generate_from_apply,
+      split,
+      { intro H1,
+        have H2 := H.2 U H1,
+        have H3 : U = ⋃₀ {V | ∃ x ∈ U, V ∈ s ∧ x ∈ V ∧ V ⊆ U},
+        { apply set.ext,
+          intro x,
+          split,
+          { intro H3,
+            rcases H2 x H3 with ⟨V, H4⟩,
+            exact ⟨V, ⟨x, H3, H4⟩, H4.2.1⟩
+          },
+          { intro H3,
+            rcases H3 with ⟨U1, H3, H4⟩,
+            rcases H3 with ⟨y, H3, H5, H6, H7⟩,
+            exact H7 H4
+          }
+        },
+        rw H3,
+        apply topological_space.generate_open.sUnion,
+        intros U1 H4,
+        rcases H4 with ⟨U1, H4, H5, H6, H7⟩,
+        apply topological_space.generate_open.basic,
+        exact H5
+      },
+      { exact generate_from_le H.1 U }
+    }
+  }
+end
