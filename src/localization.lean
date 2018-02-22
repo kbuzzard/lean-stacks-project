@@ -172,7 +172,8 @@ quotient.lift f h (mk α S x) = f x := rfl
 @[simp] lemma quotient.lift_on_beta {β : Sort v} (f : α × S → β) (h : ∀ a b, a ≈ b → f a = f b) (x : α × S) :
 quotient.lift_on (mk α S x) f h = f x := rfl
 
-@[simp] lemma div_self {y : α} {H : y ∈ S} : mk α S (y, ⟨y, H⟩) = 1 := quotient.sound ⟨1, is_submonoid.one_mem S, by simp⟩
+@[simp] lemma div_self {y : α} {H : y ∈ S} : mk α S (y, ⟨y, H⟩) = 1 :=
+quotient.sound ⟨1, is_submonoid.one_mem S, by simp⟩
 
 end simp_lemmas
 
