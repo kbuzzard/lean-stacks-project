@@ -22,7 +22,7 @@ def topological_space.is_topological_basis' {α : Type u} [t : topological_space
 
 #print topological_space.generate_open
 
-lemma topological.generate_from_apply {α : Type u} [t : topological_space α] (s : set (set α)) (U : set α) :
+lemma topological_space.generate_from_apply {α : Type u} [t : topological_space α] (s : set (set α)) (U : set α) :
   topological_space.is_open (topological_space.generate_from s) U ↔ topological_space.generate_open s U := iff.rfl
 
 lemma basis_is_basis' {α : Type u} [t : topological_space α] (s : set (set α)) : 
@@ -65,12 +65,17 @@ begin
         split,exact H18,
         split,exact H19.1,
         refine set.subset.trans H19.2 _,
-        exact set.inter_subset_inter H14.2.2 H15.2.2,
+        intro z,
+        apply and.imp,
+        { intro hz, exact H14.2.2 hz },
+        { intro hz, exact H15.2.2 hz }
       },
       { cases Hx with V HV,
         cases HV with H15 H16,
         rcases H14 V H15 H16 (H13 V H15) with ⟨W, H17, H18, H19⟩,
-        exact ⟨W, H17, H18, set.subset.trans H19 $ set.subset_sUnion_of_mem H15⟩
+        refine ⟨W, H17, H18, _⟩,
+        intros z hz,
+        exact ⟨V, H15, H19 hz⟩
       }
     }
   },
@@ -84,8 +89,9 @@ begin
       exact ⟨V, H7, H8, H9⟩
     },
     split,
-    { apply set.eq_univ_of_forall,
+    { apply set.ext,
       intro x,
+      rw iff_true_right (set.mem_univ x),
       have H1 := H.2 set.univ (topological_space.is_open_univ t) x trivial,
       rcases H1 with ⟨V, H2, H3, H4⟩,
       existsi V,
@@ -96,7 +102,7 @@ begin
       apply funext,
       intro U,
       apply propext,
-      rw topological.generate_from_apply,
+      rw topological_space.generate_from_apply,
       split,
       { intro H1,
         have H2 := H.2 U H1,
@@ -129,7 +135,6 @@ begin
     }
   }
 end 
-
 
 lemma D_f_form_basis (R : Type) [comm_ring R] : 
   topological_space.is_topological_basis {U : set (X R) | ∃ f : R, U = Spec.D'(f)} := 
