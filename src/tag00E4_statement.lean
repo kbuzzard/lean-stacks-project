@@ -16,7 +16,6 @@ import Kenny_comm_alg.Zariski
 def topological_space.open_immersion {X Y : Type} [tX : topological_space X] [tY : topological_space Y] (φ : X → Y) := 
   continuous φ ∧ 
   function.injective φ ∧ 
-  tY.is_open (set.image φ set.univ) ∧ 
   ∀ U : set X, tX.is_open U → tY.is_open (set.image φ U)
 
 lemma lemma_standard_open (R : Type) [comm_ring R] (f : R) : 
