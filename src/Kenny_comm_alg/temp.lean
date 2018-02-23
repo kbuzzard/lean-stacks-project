@@ -1,6 +1,8 @@
 -- storing intersections of definitions in different file temporarily
 
-import algebra.module algebra.linear_algebra.quotient_module tactic.ring analysis.topology.topological_space
+import algebra.module algebra.linear_algebra.quotient_module
+import tactic.ring analysis.topology.topological_space
+import order.complete_lattice
 
 universes u v w
 
