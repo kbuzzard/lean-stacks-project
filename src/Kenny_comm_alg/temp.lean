@@ -18,6 +18,57 @@ def nonunits' (α : Type u) [comm_ring α] : set α := { x | ¬∃ y, y * x = 1 
 
 class is_ideal {α : Type u} [comm_ring α] (S : set α) extends is_submodule S : Prop
 
+namespace is_ideal
+
+variables {α : Type u} [comm_ring α]
+variables (S : set α) [is_ideal S] (x y : α)
+
+lemma zero : (0:α) ∈ S := @is_submodule.zero _ _ _ _ S _
+
+variables {S x y}
+
+lemma add : x ∈ S → y ∈ S → x + y ∈ S :=
+λ hx hy, is_submodule.add hx hy
+
+lemma neg : x ∈ S → -x ∈ S :=
+λ hx, is_submodule.neg hx
+
+lemma of_neg : -x ∈ S → x ∈ S :=
+λ hx, set.mem_of_eq_of_mem (neg_neg x).symm (is_submodule.neg hx)
+
+lemma sub : x ∈ S → y ∈ S → x - y ∈ S :=
+λ hx hy, is_submodule.sub hx hy
+
+lemma mul_left : y ∈ S → x * y ∈ S :=
+λ hy, is_submodule.smul x hy
+
+lemma mul_right : x ∈ S → x * y ∈ S :=
+λ hx, set.mem_of_eq_of_mem (mul_comm x y) (is_submodule.smul y hx)
+
+lemma of_add_left : x + y ∈ S → x ∈ S → y ∈ S :=
+λ hxy hx, set.mem_of_eq_of_mem (add_sub_cancel' x y).symm (sub hxy hx)
+
+lemma of_add_right : x + y ∈ S → y ∈ S → x ∈ S :=
+λ hxy hy, set.mem_of_eq_of_mem (add_sub_cancel x y).symm (sub hxy hy)
+
+lemma of_sub_left : x - y ∈ S → x ∈ S → y ∈ S :=
+λ hxy hx, set.mem_of_eq_of_mem (sub_sub_cancel x y).symm (sub hx hxy)
+
+lemma of_sub_right : x - y ∈ S → y ∈ S → x ∈ S :=
+λ hxy hy, set.mem_of_eq_of_mem (sub_add_cancel x y).symm (add hxy hy)
+
+instance single_zero : is_ideal ({0}:set α) :=
+{ ..is_submodule.single_zero }
+
+instance univ : is_ideal (set.univ:set α) :=
+{ ..is_submodule.univ }
+
+end is_ideal
+
+instance is_submodule.to_is_ideal {α : Type u} [comm_ring α] (S : set α)
+  (H : is_submodule S) : is_ideal S :=
+{ ..H }
+
 class is_proper_ideal {α : Type u} [comm_ring α] (S : set α) extends is_ideal S : Prop :=
 (ne_univ : S ≠ set.univ)
 
@@ -226,6 +277,10 @@ quotient.lift f h (mk' α S x) = f x := rfl
 quotient.lift_on (mk' α S x) f h = f x := rfl
 
 end is_ideal
+
+lemma is_ideal_span {α : Type u} [comm_ring α] {S : set α} :
+  is_ideal (span S) :=
+{ ..is_submodule_span }
 
 
 class subring (α : Type u) [comm_ring α] (S : set α) : Prop :=
