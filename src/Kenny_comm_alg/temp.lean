@@ -18,6 +18,12 @@ eq.rec $ setoid.refl _
 def nonunits (α : Type u) [comm_ring α] : set α := { x | ¬∃ y, x * y = 1 }
 def nonunits' (α : Type u) [comm_ring α] : set α := { x | ¬∃ y, y * x = 1 }
 
+theorem nonunits_left {α : Type u} [comm_ring α] {x : α} : x ∈ nonunits α → ¬∃ y, y * x = 1 :=
+λ hx ⟨y, hyx⟩, hx ⟨y, mul_comm y x ▸ hyx⟩
+
+theorem nonunits_of_left {α : Type u} [comm_ring α] {x : α} : (¬∃ y, y * x = 1) → x ∈ nonunits α :=
+λ hx ⟨y, hxy⟩, hx ⟨y, mul_comm x y ▸ hxy⟩
+
 class is_ideal {α : Type u} [comm_ring α] (S : set α) extends is_submodule S : Prop
 
 namespace is_ideal
@@ -258,7 +264,7 @@ instance plz : has_add (α /ᵣ S) := by apply_instance
 instance help : comm_ring (α /ᵣ S) := by apply_instance
 instance me : has_mul (α /ᵣ S) := by apply_instance
 
-instance to_quotient : is_ring_hom (mk' α S) :=
+def to_quotient : is_ring_hom (mk' α S) :=
 by refine {..}; intros; refl
 
 variables (x y : α)
@@ -317,7 +323,7 @@ instance : comm_ring S :=
 @[simp] lemma mul (x y : α) (hx : x ∈ S) (hy : y ∈ S) :
 (⟨x, hx⟩ : S) * ⟨y, hy⟩ = ⟨x * y, mul_mem hx hy⟩ := rfl
 
-instance : is_ring_hom ((λ x, x) : S → α) :=
+def is_ring_hom : is_ring_hom ((λ x, x) : S → α) :=
 { map_add := λ x y, by cases x; cases y; refl,
   map_mul := λ x y, by cases x; cases y; refl,
   map_one := rfl }
