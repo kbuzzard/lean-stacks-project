@@ -2,7 +2,7 @@
 
 import algebra.module algebra.linear_algebra.quotient_module
 import tactic.ring analysis.topology.topological_space
-import order.complete_lattice
+import order.complete_lattice order.order_iso
 
 universes u v w
 
@@ -101,12 +101,10 @@ theorem mem_or_mem_of_mul_eq_zero {α : Type u} [comm_ring α] (S : set α) [is_
 λ x y hxy, have x * y ∈ S, by rw hxy; from (@is_submodule.zero α α _ _ S _ : (0:α) ∈ S),
 is_prime_ideal.mem_or_mem_of_mul_mem this
 
-class is_maximal_ideal {α : Type u} [comm_ring α] (S : set α) extends is_submodule S : Prop :=
-mk' ::
-  (ne_univ : S ≠ set.univ)
-  (eq_or_univ_of_subset : ∀ (T : set α) [is_submodule T], S ⊆ T → T = S ∨ T = set.univ)
+class is_maximal_ideal {α : Type u} [comm_ring α] (S : set α) extends is_proper_ideal S : Prop :=
+(eq_or_univ_of_subset : ∀ (T : set α) [is_submodule T], S ⊆ T → T = S ∨ T = set.univ)
 
-theorem is_maximal_ideal.mk {α : Type u} [comm_ring α] (S : set α) [is_submodule S] :
+theorem is_maximal_ideal.mk' {α : Type u} [comm_ring α] (S : set α) [is_submodule S] :
   (1:α) ∉ S → (∀ x (T : set α) [is_submodule T], S ⊆ T → x ∉ S → x ∈ T → (1:α) ∈ T) → is_maximal_ideal S :=
 λ h₁ h₂,
 { _inst_2 with
@@ -118,7 +116,7 @@ theorem is_maximal_ideal.mk {α : Type u} [comm_ring α] (S : set α) [is_submod
         λ hxs, hst hxs⟩) }
 
 theorem not_unit_of_mem_maximal_ideal {α : Type u} [comm_ring α] (S : set α) [is_maximal_ideal S] : S ⊆ nonunits' α :=
-λ x hx hxy, is_maximal_ideal.ne_univ S $ is_submodule.eq_univ_of_contains_unit S ⟨x, hx, hxy⟩
+λ x hx hxy, is_proper_ideal.ne_univ S $ is_submodule.eq_univ_of_contains_unit S ⟨x, hx, hxy⟩
 
 class local_ring (α : Type u) [comm_ring α] :=
 (S : set α)
@@ -131,7 +129,7 @@ instance local_of_nonunits_ideal {α : Type u} [comm_ring α] : (0:α) ≠ 1 →
   add_  := h,
   smul  := λ x y hy ⟨z, hz⟩, hy ⟨x * z, by rw [← hz]; simp [mul_left_comm, mul_assoc]⟩ },
 { S := nonunits' α,
-  max := @@is_maximal_ideal.mk _ (nonunits' α) hi (λ ho, ho ⟨1, mul_one 1⟩) $
+  max := @@is_maximal_ideal.mk' _ (nonunits' α) hi (λ ho, ho ⟨1, mul_one 1⟩) $
     λ x T ht hst hxns hxt, have hxu : _, from classical.by_contradiction hxns,
     let ⟨y, hxy⟩ := hxu in by rw [← hxy]; exact is_submodule.smul y hxt,
   unique := λ T hmt, or.cases_on (@@is_maximal_ideal.eq_or_univ_of_subset _ hmt (nonunits' α) hi $
@@ -463,3 +461,47 @@ begin
     }
   }
 end
+
+namespace subrel
+
+variables {α : Type u} [partial_order α] {p : α → Prop}
+
+instance : partial_order {x // p x} :=
+{ le := subrel (≤) p,
+  le_refl := λ x, le_refl x,
+  le_trans := λ x y z, le_trans,
+  le_antisymm := λ x y hx hy, subtype.eq $ le_antisymm hx hy }
+
+end subrel
+
+namespace zorn
+
+variables (α : Type u) [partial_order α] [inhabited α]
+
+local attribute [instance] classical.prop_decidable
+
+theorem zorn' (H : ∀ (c : set α) (x : α) (h1 : x ∈ c) (h2 : ∀ x y, x ∈ c → y ∈ c → x ≤ y ∨ y ≤ x), ∃ ub, ∀ x ∈ c, x ≤ ub) :
+  ∃ M:α, ∀ x, M ≤ x → x = M :=
+begin
+  have : ∃ M:α, ∀ x, M ≤ x → x ≤ M,
+  { apply zorn,
+    { intros c hc,
+      by_cases h : c = ∅,
+      { simp [h] },
+      { simp [set.not_eq_empty_iff_exists] at h,
+        cases h with x hx,
+        apply H c x hx,
+        intros x y hx hy,
+        by_cases hxy : x = y,
+        { simp [hxy] },
+        { exact hc x hx y hy hxy } } },
+    intros x y z,
+    exact le_trans },
+  rcases this with ⟨M, hm⟩,
+  existsi M,
+  intros x hx,
+  symmetry,
+  exact le_antisymm hx (hm x hx)
+end
+
+end zorn
