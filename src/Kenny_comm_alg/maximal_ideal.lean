@@ -12,15 +12,15 @@ section maximal_ideal
 parameters {α : Type u} [comm_ring α] (P : set α) [hp : is_proper_ideal P]
 include hp
 
-def partial_order : partial_order {S : set α // P ⊆ S ∧ is_proper_ideal S} :=
+def find_maximal_ideal.partial_order : partial_order {S : set α // P ⊆ S ∧ is_proper_ideal S} :=
 subrel.partial_order
 
-def inhabited : inhabited {S : set α // P ⊆ S ∧ is_proper_ideal S} :=
+def find_maximal_ideal.inhabited : inhabited {S : set α // P ⊆ S ∧ is_proper_ideal S} :=
 ⟨⟨P, set.subset.refl P, hp⟩⟩
 
-local attribute [instance] partial_order inhabited
+local attribute [instance] find_maximal_ideal.partial_order find_maximal_ideal.inhabited
 
-private theorem find_maximal_ideal_aux :
+private theorem find_maximal_ideal.aux :
   ∃ (M : {S : set α // P ⊆ S ∧ is_proper_ideal S}), ∀ x, M ≤ x → x = M :=
 zorn.zorn' {S : set α // P ⊆ S ∧ is_proper_ideal S} $
 λ c x hx hc, ⟨⟨{y | ∃ S : {S : set α // P ⊆ S ∧ is_proper_ideal S}, S ∈ c ∧ y ∈ S.val},
@@ -39,18 +39,18 @@ zorn.zorn' {S : set α // P ⊆ S ∧ is_proper_ideal S} $
 λ S hsc z hzs, ⟨S, hsc, hzs⟩⟩
 
 def find_maximal_ideal : set α :=
-(classical.some find_maximal_ideal_aux).1
+(classical.some find_maximal_ideal.aux).1
 
 theorem find_maximal_ideal.contains : P ⊆ find_maximal_ideal :=
-(classical.some find_maximal_ideal_aux).2.1
+(classical.some find_maximal_ideal.aux).2.1
 
 def find_maximal_ideal.is_maximal_ideal :
   is_maximal_ideal find_maximal_ideal :=
 let M : {S : set α // P ⊆ S ∧ is_proper_ideal S} :=
-classical.some find_maximal_ideal_aux in
+classical.some find_maximal_ideal.aux in
 { eq_or_univ_of_subset := λ T ht hmt, or_iff_not_imp_right.2 $
     λ h, congr_arg subtype.val $
-    classical.some_spec find_maximal_ideal_aux
+    classical.some_spec find_maximal_ideal.aux
     ⟨T, set.subset.trans M.2.1 hmt, { ne_univ := h, .. ht }⟩ hmt,
   ..M.2.2 }
 
