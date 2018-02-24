@@ -124,6 +124,50 @@ theorem is_maximal_ideal.mk' {α : Type u} [comm_ring α] (S : set α) [is_submo
 theorem not_unit_of_mem_maximal_ideal {α : Type u} [comm_ring α] (S : set α) [is_maximal_ideal S] : S ⊆ nonunits' α :=
 λ x hx hxy, is_proper_ideal.ne_univ S $ is_submodule.eq_univ_of_contains_unit S ⟨x, hx, hxy⟩
 
+instance is_maximal_ideal.to_is_prime_ideal {α : Type u} [comm_ring α] (S : set α) [is_maximal_ideal S] : is_prime_ideal S :=
+{ mem_or_mem_of_mul_mem :=
+  λ x y hxy,
+  have hsx : S ⊆ span (insert x S),
+  from set.subset.trans (set.subset_insert x S) subset_span,
+  have hsx2 : _,
+  from is_maximal_ideal.eq_or_univ_of_subset _ hsx,
+  have hsy : S ⊆ span (insert y S),
+  from set.subset.trans (set.subset_insert y S) subset_span,
+  have hsy2 : _,
+  from is_maximal_ideal.eq_or_univ_of_subset _ hsy,
+  begin
+    rw span_insert at hsx hsx2 hsy hsy2,
+    rw [set.set_eq_def, set.set_eq_def] at hsx2 hsy2,
+    cases hsx2 with hx hx,
+    { left,
+      rw ← hx x,
+      exact ⟨1, 0, @@is_submodule.zero _ _ is_submodule_span, by simp⟩ },
+    { cases hsy2 with hy hy,
+      { right,
+        rw ← hy y,
+        exact ⟨1, 0, @@is_submodule.zero _ _ is_submodule_span, by simp⟩ },
+      { specialize hx 1,
+        specialize hy 1,
+        simp at hx hy,
+        rcases hx with ⟨x1, x2, hx1, hx2⟩,
+        rcases hy with ⟨y1, y2, hy1, hy2⟩,
+        exfalso,
+        apply is_proper_ideal.ne_univ S,
+        apply is_submodule.univ_of_one_mem S,
+        rw @span_eq_of_is_submodule _ _ _ _ S _ at hx1 hy1,
+        exact calc
+        (1:α) = (x2 + x1 * x) * (y2 + y1 * y) : by simp [hx2.symm, hy2.symm]
+          ... = x2 * y2 + (y1 * y) * x2 + (x1 * x) * y2 + (x1 * y1) * (x * y) : by ring
+          ... ∈ S : is_submodule.add
+            (is_submodule.add
+               (is_submodule.add
+                  (is_submodule.smul x2 hy1)
+                  (is_submodule.smul (y1 * y) hx1))
+               (is_submodule.smul (x1 * x) hy1))
+            (is_submodule.smul _ hxy),
+        repeat { apply_instance } } }
+  end }
+
 class local_ring (α : Type u) [comm_ring α] :=
 (S : set α)
 (max : is_maximal_ideal S)
