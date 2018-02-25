@@ -17,10 +17,10 @@ parameters (hf : ∀ n, f^n ∉ P)
 include hp hf
 
 private def avoid_powers_aux :
-  ∃ (M : {S : set α // is_ideal S ∧ ∀ (n : ℕ), f ^ n ∉ S}),
+  ∃ (M : {S : set α // is_ideal S ∧ P ⊆ S ∧ ∀ n, f ^ n ∉ S}),
   ∀ x, M ≤ x → x = M :=
-@@zorn.zorn' {S // is_ideal S ∧ ∀ n, f^n ∉ S} _ ⟨⟨P, hp, hf⟩⟩ $
-λ c x hx hc, ⟨⟨{y | ∃ S : {S // is_ideal S ∧ ∀ n, f^n ∉ S}, S ∈ c ∧ y ∈ S.val},
+@@zorn.zorn' {S // is_ideal S ∧ P ⊆ S ∧ ∀ n, f^n ∉ S} _ ⟨⟨P, hp, set.subset.refl P, hf⟩⟩ $
+λ c x hx hc, ⟨⟨{y | ∃ S : {S // is_ideal S ∧ P ⊆ S ∧ ∀ n, f^n ∉ S}, S ∈ c ∧ y ∈ S.val},
   { zero_ := ⟨x, hx, @@is_ideal.zero _ x.1 x.2.1⟩,
     add_  := λ x y ⟨Sx, hxc, hx⟩ ⟨Sy, hyc, hy⟩,
       or.cases_on (hc Sx Sy hxc hyc)
@@ -28,14 +28,18 @@ private def avoid_powers_aux :
         (λ hyx, ⟨Sx, hxc, @@is_ideal.add _ Sx.2.1 hx (hyx hy)⟩),
     smul  := λ x y ⟨Sy, hyc, hy⟩,
       ⟨Sy, hyc, @@is_ideal.mul_left _ Sy.2.1 hy⟩ },
-  λ n ⟨S, hsc, hfns⟩, S.2.2 n hfns⟩,
+  λ z hz, ⟨x, hx, x.2.2.1 hz⟩,
+  λ n ⟨S, hsc, hfns⟩, S.2.2.2 n hfns⟩,
 λ S hsc z hzs, ⟨S, hsc, hzs⟩⟩
 
 def avoid_powers : set α :=
 (classical.some avoid_powers_aux).1
 
+theorem avoid_powers.contains : P ⊆ avoid_powers :=
+(classical.some avoid_powers_aux).2.2.1
+
 theorem avoid_powers.avoid_powers : ∀ n, f^n ∉ avoid_powers :=
-(classical.some avoid_powers_aux).2.2
+(classical.some avoid_powers_aux).2.2.2
 
 def avoid_powers.is_prime_ideal : is_prime_ideal avoid_powers :=
 { ne_univ := λ h,
@@ -49,15 +53,19 @@ def avoid_powers.is_prime_ideal : is_prime_ideal avoid_powers :=
       from set.subset.trans (set.subset_insert x _) subset_span,
     have hay : avoid_powers ⊆ span (insert y avoid_powers),
       from set.subset.trans (set.subset_insert y _) subset_span,
+    have hax2 : P ⊆ span (insert x avoid_powers),
+      from set.subset.trans avoid_powers.contains hax,
+    have hay2 : P ⊆ span (insert y avoid_powers),
+      from set.subset.trans avoid_powers.contains hay,
     have hnx : (¬∃ n, f^n ∈ span (insert x avoid_powers)) → x ∈ avoid_powers,
       from λ h,
-      have h2 : _ := h1 ⟨_, is_ideal_span, λ n hnfs, h ⟨n, hnfs⟩⟩ hax,
+      have h2 : _ := h1 ⟨_, is_ideal_span, hax2, λ n hnfs, h ⟨n, hnfs⟩⟩ hax,
       suffices x ∈ span (insert x avoid_powers),
         by unfold avoid_powers; rw ← h2; exact this,
       subset_span $ set.mem_insert x _,
     have hny : (¬∃ n, f^n ∈ span (insert y avoid_powers)) → y ∈ avoid_powers,
       from λ h,
-      have h2 : _ := h1 ⟨_, is_ideal_span, λ n hnfs, h ⟨n, hnfs⟩⟩ hay,
+      have h2 : _ := h1 ⟨_, is_ideal_span, hay2, λ n hnfs, h ⟨n, hnfs⟩⟩ hay,
       suffices y ∈ span (insert y avoid_powers),
         by unfold avoid_powers; rw ← h2; exact this,
       subset_span $ set.mem_insert y _,
