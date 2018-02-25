@@ -58,6 +58,11 @@ def lemma_standard_open_1c (R : Type u) [comm_ring R] (f : R) (g : R) (H : Spec.
   -- if p:R->S is a ring hom and image of f is a unit then there's a unique q:R[1/f]->S
   -- such that p is q ∘ localization.of_comm_ring . Do we have this?
 
+  -- Note that this lemma should have a uniqueness statement too, saying that there is precisely
+  -- one R-algebra morphism between these rings. The uniqueness is essential because we want
+  -- define O_X(U) to be R[1/f] if U=D(f), however this is not well-defined, so I propose
+  -- defining it as the subring of the product (over all f such that )
+
 def lemma_standard_open_1d (R : Type u) [comm_ring R] (f : R) (g : R) (H : Spec.D'(g) ⊆ Spec.D'(f)) (M : Type)
   [ module R M] :
   tensor_product M (localization.loc R (powers f)) → tensor_product M (localization.loc R (powers g)) := sorry
