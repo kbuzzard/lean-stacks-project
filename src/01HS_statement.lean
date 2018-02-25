@@ -22,11 +22,12 @@ The third statement follows directly from tag 00E0.
 -/
 
 import Kenny_comm_alg.Zariski localization tensor_product tag00E4_statement
+import Kenny_comm_alg.avoid_powers algebra.module
 
 universes u v
 
-local infix ` ^ ` := monoid.pow 
-
+local infix ^ := monoid.pow 
+local attribute [instance] classical.prop_decidable
 
 -- the next line should not be here. It's in broken Atiyah.lean
 
@@ -40,21 +41,41 @@ def is_unit {α : Type u} [comm_ring α] (x : α) := ∃ y, x * y = 1
 example (R : Type u) [comm_ring R] (f : R) : topological_space (X R) := by apply_instance 
 
 /-- Stacks project tag 01HS -/
-lemma lemma_standard_open_1a (R : Type u) [comm_ring R] (f : R) (g : R) (H : Spec.D'(g) ⊆ Spec.D'(f)) :
-  is_unit (localization.of_comm_ring R (powers g) f) := sorry 
-
 lemma lemma_standard_open_1b (R : Type u) [comm_ring R] (f : R) (g : R) (H : Spec.D'(g) ⊆ Spec.D'(f)) :
-  ∃ e : ℕ, ∃ a : R, e ≥ 1 ∧ g^e = a*f := sorry 
+  ∃ e, ∃ a, g^e = a*f :=
+have h1 : ¬∀ n, g^n ∉ span {f},
+from λ h,
+  let P := @@is_ideal.avoid_powers _ g (span {f}) is_ideal_span h in
+  have h1 : ∀ n, g ^ n ∉ P,
+    from @@is_ideal.avoid_powers.avoid_powers _ g (span {f}) is_ideal_span h,
+  have h2 : span {f} ⊆ P,
+    from @is_ideal.avoid_powers.contains _ _ g (span {f}) is_ideal_span h,
+  have h3 : is_prime_ideal P,
+    from @@is_ideal.avoid_powers.is_prime_ideal _ g (span {f}) is_ideal_span h,
+  have h4 : (⟨P, h3⟩ : X R) ∈ Spec.D' g,
+    from λ h5, h1 1 $ by simpa using h5,
+  H h4 $ h2 $ subset_span $ set.mem_singleton f,
+begin
+  simp [not_forall, span, span_singleton] at h1,
+  rcases h1 with ⟨e, a, h⟩,
+  exact ⟨e, a, h.symm⟩
+end
+
+lemma lemma_standard_open_1a (R : Type u) [comm_ring R] (f : R) (g : R) (H : Spec.D'(g) ⊆ Spec.D'(f)) :
+  is_unit (localization.of_comm_ring R (powers g) f) :=
+let ⟨e, a, h⟩ := lemma_standard_open_1b R f g H in
+⟨⟦(a,(⟨g^e,⟨e,rfl⟩⟩:powers g))⟧,
+ quotient.sound $ ⟨(1:R), ⟨0, rfl⟩, by simp [h, mul_comm]⟩⟩
 
 def lemma_standard_open_1c (R : Type u) [comm_ring R] (f : R) (g : R) (H : Spec.D'(g) ⊆ Spec.D'(f)) :
-  localization.loc R (powers f) → localization.loc R (powers g) :=
-  have im_f_is_unit : is_unit (localization.of_comm_ring R (powers g) f) := begin
-    cases lemma_standard_open_1b R f g H with e He,
-    cases He with a Ha,
-    existsi ⟦(a,(⟨g^e,⟨e,rfl⟩⟩:powers g))⟧,
-    admit, -- should be easy but I can't do it
-  end,
-  sorry -- regardless of my incompetence above, I now need that
+  localization.away f → localization.away g :=
+have im_f_is_unit : is_unit (localization.of_comm_ring R (powers g) f) := begin
+  rcases lemma_standard_open_1b R f g H with ⟨e, a, Ha⟩,
+  existsi ⟦(a,(⟨g^e,⟨e,rfl⟩⟩:powers g))⟧,
+  unfold localization.of_comm_ring,
+  simp [Ha, mul_comm, localization.mk_eq]
+end,
+sorry -- regardless of my incompetence above, I now need that
   -- if p:R->S is a ring hom and image of f is a unit then there's a unique q:R[1/f]->S
   -- such that p is q ∘ localization.of_comm_ring . Do we have this?
 

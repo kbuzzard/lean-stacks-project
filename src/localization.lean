@@ -163,14 +163,17 @@ by simp; refl
   mk α S ⟨f₁.1 * f₂.1, f₁.2.1 * f₂.2.1,
     is_submonoid.mul_mem f₁.2.2 f₂.2.2⟩ :=
 by cases f₁; cases f₂; cases f₁_snd; cases f₂_snd; refl
-@[simp] lemma one_frac : 1 = mk α S ⟨1, 1, is_submonoid.one_mem S⟩ := rfl
-@[simp] lemma zero_frac : 0 = mk α S ⟨0, 1, is_submonoid.one_mem S⟩ := rfl
+lemma one_frac : 1 = mk α S ⟨1, 1, is_submonoid.one_mem S⟩ := rfl
+lemma zero_frac : 0 = mk α S ⟨0, 1, is_submonoid.one_mem S⟩ := rfl
 
 @[simp] lemma quotient.lift_beta {β : Sort v} (f : α × S → β) (h : ∀ a b, a ≈ b → f a = f b) (x : α × S) :
 quotient.lift f h (mk α S x) = f x := rfl
 
 @[simp] lemma quotient.lift_on_beta {β : Sort v} (f : α × S → β) (h : ∀ a b, a ≈ b → f a = f b) (x : α × S) :
 quotient.lift_on (mk α S x) f h = f x := rfl
+
+@[simp] lemma div_self {y : α} {H : y ∈ S} : mk α S (y, ⟨y, H⟩) = 1 :=
+quotient.sound ⟨1, is_submonoid.one_mem S, by simp⟩
 
 end simp_lemmas
 

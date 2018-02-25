@@ -129,6 +129,10 @@ topological_space.of_closed {A | ∃ E, V E = A}
           exact hpb hy2
         end)⟩⟩)
 
+lemma Zariski.is_open (U : set X) (E : set α) (H : U = - V E) :
+  topological_space.is_open (Zariski) U :=
+⟨E, by rw H; rw set.compl_compl⟩
+
 instance Zariski.t0 : @t0_space X Zariski :=
 begin
   constructor,
