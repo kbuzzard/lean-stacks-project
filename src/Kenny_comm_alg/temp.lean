@@ -96,6 +96,19 @@ theorem is_submodule.univ_of_one_mem {α : Type u} [comm_ring α] (S : set α) [
 (1:α) ∈ S → S = set.univ :=
 λ h, set.ext $ λ z, ⟨λ hz, trivial, λ hz, by simpa using (is_submodule.smul z h : z * 1 ∈ S)⟩
 
+theorem is_proper_ideal.one_not_mem {α : Type u} [comm_ring α] {S : set α} [is_proper_ideal S] : (1:α) ∉ S :=
+λ h, is_proper_ideal.ne_univ S $ is_submodule.univ_of_one_mem S h
+
+theorem is_proper_ideal.not_mem_of_mul_right_one {α : Type u} [comm_ring α] {S : set α} [is_proper_ideal S]
+  {u v : α} (huv : u * v = 1) : u ∉ S :=
+λ hu, have h : (1:α) ∈ S, from huv ▸ is_ideal.mul_right hu,
+is_proper_ideal.one_not_mem h
+
+theorem is_proper_ideal.not_mem_of_mul_left_one {α : Type u} [comm_ring α] {S : set α} [is_proper_ideal S]
+  {u v : α} (huv : u * v = 1) : v ∉ S :=
+λ hv, have h : (1:α) ∈ S, from huv ▸ is_ideal.mul_left hv,
+is_proper_ideal.one_not_mem h
+
 theorem not_unit_of_mem_proper_ideal {α : Type u} [comm_ring α] (S : set α) [is_proper_ideal S] : S ⊆ nonunits' α :=
 λ x hx hxy, is_proper_ideal.ne_univ S $ is_submodule.eq_univ_of_contains_unit S ⟨x, hx, hxy⟩
 
@@ -106,6 +119,18 @@ theorem mem_or_mem_of_mul_eq_zero {α : Type u} [comm_ring α] (S : set α) [is_
   ∀ {x y : α}, x * y = 0 → x ∈ S ∨ y ∈ S :=
 λ x y hxy, have x * y ∈ S, by rw hxy; from (@is_submodule.zero α α _ _ S _ : (0:α) ∈ S),
 is_prime_ideal.mem_or_mem_of_mul_mem this
+
+local infix ^ := monoid.pow
+
+theorem is_prime_ideal.mem_of_pow_mem {α : Type u} [comm_ring α] {S : set α} [is_prime_ideal S]
+  {x : α} {n : ℕ} (hx : x^n ∈ S) : x ∈ S :=
+(nat.rec_on n
+   (λ h, false.elim $ is_proper_ideal.ne_univ S $
+      is_submodule.univ_of_one_mem S h)
+   (λ n ih h, or.cases_on
+      (is_prime_ideal.mem_or_mem_of_mul_mem h)
+      id ih))
+hx
 
 class is_maximal_ideal {α : Type u} [comm_ring α] (S : set α) extends is_proper_ideal S : Prop :=
 (eq_or_univ_of_subset : ∀ (T : set α) [is_submodule T], S ⊆ T → T = S ∨ T = set.univ)
@@ -124,7 +149,7 @@ theorem is_maximal_ideal.mk' {α : Type u} [comm_ring α] (S : set α) [is_submo
 theorem not_unit_of_mem_maximal_ideal {α : Type u} [comm_ring α] (S : set α) [is_maximal_ideal S] : S ⊆ nonunits' α :=
 λ x hx hxy, is_proper_ideal.ne_univ S $ is_submodule.eq_univ_of_contains_unit S ⟨x, hx, hxy⟩
 
-instance is_maximal_ideal.to_is_prime_ideal {α : Type u} [comm_ring α] (S : set α) [is_maximal_ideal S] : is_prime_ideal S :=
+instance is_maximal_ideal.to_is_prime_ideal {α : Type u} [comm_ring α] {S : set α} (hs : is_maximal_ideal S) : is_prime_ideal S :=
 { mem_or_mem_of_mul_mem :=
   λ x y hxy,
   have hsx : S ⊆ span (insert x S),
