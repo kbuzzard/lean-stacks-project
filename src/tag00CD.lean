@@ -64,6 +64,9 @@ let ⟨t, hts, hsv⟩ := quotient.exact h in
    ... = (-s₁ * s₂ * t) * v : by ring
    ... ∈ I : is_submodule.smul _ hv⟩
 
+private lemma to_be_named_aux35 : (1:α [1/S])
+  = ⟦⟨1, 1, is_submonoid.one_mem S⟩⟧ := rfl
+
 private def to_be_named_aux4 : is_ring_hom (to_be_named_aux3 S I) :=
 { map_add := λ x y, quotient.induction_on₂ x y $
     λ m n, quotient.induction_on₂ m n $
@@ -74,7 +77,8 @@ private def to_be_named_aux4 : is_ring_hom (to_be_named_aux3 S I) :=
     λ ⟨p, q, r⟩ ⟨s, t, u⟩, by simp [is_ideal.coset_eq, to_be_named_aux3,
       to_be_named_aux2, to_be_named_aux1, localization.mk_eq],
   map_one := by simp [is_ideal.coset_eq, to_be_named_aux3,
-      to_be_named_aux2, to_be_named_aux1, localization.mk_eq] }
+      to_be_named_aux2, to_be_named_aux1, localization.mk_eq];
+      rw to_be_named_aux35; rw quotient.lift_beta; simp }
 
 local attribute [instance] to_be_named_aux4
 local attribute [instance] is_ring_hom.ker.is_ideal
