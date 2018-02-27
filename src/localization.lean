@@ -142,6 +142,12 @@ instance : is_ring_hom (of_comm_ring α S) :=
   map_mul := λ x y, quotient.sound $ by simp,
   map_one := rfl }
 
+theorem mul_denom (r s : α) (hs : s ∈ S) : @@has_mul.mul (localization.has_mul α S) (⟦⟨r, s, hs⟩⟧ : loc α S) (of_comm_ring α S s) = of_comm_ring α S r :=
+quotient.sound $ ⟨1, is_submonoid.one_mem S, by simp [mul_comm]⟩
+
+theorem mul_inv_denom (r s : α) (hs : s ∈ S) : @@has_mul.mul (localization.has_mul α S) (of_comm_ring α S r) (⟦⟨1, s, hs⟩⟧ : loc α S) = (⟦⟨r, s, hs⟩⟧ : loc α S) :=
+quotient.sound $ ⟨1, is_submonoid.one_mem S, by simp⟩
+
 section simp_lemmas
 
 variables (f f₁ f₂ : α × S)
