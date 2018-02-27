@@ -152,8 +152,3 @@ lemma lemma_standard_covering {R : Type} [comm_ring R] (L : list R)
   function.injective α ∧ -- image of α is kernel of β (as maps of abelian groups or R-mods)
     ∀ s : (Π (i : fin n), localization.loc R (powers (f i))), ∀ j k, β s j k = 0 ↔ ∃ r : R, α r = s :=
     sorry 
-    
-  
-            
-
-
