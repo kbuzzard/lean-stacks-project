@@ -343,6 +343,18 @@ def smul_aux : α → β × γ → ℤ → free_abelian_group β γ :=
 
 variables {α β γ}
 
+theorem smul_aux_zero {r : α} (xy : β × γ) :
+  smul_aux α β γ r xy (0:ℤ) = 0 :=
+by simp [smul_aux]; refl
+
+theorem smul_aux_add {r : α} (xy : β × γ) (m n : ℤ) :
+  smul_aux α β γ r xy (m + n) = smul_aux α β γ r xy m + smul_aux α β γ r xy n :=
+by simp [smul_aux]
+
+theorem smul_aux_sub {r : α} (xy : β × γ) (m n : ℤ) :
+  smul_aux α β γ r xy (m - n) = smul_aux α β γ r xy m - smul_aux α β γ r xy n :=
+by simp [smul_aux]
+
 theorem pair_add.neg (x : β) (y₁ y₂ : γ) (n : ℤ) :
   -pair_add α x y₁ y₂ n = pair_add α x y₁ y₂ (-n) :=
 begin
@@ -358,7 +370,7 @@ theorem pair_add.smul (r : α) (x : β) (y₁ y₂ : γ) (n : ℤ) :
   finsupp.sum (pair_add α x y₁ y₂ n) (smul_aux α β γ r) = relators.pair_add α (r • x) y₁ y₂ n :=
 begin
   unfold pair_add,
-  rw finsupp.sum_sub_index,
+  rw finsupp.sum_sub_index smul_aux_sub,
   rw finsupp.sum_add_index,
   repeat { rw finsupp.sum_single_index },
   repeat { intros, simp [smul_aux] },
@@ -380,7 +392,7 @@ theorem add_pair.smul (r : α) (x₁ x₂ : β) (y : γ) (n : ℤ) :
   finsupp.sum (add_pair α x₁ x₂ y n) (smul_aux α β γ r) = relators.add_pair α (r • x₁) (r • x₂) y n :=
 begin
   unfold add_pair,
-  rw finsupp.sum_sub_index,
+  rw finsupp.sum_sub_index smul_aux_sub,
   rw finsupp.sum_add_index,
   repeat { rw finsupp.sum_single_index },
   repeat { intros, simp [smul_aux, smul_add] },
@@ -400,7 +412,7 @@ theorem smul_trans.smul (r r' : α) (x : β) (y : γ) (n : ℤ) :
   finsupp.sum (smul_trans α r' x y n) (smul_aux α β γ r) = relators.smul_trans α r' (r • x) y n :=
 begin
   unfold smul_trans,
-  rw finsupp.sum_sub_index,
+  rw finsupp.sum_sub_index smul_aux_sub,
   repeat { rw finsupp.sum_single_index },
   repeat { intros, simp [smul_aux, smul_add, smul_smul, mul_comm] },
   repeat { refl },
@@ -475,7 +487,7 @@ quotient.lift₂ (λ f g, ⟦f + g⟧ : free_abelian_group β γ → free_abelia
 λ f₁ f₂ g₁ g₂ ⟨L₁, hL₁, hLfg₁⟩ ⟨L₂, hL₂, hLfg₂⟩, quotient.sound
 ⟨L₁ ++ L₂,
  λ x hx, by rw [list.mem_append] at hx; from or.cases_on hx (hL₁ x) (hL₂ x),
- by rw [list.sum_append, hLfg₁, hLfg₂]; simp⟩
+ by rw [@list.sum_append _ _ L₁ L₂, hLfg₁, hLfg₂]; simp⟩
 
 protected theorem add_assoc (f g h : β ⊗ γ) : add α β γ (add α β γ f g) h = add α β γ f (add α β γ g h) :=
 quotient.induction_on₃ f g h $ λ m n k, quotient.sound $ by simp
@@ -533,7 +545,7 @@ theorem mem_closure_of_finset {f : free_abelian_group β γ} :
     exact hSr y hyms },
   { change multiset.sum (multiset.map g ms) = f at hSf,
     rw ← hL at hSf,
-    rw ← multiset.coe_sum,
+    rw ← multiset.coe_sum (list.map g L),
     exact hSf }
 end
 
@@ -582,7 +594,7 @@ begin
       { rw ← finsupp.sum_sub_index,
         rw ← hLfg,
         rw list.sum_cons,
-        rw list.sum_cons,
+        rw @list.sum_cons _ _ L',
         rw finsupp.sum_add_index,
         rw ← hLfg',
         rw h,
@@ -597,7 +609,7 @@ begin
       { rw ← finsupp.sum_sub_index,
         rw ← hLfg,
         rw list.sum_cons,
-        rw list.sum_cons,
+        rw @list.sum_cons _ _ L',
         rw finsupp.sum_add_index,
         rw ← hLfg',
         rw h,
@@ -612,7 +624,7 @@ begin
       { rw ← finsupp.sum_sub_index,
         rw ← hLfg,
         rw list.sum_cons,
-        rw list.sum_cons,
+        rw @list.sum_cons _ _ L',
         rw finsupp.sum_add_index,
         rw ← hLfg',
         rw h,
@@ -868,7 +880,7 @@ begin
     unfold factor_aux at L_ih ⊢,
     rw ← finsupp.sum_sub_index,
     rw ← hgL,
-    rw list.sum_cons,
+    rw @list.sum_cons _ _ L_tl,
     rw finsupp.sum_add_index,
     rw L_ih,
     rw sum_zero_index',

@@ -163,7 +163,7 @@ hence $fR = R$, so $f$ is a unit.
 -/
 
 import Kenny_comm_alg.maximal_ideal Kenny_comm_alg.minimal_prime_ideal
-import Kenny_comm_alg.avoid_powers Kenny_comm_alg.Zariski
+import Kenny_comm_alg.avoid_powers Kenny_comm_alg.Zariski Kenny_comm_alg.ideal_operations
 
 noncomputable theory
 local attribute [instance] classical.prop_decidable
@@ -221,7 +221,27 @@ set.ext $ λ x,
 ⟨λ hx z hz, hx $ subset_span hz,
  λ hx z hz, span_minimal x.2.1.1.1 hx hz⟩
 
--- TODO: lemma06 lemma07
+lemma lemma06 (I : set R) [is_ideal I] : Spec.V I = Spec.V (is_ideal.radical I) :=
+set.ext $ λ x,
+⟨λ hx z ⟨n, hz⟩, @@is_prime_ideal.mem_of_pow_mem _ x.2 $ hx hz,
+ λ hx z hz, hx $ is_ideal.subset_radical I hz⟩
+
+lemma lemma07 (I : set R) [is_ideal I] : is_ideal.radical I = ⋂₀ {x | is_prime_ideal x ∧ I ⊆ x} :=
+set.ext $ λ f,
+⟨λ ⟨n, hf⟩ x ⟨hx, hix⟩, @@is_prime_ideal.mem_of_pow_mem _ hx $ hix hf,
+ λ hf, classical.by_contradiction $ λ hnf,
+   have h1 : ∀ n, f^n ∉ I,
+     from λ n, nat.rec_on n
+       (λ hfz, hnf ⟨0, is_ideal.mul_left hfz⟩)
+       (λ n _ hfni, hnf ⟨n, hfni⟩),
+   let P := is_ideal.avoid_powers f I h1 in
+   have h2 : is_prime_ideal P,
+     from is_ideal.avoid_powers.is_prime_ideal f I h1,
+   have h3 : I ⊆ P,
+     from is_ideal.avoid_powers.contains f I h1,
+   have h4 : ∀ n, f^n ∉ P,
+     from is_ideal.avoid_powers.avoid_powers f I h1,
+   h4 1 $ by simpa using hf P ⟨h2, h3⟩⟩
 
 lemma lemma08 (I : set R) [is_ideal I] : Spec.V I = ∅ ↔ I = set.univ :=
 ⟨λ h, set.eq_univ_of_forall $ classical.by_contradiction $ λ hn,

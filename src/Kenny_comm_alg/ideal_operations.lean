@@ -140,4 +140,111 @@ span_eq is_submodule.single_zero
   (subset_span_of_subset $
    λ x hx, ⟨0, 0, by simp at hx; simp [hx, zero]⟩)
 
+local infix ^ := monoid.pow
+
+/-
+(0,2) -> (x+y, 0)
+(1,0) -> (0, 1) [(x+y)^(1+0-1) = (0)*x^1+(1)*y^0]
+(1,1) -> (1, 1) [(x+y)^(1+1-1) = (1)*x^1+(1)*y^1]
+(1,2) -> (x+2y, 1) [(x+y)^(1+2-1) = (x+2y)*x^1+(1)*y^2]
+(1,3) -> (x^2+3xy+3y^2, 1) [(x+y)^3 = (x^2+3xy+3y^2)*x^1+(1)*y^3]
+(2,2) -> (x+3y, y+3x)
+(3,2) -> (x+4y, y^2+4xy+6x^2)
+(4,1) -> (1, y^3+4xy^2+6x^2y+4x^3)
+(4,2) -> (x+5y, y^3+5xy^2+10x^2y+10x^3)
+(4,3) -> (x^2+6xy+15y^2, y^3+6xy^2+14x^2y+20x^3)
+(4,4) -> (x^3+7x^2y+21xy^2+35y^3, y^3+7xy^2+21x^2y+35x^3)
+
+(x,y,1,0) : 0
+(x,y,1,1) : 1 = 0*(x+y) + 1*y^0
+(x,y,1,2) : x+2y = 1*(x+y) + 1*y^1
+(x,y,1,3) : x^2+3xy+3y^2 = (x+2y)*(x+y) + 1*y^2
+
+(y,x,2,3): y^2+4xy+6x^2 = (y+3x)(y+x) + 3x^2
+(y,x,2,4): y^3+5xy^2+10x^2y+10x^3 = (y^2+4xy+6x^2)(y+x) + 4x^3
+
+A(x,y,4,3) = A(x,y,4,2)*(x+y)+(5C2)y^3
+A(x,y,4,4) = A(x,y,4,3)*(x+y)+(6C3)y^3
+
+(x+y)^(4+3-1) = x^4(x^2+6xy+15y^2) + y^3(y^3+6xy^2+15x^2y+20x^3)
+(x+y)^(5+3-1)
+= (x^4(x^2+6xy+15y^2) + y^3(y^3+6xy^2+15x^2y+20x^3))(x+y)
+= x^5(x^2+6xy+15y^2) + x^4(x^2+6xy+15y^2)y + y^3(y^3+6xy^2+15x^2y+20x^3)(x+y)
+= x^5(x^2+6xy+15y^2) + x^4(x^2+6xy+15y^2)y + y^3(y^3+6xy^2+15x^2y+20x^3)(x+y)
+
+(x+y)^(1+2+1) = (x^2+4xy+6y^2)*x^2 + (y+4x)*y^3
+(x+y)^(1+1+1) = (x+3y)*x^2 + (y+3x)*y^2
+(x+y)^(1+0+1) = (1)*x^2 + (y+2x)*y^1
+(x+y)^(0+0+1) = (1)*x^1 + (1)*y^1
+
+A(x,y,0,0) = 1
+A(x,y,0,1) = x+2y = (1)*(x+y)+y
+A(x,y,0,2) = x^2+3xy+3y^2
+A(x,y,0,3) = x^3+4x^2y+6xy^2+4y^3 = A(x,y,0,2)*(x+y)+y^3
+A(x,y,1,0) = 1
+A(x,y,1,1) = x+3y = (1)*(x+y)+2y
+A(x,y,1,2) = x^2+4xy+6y^2 = (x+3y)*(x+y)+3y^2 [remark: 3C1]
+A(x,y,1,3) = x^3+5x^2y+10xy^2+10y^3
+A(x,y,2,0) = 1
+A(x,y,2,1) = x+4y
+A(x,y,2,2) = x^2+5xy+10y^2
+A(x,y,2,3) = x^3+6x^2y+15xy^2+20y^3 = A(x,y,1,3) + y*A(x,y,2,2)
+
+-/
+
+def some_binomial_boi (x y : α) : nat → nat → α
+| m     0     := 1
+| 0     (n+1) := (some_binomial_boi 0 n) * (x + y) + y^(n+1)
+| (m+1) (n+1) := some_binomial_boi m (n+1) + y * some_binomial_boi (m+1) n
+
+lemma some_lemma_boi (x y : α) (n : nat) : some_binomial_boi x y n 0 = 1 :=
+by cases n; refl
+
+theorem some_binomial_theorem_boi (x y : α) (m n : nat) :
+  (x + y)^(m+n+1) = (some_binomial_boi x y m n)*x^(m+1) + (some_binomial_boi y x n m)*y^(n+1) :=
+begin
+  induction m with m m_ih generalizing n;
+  induction n with n n_ih,
+  { simp [some_binomial_boi] },
+  { rw nat.zero_add at n_ih ⊢,
+    unfold monoid.pow at n_ih ⊢,
+    rw n_ih,
+    unfold some_binomial_boi,
+    rw some_lemma_boi,
+    unfold monoid.pow,
+    ring },
+  { specialize m_ih 0,
+    simp [pow_succ] at m_ih ⊢,
+    rw m_ih,
+    unfold some_binomial_boi,
+    rw some_lemma_boi,
+    unfold monoid.pow,
+    ring },
+  { calc  (x + y) ^ (nat.succ m + nat.succ n + 1)
+        = x * (x + y) ^ (m + (n + 1) + 1) + y * (x + y) ^ (nat.succ m + n + 1) :
+            by rw [pow_succ, add_mul]; simp [nat.succ_eq_add_one]
+    ... = x * (some_binomial_boi x y m (n + 1) * x ^ (m + 1) + some_binomial_boi y x (n + 1) m * y ^ ((n + 1) + 1)) +
+          y * (some_binomial_boi x y (nat.succ m) n * x ^ (nat.succ m + 1) + some_binomial_boi y x n (nat.succ m) * y ^ (n + 1)) :
+            by rw [m_ih, n_ih]
+    ... = some_binomial_boi x y (nat.succ m) (nat.succ n) * x ^ (nat.succ m + 1) +
+          some_binomial_boi y x (nat.succ n) (nat.succ m) * y ^ (nat.succ n + 1) :
+            by unfold some_binomial_boi; unfold monoid.pow; simp [nat.succ_eq_add_one]; ring SOP; ac_refl }
+end
+
+def radical : set α := {x | ∃ n, x ^ (n+1) ∈ S}
+
+instance radical.is_ideal : is_ideal (radical S) :=
+{ zero_ := ⟨0, by simp [is_ideal.zero]⟩,
+  add_  := λ x y ⟨m, hxms⟩ ⟨n, hyns⟩,
+    ⟨m + n, by rw some_binomial_theorem_boi;
+     exact is_ideal.add
+       (is_ideal.mul_left hxms)
+       (is_ideal.mul_left hyns)⟩,
+  smul  := λ x y ⟨n, hyns⟩,
+    ⟨n, by dsimp [(•)]; rw mul_pow;
+       exact is_ideal.mul_left hyns⟩ }
+
+theorem subset_radical : S ⊆ radical S :=
+λ x hx, ⟨0, by simpa⟩
+
 end is_ideal

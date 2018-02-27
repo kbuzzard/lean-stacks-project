@@ -113,7 +113,7 @@ topological_space.of_closed {A | ∃ E, V E = A}
            { rw mul_comm,
              apply is_submodule.smul _ (subset_generate Ea hwa1) },
            { apply is_submodule.smul _ (subset_generate Eb hwb1) } },
-         cases is_prime_ideal.mem_or_mem_of_mul_mem (hz this) with hwap hwbp,
+         cases @@is_prime_ideal.mem_or_mem_of_mul_mem _ hp (hz this) with hwap hwbp,
          exact hwa (λ h, hwap),
          exact hwb (λ h, hwbp),
        end,
