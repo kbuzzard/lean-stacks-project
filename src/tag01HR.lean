@@ -29,5 +29,11 @@ def zariski.structure_sheaf_standard {R : Type u} [comm_ring R] (U : set (X R)) 
   @localization.loc R _ {g : R | U ⊆ Spec.D'(g)} (nonzero_on_U_is_mult_set U)
 
 lemma zariski.structure_sheaf_on_standard {R : Type u} [comm_ring R] (f : R) : let U := Spec.D'(f) in
-  zariski.structure_sheaf_standard U (⟨f,rfl⟩) = localization.loc R (powers f) := sorry -- they are supposed to be canonically isomorphic not equal
+  zariski.structure_sheaf_standard U (⟨f,rfl⟩) = localization.loc R (powers f) := sorry
+   -- they are supposed to be canonically isomorphic not equal
+-- Ideas: The map goes from loc R (powers f) to loc R S (S the big set) because f is in S
+-- so existence of the map is some universal property
+-- Uniqueness is probably easy -- we know where R goes and where 1/f goes and that's all we need
+-- Isomorphism seems harder. I want to write down an inverse using choice; have to go back to definition of S
+-- to see 1/s in R[1/f] and that will be an inverse again because there's a unique R-algebra map.
 
