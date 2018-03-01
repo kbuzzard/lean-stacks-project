@@ -117,29 +117,19 @@ as required.  There the sequence is exact.
 -/
 
 import Kenny_comm_alg.Zariski localization --tactic.find
---#check id 
---#find _ (_ : list) _ (_ : ℕ) _ -- TODO why doens't this work
-
---#check list.nth_le 
+universe u
 
 -- I used a list L for [f_1,f_2,...,f_n] (I used [f_0,f_1,...,f_{n-1}] of)
 -- I needed to think of it as a set when claiming it generated R
 -- and I needed to define a function f : fin n -> R sending i to f_i.
-def localise_more_left {R : Type} [comm_ring R] (f g) : 
+def localise_more_left {R : Type u} [comm_ring R] (f g) : 
   localization.loc R (powers f) → localization.loc R (powers (f * g)) 
   := sorry -- the canonical map
 
-def localise_more_right {R : Type} [comm_ring R] (f g) :
-  localization.loc R (powers f) → localization.loc R (powers (g * f))
-  := sorry -- the canonical map; I tried to induce it from the previous one
-  -- see below commented out code. I failed.
-  
-/-
-have H : f * g = g * f := mul_comm _ _,
-     have H2 : localization.loc R (powers (f * g)) = localization.loc R (powers (g * f))
-       := congr_arg (λ z, localization.loc R (powers z)) H,
-     λ r, eq.subst H2 (localise_more_left f g r)
--/
+def localise_more_right {R : Type u} [comm_ring R] (f g) :
+  localization.loc R (powers g) → localization.loc R (powers (f * g))
+  := sorry -- the canonical map;  induce from the previous def?
+
 lemma lemma_standard_covering {R : Type} [comm_ring R] (L : list R) 
 (H : (1:R) ∈ generate {x : R | x ∈ L}) :
   let n := list.length L in 
@@ -148,7 +138,7 @@ lemma lemma_standard_covering {R : Type} [comm_ring R] (L : list R)
         := λ r i, localization.of_comm_ring R _ r in
   let β : (Π (i : fin n), localization.loc R (powers (f i))) → 
             Π (j : fin n), Π (k : fin n), localization.loc R (powers (f j * f k)) 
-        := λ r, λ j k, localise_more_left (f j) (f k) (r j) - localise_more_right (f k) (f j) (r k) in
+        := λ r, λ j k, localise_more_left (f j) (f k) (r j) - localise_more_right (f j) (f k) (r k) in
   function.injective α ∧ -- image of α is kernel of β (as maps of abelian groups or R-mods)
     ∀ s : (Π (i : fin n), localization.loc R (powers (f i))), ∀ j k, β s j k = 0 ↔ ∃ r : R, α r = s :=
     sorry 
