@@ -97,8 +97,6 @@ end indexed_product
 -- now back to stuff not stolen from Patrick
 
 universes u v
-#check Zariski.is_open
---    U = -Spec.V E → topological_space.is_open (Zariski α) U
 
 theorem D_f_are_a_basis {R : Type u} [comm_ring R] : ∀ U : set (X R), topological_space.is_open (Zariski R) U → ∃ α : Type v, ∃ f : α → R, U = set.Union (Spec.D' ∘ f) := sorry
 
