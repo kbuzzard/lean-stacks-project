@@ -107,17 +107,17 @@ definition structure_sheaf_on_affine_scheme (R : Type*) [comm_ring R] : @sheaf_o
   },
   Fsheaf := sorry
 }
-
+/-
 structure scheme :=
 (α : Type u)
 (T :topological_space α)
-(O_X : {U : set α // T.is_open U} → Type v)
-(O_X_sheaf_of_rings : sheaf_of_rings O_X) -- TODO
+(O_X : Π U : set α, topological_space.is_open T U → Type*)
+(O_X_sheaf_of_rings : sheaf_of_rings α O_X) -- TODO
 (locally_affine : ∃ β : Type v, ∃ cov : β → {U : set α // T.is_open U}, 
   set.Union (λ b, (cov b).val) = set.univ ∧
-  ∀ b : β, ∃ R : Type w, comm_ring R ∧ true)
+  ∀ b : β, ∃ R : Type*, comm_ring R ∧ true)
 
-
+-/
 -- now back to stuff not stolen from Patrick
 /-
 universes u v
