@@ -1,10 +1,4 @@
-import analysis.topology.topological_space data.set 
-
-structure ring_morphism {α : Type*} {β : Type*} [Ra : comm_ring α] [Rb : comm_ring β] (f : α → β) :=
-(f_zero : f 0 = 0)
-(f_one : f 1 = 1)
-(f_add : ∀ {a₁ a₂ : α}, f (a₁ + a₂) = f a₁ + f a₂)
-(f_mul : ∀ {a₁ a₂ : α}, f (a₁ * a₂) = f a₁ * f a₂) 
+import analysis.topology.topological_space data.set Kenny_comm_alg.temp
 
 local attribute [class] topological_space.is_open 
 
@@ -14,7 +8,7 @@ structure presheaf_of_rings (α : Type*) [T : topological_space α]
 (res : ∀ (U V : set α) [OU : T.is_open U] [OV : T.is_open V] (H : V ⊆ U), 
   (F U OU) → (F V OV))
 (res_is_ring_morphism : ∀ (U V : set α) [OU : T.is_open U] [OV : T.is_open V] (H : V ⊆ U),
-ring_morphism (res U V H))
+is_ring_hom (res U V H))
 (Hid : ∀ (U : set α) [OU : T.is_open U], (res U U (set.subset.refl _)) = id)  
 (Hcomp : ∀ (U V W : set α) [OU : T.is_open U] [OV : T.is_open V] [OW : T.is_open W]
   (HUV : V ⊆ U) (HVW : W ⊆ V),
