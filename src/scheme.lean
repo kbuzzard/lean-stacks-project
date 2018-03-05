@@ -2,8 +2,9 @@ import analysis.topology.topological_space data.set
 import analysis.topology.continuity 
 import Kenny_comm_alg.Zariski
 import Kenny_comm_alg.temp
-import tag00EJ_statement
+-- import tag00EJ_statement -- will need this to prove O_X is a sheaf on affine scheme I think
 import localization
+import localization_UMP
 
 universes u v 
 
@@ -49,7 +50,6 @@ definition presheaf_of_types_pushforward
       (λ x Hx, HUV Hx) (λ x Hx, HVW Hx)
   }
 
-
 definition presheaf_of_rings_pushforward
   {α : Type*} [Tα : topological_space α]
   {β : Type*} [Tβ : topological_space β]
@@ -71,13 +71,29 @@ structure open_immersion
 (finj : function.injective f)
 (fopens : ∀ U : set α, is_open U ↔ is_open (f '' U))
 
+--set_option pp.notation false 
+
+lemma inclusion_of_inclusion
+  {α : Type*} [Tα : topological_space α]
+  {β : Type*} [Tβ : topological_space β]
+  (f : α → β)
+  (U V : set α)
+  : (V ⊆ U) → (f '' V) ⊆ (f '' U) := λ H2 a ⟨x,Hx⟩,⟨x,H2 Hx.1,Hx.2⟩
+
 definition presheaf_of_types_pullback_under_open_immersion
   {α : Type*} [Tα : topological_space α]
   {β : Type*} [Tβ : topological_space β]
   (PT : presheaf_of_types β)
   (f : α → β)
   (H : open_immersion f)
-  : presheaf_of_types α := sorry 
+: presheaf_of_types α := {
+F := λ U HU,PT.F (f '' U) ((H.fopens U).1 HU),
+res := λ U V OU OV H2,PT.res (f '' U) (f '' V) ((H.fopens U).1 OU) ((H.fopens V).1 OV)
+  (inclusion_of_inclusion f U V H2),
+Hid := λ _ _,PT.Hid _ _,
+Hcomp := λ U V W _ _ _ HUV HVW, 
+  PT.Hcomp _ _ _ _ _ _ (inclusion_of_inclusion f U V HUV) (inclusion_of_inclusion f V W HVW)
+} 
 
 definition presheaf_of_rings_pullback_under_open_immersion
   {α : Type*} [Tα : topological_space α]
@@ -85,7 +101,11 @@ definition presheaf_of_rings_pullback_under_open_immersion
   (PR : presheaf_of_rings β)
   (f : α → β)
   (H : open_immersion f)
-  : presheaf_of_rings α := sorry 
+: presheaf_of_rings α := 
+{ PT := sorry,
+  res_is_ring_morphism := sorry,
+  Fring := sorry
+} 
 
 structure morphism_of_presheaves_of_types {α : Type*} [Tα : topological_space α] 
 (FPT : presheaf_of_types α) (GPT : presheaf_of_types α)
@@ -192,11 +212,26 @@ structure is_sheaf_of_rings {α : Type*} [T : topological_space α]
 --#check @localization.at_prime
 -- #check @sheaf_of_rings 
 
+#print Spec.V'
+#print is_ring_hom 
+#check @localization.away.extend_map_of_im_unit
+#check localization.of_comm_ring
+#check @localization.prime.is_submonoid
+#check @localization.unit_of_in_S
+#check localization.away.extend_map_of_im_unit.is_ring_hom
 
-definition canonical_map {R : Type*} [comm_ring R] (g : R) (u : X R) (H : u ∈ Spec.D' g) 
+
+noncomputable definition canonical_map {R : Type*} [comm_ring R] (g : R) (u : X R) (H : u ∈ Spec.D' g) 
 : localization.away g → @localization.at_prime R _ u.val u.property 
-:= sorry 
+:= have H2 : g ∈ set.compl u.val, by exact H,
+   @localization.away.extend_map_of_im_unit _ _ _ _
+     (@localization.of_comm_ring R _ (set.compl u.val) (@localization.prime.is_submonoid _ _ u.val u.property))
+     (_)
+     g 
+     (@localization.unit_of_in_S R _ (set.compl u.val) (@localization.prime.is_submonoid _ _ u.val u.property) ⟨g,H2⟩)
 
+
+  
 definition structure_presheaf_of_types_on_affine_scheme (R : Type*) [comm_ring R] 
 : presheaf_of_types (X R) :=
 { F := λ U HU, { f : Π P : {u : X R // U u}, @localization.at_prime R _ P.val.val P.val.property // 
@@ -217,7 +252,7 @@ definition structure_presheaf_of_rings_on_affine_scheme (R : Type*) [comm_ring R
 definition structure_sheaf_of_rings_on_affine_scheme (R : Type*) [comm_ring R] 
 : is_sheaf_of_rings (structure_presheaf_of_rings_on_affine_scheme R)
 := {
-  Fsheaf := sorry,
+  Fsheaf := sorry, -- don't need this to define schemes.
 }
 
 structure scheme :=
