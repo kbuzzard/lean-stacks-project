@@ -1,4 +1,3 @@
-<<<<<<< HEAD
 import analysis.topology.topological_space data.set
 import analysis.topology.continuity 
 import Kenny_comm_alg.Zariski
@@ -31,7 +30,7 @@ structure presheaf_of_rings {α : Type*} [T : topological_space α]
 (res_is_ring_morphism : ∀ (U V : set α) (OU : T.is_open U) (OV : T.is_open V) (H : V ⊆ U),
 ring_morphism (FPT.res U V OU OV H))
 
-attribute [class] presheaf_of_rings
+--attribute [class] presheaf_of_rings
 --attribute [instance] presheaf_of_rings.Fring
 --local attribute [instance] topological_space.is_open_inter
 
@@ -64,32 +63,61 @@ definition presheaf_of_rings_pushforward
       FPR.res_is_ring_morphism (f ⁻¹' U) (f ⁻¹' V) (fcont U OU) (fcont V OV) (λ x Hx, H Hx)
   }
 
+structure morphism_of_presheaves_of_types {α : Type*} [Tα : topological_space α] 
+(FPT : presheaf_of_types α) (GPT : presheaf_of_types α)
+:= 
+(morphism : ∀ U : set α, ∀ HU : Tα.is_open U, (FPT.F U HU) → GPT.F U HU)
+(commutes : ∀ U V : set α, ∀ HU : Tα.is_open U, ∀ HV : Tα.is_open V, ∀ Hsub : V ⊆ U,
+  (GPT.res U V HU HV Hsub) ∘ (morphism U HU) = (morphism V HV) ∘ (FPT.res U V HU HV Hsub))
+
+def composition_of_morphisms_of_presheaves_of_types {α : Type*} [Tα : topological_space α]
+  {FPT GPT HPT : presheaf_of_types α} (fg : morphism_of_presheaves_of_types FPT GPT)
+  (gh : morphism_of_presheaves_of_types GPT HPT)
+: morphism_of_presheaves_of_types FPT HPT :=
+  { morphism := λ U HU, gh.morphism U HU ∘ fg.morphism U HU,
+    commutes := λ U V HU HV Hsub, begin
+    show (HPT.res U V HU HV Hsub ∘ gh.morphism U HU) ∘ fg.morphism U HU =
+    gh.morphism V HV ∘ (fg.morphism V HV ∘ FPT.res U V HU HV Hsub),
+    rw gh.commutes U V HU HV Hsub,
+    rw ←fg.commutes U V HU HV Hsub,
+    end
+  }
+
+def identity_morphism_of_presheaves_of_types {α : Type*} [Tα : topological_space α]
+  (FPT : presheaf_of_types α) : morphism_of_presheaves_of_types FPT FPT :=
+  { morphism := λ _ _,id,
+    commutes := λ _ _ _ _ _,rfl
+  }
+
+def isomorphism_of_presheaves_of_types {α : Type} [Tα : topological_space α]
+(FPT : presheaf_of_types α) (GPT : presheaf_of_types α) (fg : morphism_of_presheaves_of_types FPT GPT)
+: Prop 
+:= ∃ gf : morphism_of_presheaves_of_types GPT FPT, 
+  composition_of_morphisms_of_presheaves_of_types fg gf = identity_morphism_of_presheaves_of_types FPT
+  ∧ composition_of_morphisms_of_presheaves_of_types gf fg = identity_morphism_of_presheaves_of_types GPT
 
 def res_to_inter_left {α : Type*} [T : topological_space α] 
-  (F : presheaf_of_types α)
-  [FP : presheaf_of_rings F]
+  (FT : presheaf_of_types α)
   (U V : set α) [OU : T.is_open U] [OV : T.is_open V] 
-  : (F U OU) → (F (U ∩ V) (T.is_open_inter U V OU OV)) 
-  := @presheaf_of_rings.res α _ _ FP U (U ∩ V) _ (T.is_open_inter U V OU OV) (set.inter_subset_left U V)
+  : (FT.F U OU) → (FT.F (U ∩ V) (T.is_open_inter U V OU OV)) 
+  := FT.res U (U ∩ V) OU (T.is_open_inter U V OU OV) (set.inter_subset_left U V)
 
 def res_to_inter_right {α : Type*} [T : topological_space α]
-  (F : Π U : set α, T.is_open U → Type)
-  [FP : presheaf_of_rings α F]
+  (FT : presheaf_of_types α)
   (U V : set α) [OU : T.is_open U] [OV : T.is_open V]
-  : (F V OV) → (F (U ∩ V) (T.is_open_inter U V OU OV)) 
-  := @presheaf_of_rings.res α _ _ FP V (U ∩ V) _ (T.is_open_inter U V OU OV) (set.inter_subset_right U V)
+  : (FT.F V OV) → (FT.F (U ∩ V) (T.is_open_inter U V OU OV)) 
+  := FT.res V (U ∩ V) OV (T.is_open_inter U V OU OV) (set.inter_subset_right U V)
 
-def gluing {α : Type*} [T : topological_space α] (F : Π U : set α, T.is_open U → Type*) 
-  [FP : presheaf_of_rings α F]
+def gluing {α : Type*} [T : topological_space α] (FP : presheaf_of_types α) 
   (U :  set α)
   [UO : T.is_open U]
   {γ : Type*} (Ui : γ → set α)
   [UiO : ∀ i : γ, T.is_open (Ui i)]
   (Hcov : (⋃ (x : γ), (Ui x)) = U) 
-  : (F U UO) → 
-    {a : (Π (x : γ), (F (Ui x) (UiO x))) | ∀ (x y : γ), 
-      (res_to_inter_left F (Ui x) (Ui y)) (a x) = 
-      (res_to_inter_right F (Ui x) (Ui y)) (a y)} :=
+  : (FP.F U UO) → 
+    {a : (Π (x : γ), (FP.F (Ui x) (UiO x))) | ∀ (x y : γ), 
+      (res_to_inter_left FP (Ui x) (Ui y)) (a x) = 
+      (res_to_inter_right FP (Ui x) (Ui y)) (a y)} :=
 λ r,⟨λ x,(FP.res U (Ui x) (Hcov ▸ set.subset_Union Ui x) r),
   λ x₁ y₁,
   have Hopen : T.is_open ((Ui x₁) ∩ (Ui y₁)) := (T.is_open_inter _ _ (UiO x₁) (UiO y₁)),
