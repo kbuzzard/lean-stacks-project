@@ -63,6 +63,21 @@ definition presheaf_of_rings_pushforward
       FPR.res_is_ring_morphism (f ⁻¹' U) (f ⁻¹' V) (fcont U OU) (fcont V OV) (λ x Hx, H Hx)
   }
 
+definition presheaf_of_types_pullback_under_open_immersion
+  {α : Type*} [Tα : topological_space α]
+  (U : set α) (OU : is_open U)
+  (FPT : presheaf_of_types α)
+  : presheaf_of_types {x : α // U x} := sorry 
+
+definition presheaf_of_rings_pullback_under_open_immersion
+  {α : Type*} [Tα : topological_space α]
+  (U : set α) (OU : is_open U)
+  (FPT : presheaf_of_types α)
+  (FPR : presheaf_of_rings (FPT))
+  : presheaf_of_rings (presheaf_of_types_pullback_under_open_immersion U OU FPT) := sorry 
+
+
+
 structure morphism_of_presheaves_of_types {α : Type*} [Tα : topological_space α] 
 (FPT : presheaf_of_types α) (GPT : presheaf_of_types α)
 := 
@@ -118,24 +133,26 @@ def gluing {α : Type*} [T : topological_space α] (FP : presheaf_of_types α)
     {a : (Π (x : γ), (FP.F (Ui x) (UiO x))) | ∀ (x y : γ), 
       (res_to_inter_left FP (Ui x) (Ui y)) (a x) = 
       (res_to_inter_right FP (Ui x) (Ui y)) (a y)} :=
-λ r,⟨λ x,(FP.res U (Ui x) (Hcov ▸ set.subset_Union Ui x) r),
+λ r,⟨λ x,(FP.res U (Ui x) UO (UiO x) (Hcov ▸ set.subset_Union Ui x) r),
   λ x₁ y₁,
   have Hopen : T.is_open ((Ui x₁) ∩ (Ui y₁)) := (T.is_open_inter _ _ (UiO x₁) (UiO y₁)),
-show ((@presheaf_of_rings.res _ _ _ FP (Ui x₁) ((Ui x₁) ∩ (Ui y₁)) _ Hopen _) ∘ 
-      (@presheaf_of_rings.res _ _ _ FP U (Ui x₁) _ _ _)) r =
-    ((@presheaf_of_rings.res _ _ _ FP (Ui y₁) ((Ui x₁) ∩ (Ui y₁)) _ Hopen _) ∘ 
-      (@presheaf_of_rings.res _ _ _ FP U (Ui y₁) _ _ _)) r,by rw [←presheaf_of_rings.Hcomp,←presheaf_of_rings.Hcomp]⟩
+show ((FP.res (Ui x₁) ((Ui x₁) ∩ (Ui y₁)) _ Hopen _) ∘ 
+      (FP.res U (Ui x₁) _ _ _)) r =
+    ((FP.res (Ui y₁) ((Ui x₁) ∩ (Ui y₁)) _ Hopen _) ∘ 
+      (FP.res U (Ui y₁) _ _ _)) r,by rw [←presheaf_of_types.Hcomp,←presheaf_of_types.Hcomp]⟩
 
-structure sheaf_of_rings (α : Type*) [T : topological_space α] 
-  (F : Π U : set α, T.is_open U → Type*) :=
-
-(FP : presheaf_of_rings α F)
+structure sheaf_of_types (α : Type*) [T : topological_space α] :=
+(FPT : presheaf_of_types α)
 (Fsheaf : ∀ (U : set α) [OU : T.is_open U] 
           {γ : Type*} (Ui : γ → set α)
           [UiO : ∀ x : γ, T.is_open (Ui x)] 
           (Hcov : (⋃ (x : γ), (Ui x)) = U),
-        function.bijective (gluing F U Ui Hcov)
+        function.bijective (gluing FPT U Ui Hcov)
 )
+
+structure sheaf_of_rings (α : Type*) [T : topological_space α] :=
+(FT : sheaf_of_types α)
+(Hsheaf : presheaf_of_rings FT.FPT)
 
 --theorem D_f_are_a_basis {R : Type u} [comm_ring R] : ∀ U : set (X R), topological_space.is_open (Zariski R) U → ∃ α : Type v, ∃ f : α → R, U = set.Union (Spec.D' ∘ f) := sorry
 
@@ -151,35 +168,35 @@ definition canonical_map {R : Type*} [comm_ring R] (g : R) (u : X R) (H : u ∈ 
 : localization.away g → @localization.at_prime R _ u.val u.property 
 := sorry 
 
-definition underlying_set_of_sheaf_of_rings_on_affine_scheme (R : Type*) [comm_ring R] 
-: Π U : set (X R), topological_space.is_open (Zariski R) U → Type* 
-:= λ U HU, { f : Π P : {u : X R // U u}, @localization.at_prime R _ P.val.val P.val.property // 
+definition structure_presheaf_of_types_on_affine_scheme (R : Type*) [comm_ring R] 
+: presheaf_of_types (X R) :=
+{ F := λ U HU, { f : Π P : {u : X R // U u}, @localization.at_prime R _ P.val.val P.val.property // 
   ∀ u : X R, U u → ∃ g : R, Π H : u ∈ Spec.D' g, Π H2 : Spec.D' g ⊆ U, ∃ r : localization.away g, ∀ v : {v : X R // Spec.D' g v},
-  f ⟨v.val, H2 (v.property)⟩ = canonical_map g v v.property r
-   }
-
-definition structure_presheaf_of_rings_on_affine_scheme (R : Type*) [comm_ring R] 
-: presheaf_of_rings (X R) (underlying_set_of_sheaf_of_rings_on_affine_scheme R)
-:= {
-    Fring := sorry,
-    res := sorry,
-    res_is_ring_morphism := sorry,
-    Hid := sorry,
-    Hcomp := sorry,
+  f ⟨v.val, H2 (v.property)⟩ = canonical_map g v v.property r },
+  res := sorry,
+  Hid := sorry,
+  Hcomp := sorry
 }
 
-definition structure_sheaf_on_affine_scheme (R : Type*) [comm_ring R] 
-: @sheaf_of_rings (X R) _ (underlying_set_of_sheaf_of_rings_on_affine_scheme R)
+definition structure_presheaf_of_rings_on_affine_scheme (R : Type*) [comm_ring R] 
+: presheaf_of_rings (structure_presheaf_of_types_on_affine_scheme (R))
 := {
-  FP := structure_presheaf_of_rings_on_affine_scheme R,
-  Fsheaf := sorry
+    Fring := sorry,
+    res_is_ring_morphism := sorry,
+}
+
+definition structure_sheaf_of_rings_on_affine_scheme (R : Type*) [comm_ring R] 
+: sheaf_of_rings (X R)
+:= {
+  FT := sorry,
+  Hsheaf := sorry
 }
 
 structure scheme :=
 (α : Type u)
 (T :topological_space α)
 (O_X : Π U : set α, topological_space.is_open T U → Type*)
-(O_X_sheaf_of_rings : sheaf_of_rings α O_X)
+(O_X_sheaf_of_rings : sheaf_of_rings α)
 (locally_affine : ∃ β : Type v, ∃ cov : β → {U : set α // T.is_open U}, 
   set.Union (λ b, (cov b).val) = set.univ ∧
   ∀ b : β, ∃ R : Type*, ∃ RR : comm_ring R, ∃ fR : (X R) → α, 
@@ -190,7 +207,7 @@ structure scheme :=
       (Zariski R).is_open VX → fR '' VX = VS → T.is_open (fR '' VX)
       → ∃ 
 
--/
+n : ℕ,sorry)
 -- now back to stuff not stolen from Patrick
 /-
 universes u v
