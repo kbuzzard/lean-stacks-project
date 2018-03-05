@@ -21,7 +21,7 @@ Recall that D(f) is quasi-compact, see tag 00F6. Hence the second statement foll
 The third statement follows directly from tag 00E0. 
 -/
 
-import Kenny_comm_alg.Zariski localization tensor_product tag00E4_statement
+import Kenny_comm_alg.Zariski localization_UMP tensor_product tag00E4
 import Kenny_comm_alg.avoid_powers algebra.module
 
 universes u v
@@ -67,15 +67,11 @@ let ⟨e, a, h⟩ := lemma_standard_open_1b R f g H in
 ⟨⟦(a,(⟨g^e,⟨e,rfl⟩⟩:powers g))⟧,
  quotient.sound $ ⟨(1:R), ⟨0, rfl⟩, by simp [h, mul_comm]⟩⟩
 
-def lemma_standard_open_1c (R : Type u) [comm_ring R] (f : R) (g : R) (H : Spec.D'(g) ⊆ Spec.D'(f)) :
+noncomputable def lemma_standard_open_1c (R : Type u) [comm_ring R] (f : R) (g : R) (H : Spec.D'(g) ⊆ Spec.D'(f)) :
   localization.away f → localization.away g :=
-have im_f_is_unit : is_unit (localization.of_comm_ring R (powers g) f) := begin
-  rcases lemma_standard_open_1b R f g H with ⟨e, a, Ha⟩,
-  existsi ⟦(a,(⟨g^e,⟨e,rfl⟩⟩:powers g))⟧,
-  unfold localization.of_comm_ring,
-  simp [Ha, mul_comm, localization.mk_eq]
-end,
-sorry -- regardless of my incompetence above, I now need that
+localization.away.extend_map_of_im_unit
+  (localization.of_comm_ring R (powers g))
+  (lemma_standard_open_1a R f g H) -- regardless of my incompetence above, I now need that
   -- if p:R->S is a ring hom and image of f is a unit then there's a unique q:R[1/f]->S
   -- such that p is q ∘ localization.of_comm_ring . Do we have this?
 
