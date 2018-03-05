@@ -69,4 +69,6 @@ theorem away.extend_map_of_im_unit.is_ring_hom {x : α} (H : ∃ y, f x * y = 1)
   is_ring_hom (away.extend_map_of_im_unit f H) :=
 extend_map_of_im_unit.is_ring_hom f _
 
+theorem unit_of_in_S (s : S) : ∃ y : loc α S, (of_comm_ring α S s) * y = 1 := sorry
+
 end localization
