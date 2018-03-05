@@ -232,12 +232,11 @@ structure is_sheaf_of_rings {α : Type*} [T : topological_space α]
 
 noncomputable definition canonical_map {R : Type*} [comm_ring R] (g : R) (u : X R) (H : u ∈ Spec.D' g) 
 : localization.away g → @localization.at_prime R _ u.val u.property 
-:= have H2 : g ∈ set.compl u.val, by exact H,
-   @localization.away.extend_map_of_im_unit _ _ _ _
+:= @localization.away.extend_map_of_im_unit _ _ _ _
      (@localization.of_comm_ring R _ (set.compl u.val) (@localization.prime.is_submonoid _ _ u.val u.property))
      (_)
      g 
-     (@localization.unit_of_in_S R _ (set.compl u.val) (@localization.prime.is_submonoid _ _ u.val u.property) ⟨g,H2⟩)
+     (@localization.unit_of_in_S R _ (set.compl u.val) (@localization.prime.is_submonoid _ _ u.val u.property) ⟨g,H⟩)
 
 
   
@@ -246,7 +245,7 @@ definition structure_presheaf_of_types_on_affine_scheme (R : Type*) [comm_ring R
 { F := λ U HU, { f : Π P : {u : X R // U u}, @localization.at_prime R _ P.val.val P.val.property // 
   ∀ u : X R, U u → ∃ g : R, Π H : u ∈ Spec.D' g, Π H2 : Spec.D' g ⊆ U, ∃ r : localization.away g, ∀ v : {v : X R // Spec.D' g v},
   f ⟨v.val, H2 (v.property)⟩ = canonical_map g v v.property r },
-  res := sorry,
+  res := λ U V OU OV H f,⟨(λ ⟨P,VP⟩,_),_⟩,
   Hid := sorry,
   Hcomp := sorry
 }
@@ -278,6 +277,7 @@ structure scheme :=
       (structure_presheaf_of_rings_on_affine_scheme R)
 )
 
+#print axioms scheme 
 /-
 definition presheaf_of_rings_pullback_under_open_immersion
   {α : Type*} [Tα : topological_space α]
