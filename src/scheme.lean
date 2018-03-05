@@ -27,7 +27,7 @@ structure presheaf_of_types (α : Type*) [T : topological_space α] :=
 
 structure presheaf_of_rings (α : Type*) [T : topological_space α] :=
 (PT : presheaf_of_types α)
-(Fring : ∀ U O, comm_ring (PT.F U O))
+(Fring : ∀ U OU, comm_ring (PT.F U OU))
 (res_is_ring_morphism : ∀ (U V : set α) (OU : T.is_open U) (OV : T.is_open V) (H : V ⊆ U),
   ring_morphism (Fring U OU) (Fring V OV) (PT.res U V OU OV H))
 --attribute [class] presheaf_of_rings
@@ -80,6 +80,12 @@ lemma inclusion_of_inclusion
   (U V : set α)
   : (V ⊆ U) → (f '' V) ⊆ (f '' U) := λ H2 a ⟨x,Hx⟩,⟨x,H2 Hx.1,Hx.2⟩
 
+lemma immersion_sends_opens_to_opens 
+  {α : Type*} [Tα : topological_space α]
+  {β : Type*} [Tβ : topological_space β]
+  (f : α → β) (H : open_immersion f) : 
+∀ U : set α, is_open U → is_open (f '' U) := λ U OU, (H.fopens U).1 OU
+
 definition presheaf_of_types_pullback_under_open_immersion
   {α : Type*} [Tα : topological_space α]
   {β : Type*} [Tβ : topological_space β]
@@ -102,9 +108,12 @@ definition presheaf_of_rings_pullback_under_open_immersion
   (f : α → β)
   (H : open_immersion f)
 : presheaf_of_rings α := 
-{ PT := sorry,
-  res_is_ring_morphism := sorry,
-  Fring := sorry
+{ PT := presheaf_of_types_pullback_under_open_immersion PR.PT f H,
+  Fring := λ U OU,PR.Fring (f '' U) (immersion_sends_opens_to_opens f H U OU),
+  res_is_ring_morphism := λ U V OU OV H2,PR.res_is_ring_morphism (f '' U) (f '' V)
+    (immersion_sends_opens_to_opens f H U OU)
+    (immersion_sends_opens_to_opens f H V OV) 
+    (inclusion_of_inclusion f U V H2),
 } 
 
 structure morphism_of_presheaves_of_types {α : Type*} [Tα : topological_space α] 
