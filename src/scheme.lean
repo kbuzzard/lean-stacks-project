@@ -47,7 +47,7 @@ definition presheaf_of_types_pushforward
     res := λ V₁ V₂ OV₁ OV₂ H, 
       FPT.res (f ⁻¹' V₁) (f⁻¹' V₂) (fcont V₁ OV₁) (fcont V₂ OV₂) (λ x Hx,H Hx),
     Hid := λ V OV, FPT.Hid (f ⁻¹' V) (fcont V OV),
-    Hcomp := λ Uβ Vβ Wβ OUβ OVβ OWβ HUV HVW,rfl -- assertion violation
+    Hcomp := λ Uβ Vβ Wβ OUβ OVβ OWβ HUV HVW, FPT.Hcomp _ _ _ _ _ _ _ _
   }
 
 
