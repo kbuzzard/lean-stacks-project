@@ -24,17 +24,15 @@ structure presheaf_of_types (α : Type*) [T : topological_space α] :=
   (HUV : V ⊆ U) (HVW : W ⊆ V),
   (res U W OU OW (set.subset.trans HVW HUV)) = (res V W OV _ HVW) ∘ (res U V _ _ HUV) )
 
-structure is_presheaf_of_rings {α : Type*} [T : topological_space α] 
+structure presheaf_of_rings {α : Type*} [T : topological_space α] 
   FPT : presheaf_of_types α :=
 (Fring : ∀ U O, comm_ring (FPT.F U O))
-(res_is_ring_morphism : ∀ (U V : set α) [OU : T.is_open U] [OV : T.is_open V] (H : V ⊆ U),
+(res_is_ring_morphism : ∀ (U V : set α) (OU : T.is_open U) (OV : T.is_open V) (H : V ⊆ U),
 ring_morphism (FPT.res U V OU OV H))
 
-attribute [class] is_presheaf_of_rings
+attribute [class] presheaf_of_rings
 --attribute [instance] presheaf_of_rings.Fring
 --local attribute [instance] topological_space.is_open_inter
-
-
 
 definition presheaf_of_types_pushforward
   {α : Type*} [Tα : topological_space α]
@@ -47,12 +45,27 @@ definition presheaf_of_types_pushforward
     res := λ V₁ V₂ OV₁ OV₂ H, 
       FPT.res (f ⁻¹' V₁) (f⁻¹' V₂) (fcont V₁ OV₁) (fcont V₂ OV₂) (λ x Hx,H Hx),
     Hid := λ V OV, FPT.Hid (f ⁻¹' V) (fcont V OV),
-    Hcomp := λ Uβ Vβ Wβ OUβ OVβ OWβ HUV HVW,rfl -- assertion violation
+    Hcomp := λ Uβ Vβ Wβ OUβ OVβ OWβ HUV HVW,
+      FPT.Hcomp (f ⁻¹' Uβ)(f ⁻¹' Vβ)(f ⁻¹' Wβ) (fcont Uβ OUβ) (fcont Vβ OVβ) (fcont Wβ OWβ)
+      (λ x Hx, HUV Hx) (λ x Hx, HVW Hx)
+  }
+
+definition presheaf_of_rings_pushforward
+  {α : Type*} [Tα : topological_space α]
+  {β : Type*} [Tβ : topological_space β]
+  (f : α → β)
+  (fcont: continuous f)
+  (FPT : presheaf_of_types α)
+  (FPR : presheaf_of_rings FPT)
+  : presheaf_of_rings (presheaf_of_types_pushforward f fcont FPT) :=
+  { Fring := λ U OU,FPR.Fring (f ⁻¹' U) (fcont U OU),
+    res_is_ring_morphism := λ U V OU OV H,
+      FPR.res_is_ring_morphism (f ⁻¹' U) (f ⁻¹' V) (fcont U OU) (fcont V OV) (λ x Hx, H Hx)
   }
 
 
 def res_to_inter_left {α : Type*} [T : topological_space α] 
-  (F : Π U : set α, T.is_open U → Type*)
+  (F : presheaf_of_types α)
   [FP : presheaf_of_rings F]
   (U V : set α) [OU : T.is_open U] [OV : T.is_open V] 
   : (F U OU) → (F (U ∩ V) (T.is_open_inter U V OU OV)) 
