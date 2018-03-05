@@ -1,13 +1,3 @@
--- This does not really prove tag 009Q but it will do for now.
--- It concentrates on sheaves of rings and it is currently only a
--- construction, not the proof.
-
-import Kenny_comm_alg.Zariski
-import algebra.module
-import Kenny_comm_alg.temp
-import tag00EJ_statement
-import localization
-
 -- stolen from Patrick Massot
 -- https://github.com/PatrickMassot/lean-differential-topology/blob/f47348abf8515e23bd485683d8b351c7fd89c70f/src/indexed_product.lean
 
@@ -94,33 +84,3 @@ instance comm_ring [∀ i, comm_ring $ f i] : comm_ring (Π i : I, f i) :=
 ..indexed_product.ring }
 
 end indexed_product
--- now back to stuff not stolen from Patrick
-
-universes u v
-
-theorem D_f_are_a_basis {R : Type u} [comm_ring R] : ∀ U : set (X R), topological_space.is_open (Zariski R) U → ∃ α : Type v, ∃ f : α → R, U = set.Union (Spec.D' ∘ f) := sorry
-
-definition structure_sheaf_on_union {R : Type u} [comm_ring R] {α : Type} (f : α → R) := 
-  {x : (Π i : α, localization.loc R (powers $ f i)) // ∀ j k : α, localise_more_left (f j) (f k) (x j) = localise_more_right (f j) (f k) (x k) } 
-
--- a theorem says that this is a subring.
-
-definition structure_sheaf (R : Type u) [comm_ring R] : {U : set (X R) // topological_space.is_open (Zariski R) U} → Type u :=
-λ ⟨U,HU⟩, let exf := D_f_are_a_basis U HU in let fH := classical.some_spec exf in structure_sheaf_on_union (classical.some fH)
-
--- the pair consisting of Spec(R) and its structure sheaf are an affine scheme, although it is currently not even clear
--- from the definition that everything is well-defined (I choose a cover; I still didn't do the work to check that
--- the resulting ring is independent of choices (or even that it is a ring!)
-
--- Just begun to think about general schemes below.
-/-
-structure scheme :=
-(α : Type u)
-(T :topological_space α)
-(O_X : {U : set α // T.is_open U} → Type v)
-(O_X_sheaf_of_rings : sheaf_of_rings O_X) -- TODO
-(locally_affine : ∃ β : Type v, ∃ cov : β → {U : set α // T.is_open U}, 
-  set.Union (λ b, (cov b).val) = set.univ ∧
-  ∀ b : β, ∃ R : Type w, comm_ring R ∧ true)
-
--/

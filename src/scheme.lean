@@ -1,10 +1,22 @@
-import analysis.topology.topological_space data.set Kenny_comm_alg.temp
+import analysis.topology.topological_space data.set 
+import Kenny_comm_alg.Zariski
+import Kenny_comm_alg.temp
+import tag00EJ_statement
+import localization
+
+universes u v 
+
+structure ring_morphism {α : Type*} {β : Type*} [Ra : comm_ring α] [Rb : comm_ring β] (f : α → β) :=
+(f_zero : f 0 = 0)
+(f_one : f 1 = 1)
+(f_add : ∀ {a₁ a₂ : α}, f (a₁ + a₂) = f a₁ + f a₂)
+(f_mul : ∀ {a₁ a₂ : α}, f (a₁ * a₂) = f a₁ * f a₂) 
 
 local attribute [class] topological_space.is_open 
 
 structure presheaf_of_rings (α : Type*) [T : topological_space α] 
   (F : Π U : set α, T.is_open U → Type*) :=
-[Fring : ∀ U O, comm_ring (F U O)]
+(Fring : ∀ U O, comm_ring (F U O))
 (res : ∀ (U V : set α) [OU : T.is_open U] [OV : T.is_open V] (H : V ⊆ U), 
   (F U OU) → (F V OV))
 (res_is_ring_morphism : ∀ (U V : set α) [OU : T.is_open U] [OV : T.is_open V] (H : V ⊆ U),
@@ -62,34 +74,69 @@ structure sheaf_of_rings (α : Type*) [T : topological_space α]
         function.bijective (gluing F U Ui Hcov)
 )
 
+--theorem D_f_are_a_basis {R : Type u} [comm_ring R] : ∀ U : set (X R), topological_space.is_open (Zariski R) U → ∃ α : Type v, ∃ f : α → R, U = set.Union (Spec.D' ∘ f) := sorry
+
+--definition structure_sheaf_on_union {R : Type u} [comm_ring R] {α : Type} (f : α → R) := 
+--  {x : (Π i : α, localization.loc R (powers $ f i)) // ∀ j k : α, localise_more_left (f j) (f k) (x j) = localise_more_right (f j) (f k) (x k) } 
+
+--#check topological_space.is_open 
+--#check @localization.at_prime
+#check @sheaf_of_rings 
+
+
+definition canonical_map {R : Type*} [comm_ring R] (g : R) (u : X R) (H : u ∈ Spec.D' g) 
+: localization.away g → @localization.at_prime R _ u.val u.property 
+:= sorry 
+
+
+definition underlying_set_of_sheaf_of_rings_on_affine_scheme (R : Type*) [comm_ring R] 
+: Π U : set (X R), topological_space.is_open (Zariski R) U → Type* 
+:= λ U HU, { f : Π P : {u : X R // U u}, @localization.at_prime R _ P.val.val P.val.property // 
+  ∀ u : X R, U u → ∃ g : R, Π H : u ∈ Spec.D' g, Π H2 : Spec.D' g ⊆ U, ∃ r : localization.away g, ∀ v : {v : X R // Spec.D' g v},
+  f ⟨v.val, H2 (v.property)⟩ = canonical_map g v v.property r
+   }
+
+definition structure_sheaf_on_affine_scheme (R : Type*) [comm_ring R] : @sheaf_of_rings (X R) _ (underlying_set_of_sheaf_of_rings_on_affine_scheme R)
+:= {
+  FP := {
+    Fring := sorry,
+    res := sorry,
+    res_is_ring_morphism := sorry,
+    Hid := sorry,
+    Hcomp := sorry,
+  },
+  Fsheaf := sorry
+}
+
+structure scheme :=
+(α : Type u)
+(T :topological_space α)
+(O_X : {U : set α // T.is_open U} → Type v)
+(O_X_sheaf_of_rings : sheaf_of_rings O_X) -- TODO
+(locally_affine : ∃ β : Type v, ∃ cov : β → {U : set α // T.is_open U}, 
+  set.Union (λ b, (cov b).val) = set.univ ∧
+  ∀ b : β, ∃ R : Type w, comm_ring R ∧ true)
+
+
+-- now back to stuff not stolen from Patrick
 /-
-structure ideal (R : Type u) [RR : comm_ring R] :=
-(I_set : set R)
-(I_zero : RR.zero ∈ I_set)
-(I_ab_group : ∀ a b : R, a ∈ I_set → b ∈ I_set → a-b ∈ I_set)
-(I_module : ∀ (r : R) (i ∈ I_set), r*i ∈ I_set)
+universes u v
 
+theorem D_f_are_a_basis {R : Type u} [comm_ring R] : ∀ U : set (X R), topological_space.is_open (Zariski R) U → ∃ α : Type v, ∃ f : α → R, U = set.Union (Spec.D' ∘ f) := sorry
 
--/
+definition structure_sheaf_on_union {R : Type u} [comm_ring R] {α : Type} (f : α → R) := 
+  {x : (Π i : α, localization.loc R (powers $ f i)) // ∀ j k : α, localise_more_left (f j) (f k) (x j) = localise_more_right (f j) (f k) (x k) } 
 
-/-
+-- a theorem says that this is a subring.
 
+definition structure_sheaf (R : Type u) [comm_ring R] : {U : set (X R) // topological_space.is_open (Zariski R) U} → Type u :=
+λ ⟨U,HU⟩, let exf := D_f_are_a_basis U HU in let fH := classical.some_spec exf in structure_sheaf_on_union (classical.some fH)
 
-Re: ideal, you should have a is_subgroup predicate for asserting that I is closed under group operations for this
-It should be similar to is_submodule in algebra/module
+-- the pair consisting of Spec(R) and its structure sheaf are an affine scheme, although it is currently not even clear
+-- from the definition that everything is well-defined (I choose a cover; I still didn't do the work to check that
+-- the resulting ring is independent of choices (or even that it is a ring!)
 
-Whenever you are trying to make a typeclass instance solvable, you need
- to add an instance keyed
- to the form of the thing being inferred.
- If it's FP.F then this is easy, just have a theorem like 
- instance : comm_ring (FP.F U O) or whatever
-If it's a parameter, the comm_ring part will also need to be a parameter,
- so it shows up in the local context of all such theorems (or else it is 
- derivable from something in the context that only depends on F)
+-- Just begun to think about general schemes below.
 
-I might also suggest removing the is_open parameter from F entirely, but I don't
-know if that will interfere with some construction or another since that's not an
-isomorphic modification (seeing as how partial functions are not nice to work 
-with in practice)
 
 -/
