@@ -116,19 +116,21 @@ as required.  There the sequence is exact.
 \end{proof}
 -/
 
-import Kenny_comm_alg.Zariski localization --tactic.find
+import Kenny_comm_alg.Zariski localization_UMP --tactic.find
 universe u
 
 -- I used a list L for [f_1,f_2,...,f_n] (I used [f_0,f_1,...,f_{n-1}] of)
 -- I needed to think of it as a set when claiming it generated R
 -- and I needed to define a function f : fin n -> R sending i to f_i.
-def localise_more_left {R : Type u} [comm_ring R] (f g) : 
-  localization.loc R (powers f) → localization.loc R (powers (f * g)) 
-  := sorry -- the canonical map
+noncomputable def localise_more_left {R : Type u} [comm_ring R] (f g) : 
+  localization.loc R (powers f) → localization.loc R (powers (f * g)) :=
+localization.away.extend_map_of_im_unit (localization.of_comm_ring R _) $
+⟨⟦⟨g, f * g, 1, by simp⟩⟧, by simp [localization.of_comm_ring, localization.mk_eq, localization.mul_frac]⟩
 
-def localise_more_right {R : Type u} [comm_ring R] (f g) :
-  localization.loc R (powers g) → localization.loc R (powers (f * g))
-  := sorry -- the canonical map;  induce from the previous def?
+noncomputable def localise_more_right {R : Type u} [comm_ring R] (f g) :
+  localization.loc R (powers g) → localization.loc R (powers (f * g)) :=
+localization.away.extend_map_of_im_unit (localization.of_comm_ring R _) $
+⟨⟦⟨f, f * g, 1, by simp⟩⟧, by simp [localization.of_comm_ring, localization.mk_eq, localization.mul_frac, mul_comm]⟩
 
 lemma lemma_standard_covering {R : Type} [comm_ring R] (L : list R) 
 (H : (1:R) ∈ generate {x : R | x ∈ L}) :

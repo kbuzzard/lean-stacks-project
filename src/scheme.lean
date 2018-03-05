@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 import analysis.topology.topological_space data.set
 import analysis.topology.continuity 
 import Kenny_comm_alg.Zariski
