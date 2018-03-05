@@ -6,8 +6,4 @@ Proof. It suffices to prove that any covering of Spec(R) by standard opens can b
 
 import Kenny_comm_alg.Zariski
 universes u v
-lemma lemma_quasi_compact {R : Type u} [comm_ring R] {α : Type v} : 
-  ∀ f : α →  set (X R),
-  (∀ a : α, topological_space.is_open (Zariski R) (f a)) → 
-  set.Union f = set.univ → -- exists finite subcover
-  1=1 := sorry -- needs fixingx
+lemma lemma_quasi_compact {R : Type u} [comm_ring R] : compact (@set.univ (X R)) := sorry
