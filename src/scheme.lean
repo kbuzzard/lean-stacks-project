@@ -254,9 +254,16 @@ local attribute [instance] localization.away.extend_map_of_im_unit.is_ring_hom
 
 definition structure_presheaf_of_types_on_affine_scheme (R : Type*) [comm_ring R] 
 : presheaf_of_types (X R) :=
-{ F := λ U HU, { f : Π P : {u : X R // U u}, @localization.at_prime R _ P.val.val P.val.property // 
-  ∀ u : X R, U u → ∃ g : R, u ∈ Spec.D' g ∧ Spec.D' g ⊆ U ∧ ∃ r : localization.away g, ∀ v : {v : X R // U v},
-  Π H2 : v.val ∈ Spec.D' g, f ⟨v.val,v.property⟩ = canonical_map g v H2 r },
+{ F := 
+
+λ U HU, { f : Π P : X R, P ∈ U → @localization.at_prime R _ P.val P.property // 
+  ∀ u : X R, U u → ∃ g : R, u ∈ Spec.D' g ∧ Spec.D' g ⊆ U ∧ ∃ r : localization.away g, ∀ Q : X R, 
+  Π HQQ : Q ∈ U, Π H2 : Q ∈ Spec.D' g, f Q HQQ = canonical_map g Q H2 r }
+  
+--λ U HU, { f : Π P : {u : X ∈ Spec.D' g ∧ Spec.D' g ⊆ U ∧ ∃ r : localization.away g, ∀ v : {v : X R // U v},
+--  Π H2 : v.val ∈ Spec.D' g, f ⟨v.val,v.property⟩ = canonical_map g v H2 r }
+  
+  ,
   res := λ U V OU OV H f,⟨(λ ⟨P,VP⟩,f.val ⟨P,H VP⟩),begin
     intros P HVP,
     -- P is in U, so existence of f says there exists g...
@@ -285,6 +292,12 @@ definition structure_presheaf_of_types_on_affine_scheme (R : Type*) [comm_ring R
       -- and this should boil down to f(Q) = f(Q)
       unfold structure_presheaf_of_types_on_affine_scheme._match_1,
       have H3 := Hr ⟨Q,H (H4 HQ)⟩,
+      rw tag00E0.lemma15 at HQ,
+      have H5 : Q.val ∈ (Spec.D' g) := HQ.1,
+      have H6 := H3 H5,
+      have H7 : (f.val ⟨(⟨coe Q, _⟩:{u // U u}).val, _⟩) = f.val ⟨Q.val,_⟩ := rfl,
+      rw H6,
+
 
     end⟩,
   Hid := sorry,
