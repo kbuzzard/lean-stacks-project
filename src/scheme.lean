@@ -264,7 +264,8 @@ definition structure_presheaf_of_types_on_affine_scheme (R : Type*) [comm_ring R
 --  Π H2 : v.val ∈ Spec.D' g, f ⟨v.val,v.property⟩ = canonical_map g v H2 r }
   
   ,
-  res := λ U V OU OV H f,⟨(λ ⟨P,VP⟩,f.val ⟨P,H VP⟩),begin
+  res := λ U V OU OV H f,⟨λ P HP,f.val P (H HP),
+  begin
     intros P HVP,
     -- P is in U, so existence of f says there exists g...
     cases f.property P (H HVP) with g Hg,
@@ -290,15 +291,11 @@ definition structure_presheaf_of_types_on_affine_scheme (R : Type*) [comm_ring R
       intros Q HQ,
       -- Hr is the assertion that f is on both sides
       -- and this should boil down to f(Q) = f(Q)
-      unfold structure_presheaf_of_types_on_affine_scheme._match_1,
-      have H3 := Hr ⟨Q,H (H4 HQ)⟩,
-      rw tag00E0.lemma15 at HQ,
-      have H5 : Q.val ∈ (Spec.D' g) := HQ.1,
-      have H6 := H3 H5,
-      have H7 : (f.val ⟨(⟨coe Q, _⟩:{u // U u}).val, _⟩) = f.val ⟨Q.val,_⟩ := rfl,
+      have H3 := Hr Q (H HQ),
+      intro H2,
+      have H5 := H2,rw tag00E0.lemma15 at H5,
+      have H6 := H3 H5.1,
       rw H6,
-
-
     end⟩,
   Hid := sorry,
   Hcomp := sorry
