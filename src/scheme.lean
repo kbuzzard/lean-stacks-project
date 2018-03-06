@@ -6,15 +6,16 @@ import tag00EJ_statement
 import localization
 import localization_UMP
 import tag00E0
+import Kenny_comm_alg.temp
 
 universes u v 
-
+/-
 structure ring_morphism {α : Type*} {β : Type*} (Ra : comm_ring α) (Rb : comm_ring β) (f : α → β) :=
 (f_zero : f 0 = 0)
 (f_one : f 1 = 1)
 (f_add : ∀ {a₁ a₂ : α}, f (a₁ + a₂) = f a₁ + f a₂)
 (f_mul : ∀ {a₁ a₂ : α}, f (a₁ * a₂) = f a₁ * f a₂) 
-
+-/
 local attribute [class] topological_space.is_open 
 
 structure presheaf_of_types (α : Type*) [T : topological_space α] := 
@@ -30,7 +31,7 @@ structure presheaf_of_rings (α : Type*) [T : topological_space α] :=
 (PT : presheaf_of_types α)
 (Fring : ∀ U OU, comm_ring (PT.F U OU))
 (res_is_ring_morphism : ∀ (U V : set α) (OU : T.is_open U) (OV : T.is_open V) (H : V ⊆ U),
-  ring_morphism (Fring U OU) (Fring V OV) (PT.res U V OU OV H))
+  is_ring_hom (PT.res U V OU OV H)) 
 --attribute [class] presheaf_of_rings
 --attribute [instance] presheaf_of_rings.Fring
 --local attribute [instance] topological_space.is_open_inter
@@ -129,7 +130,7 @@ structure morphism_of_presheaves_of_rings {α : Type*} [Tα : topological_space 
 :=
 (morphism : morphism_of_presheaves_of_types FPR.PT GPR.PT)
 (ring_homs : ∀ U : set α, ∀ HU : is_open U, 
-  ring_morphism (FPR.Fring U HU) (GPR.Fring U HU) (morphism.morphism U HU))
+  @is_ring_hom _ _ (FPR.Fring U HU) (GPR.Fring U HU) (morphism.morphism U HU))
 
 def composition_of_morphisms_of_presheaves_of_types {α : Type*} [Tα : topological_space α]
   {FPT GPT HPT : presheaf_of_types α} (fg : morphism_of_presheaves_of_types FPT GPT)
@@ -296,8 +297,13 @@ definition structure_presheaf_of_types_on_affine_scheme (R : Type*) [comm_ring R
       have H5 := H2,rw tag00E0.lemma15 at H5,
       have H6 := H3 H5.1,
       rw H6,
+      suffices : canonical_map g Q H5.left = (canonical_map (g * h) Q H2) ∘ (localise_more_left g h),
+        exact congr_fun this r,
+      apply eq.symm,
+      unfold canonical_map,
+      admit,
     end⟩,
-  Hid := sorry,
+  Hid := λ U OU,funext (λ f,subtype.eq (funext (λ P,rfl))),
   Hcomp := sorry
 }
 #check localization.away.extend_map_of_im_unit
