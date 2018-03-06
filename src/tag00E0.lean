@@ -362,7 +362,10 @@ end
 
 -- corollary of 14
 
-lemma cor_to_14 (T : set R) (U : set (X R)) (HT : Spec.V T = -U) (P : X R) (HUP : U P) :
-∃ h : R, P ∈ Spec.D' h ∧ Spec.D' h ⊆ U := sorry
+lemma cor_to_14 (T : set R) (U : set (X R)) (HT : Spec.V T = -U) (P : X R) (HPU : P ∈ U) :
+  ∃ h : R, P ∈ Spec.D' h ∧ Spec.D' h ⊆ U :=
+have h1 : P ∉ Spec.V T, by rw HT; simp [HPU],
+let ⟨h, h2, h3⟩ := set.not_subset.1 h1 in
+⟨h, h3, λ f hf, have h3 : f ∉ Spec.V T, from λ h4, hf $ h4 h2, by rw HT at h3; simpa using h3⟩
 
 end tag00E0
