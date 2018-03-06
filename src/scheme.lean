@@ -250,6 +250,8 @@ noncomputable definition canonical_map {R : Type*} [comm_ring R] (g : R) (u : X 
     -/
 local attribute [instance] localization.away.extend_map_of_im_unit.is_ring_hom
 
+--set_option pp.notation false 
+
 definition structure_presheaf_of_types_on_affine_scheme (R : Type*) [comm_ring R] 
 : presheaf_of_types (X R) :=
 { F := λ U HU, { f : Π P : {u : X R // U u}, @localization.at_prime R _ P.val.val P.val.property // 
@@ -268,19 +270,22 @@ definition structure_presheaf_of_types_on_affine_scheme (R : Type*) [comm_ring R
         rw tag00E0.lemma15,
         exact ⟨Hg.1,Hh.1⟩
       },
-      split,
+      have H4 : set.subset (Spec.D' (g * h)) V,
       { -- proof that D(gh) is a sub of V
         rw tag00E0.lemma15,
         refine set.subset.trans _ Hh.2,
         exact set.inter_subset_right _ _,
-      },
+      },      
+      split, exact H4,
       cases Hg.2.2 with r Hr,
       -- r in R[1/g] but I need it in R[1/gh]
       existsi (localise_more_left g h r),
-      intros v H2,
+      intros Q HQ,
       -- Hr is the assertion that f is on both sides
-      -- and this should boil down to f(P) = f(P)
-      
+      -- and this should boil down to f(Q) = f(Q)
+      unfold structure_presheaf_of_types_on_affine_scheme._match_1,
+      have H3 := Hr ⟨Q,H (H4 HQ)⟩,
+
     end⟩,
   Hid := sorry,
   Hcomp := sorry
