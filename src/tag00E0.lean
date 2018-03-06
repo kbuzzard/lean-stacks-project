@@ -319,9 +319,13 @@ set.ext $ λ x, not_iff_not.2
        @@is_proper_ideal.not_mem_of_mul_left_one _ x.2.1 huv hv),⟩
 
 -- people need to stop abstracting things by existentials
-lemma lemma14 (f : R) (I : set R) [is_ideal I] (hfi : f ∈ I) :
+lemma lemma14_not_what_it_says (f : R) (I : set R) [is_ideal I] (hfi : f ∈ I) :
   Spec.D' f ∩ Spec.V I = ∅ :=
 set.eq_empty_of_subset_empty $ λ z ⟨hzf, hzi⟩, hzf $ hzi hfi
+
+-- but I need this exactly as stated
+lemma lemma14 (I : set R) [is_ideal I] (P : X R) (H : ¬ (P ∈ Spec.V I)) :
+  ∃ f : R, P ∈ Spec.D' (f) ∧ Spec.D' f ∩ Spec.V I = ∅ := sorry
 
 lemma lemma15 (f g : R) : Spec.D' (f * g) = Spec.D' f ∩ Spec.D' g :=
 set.ext $ λ x,
