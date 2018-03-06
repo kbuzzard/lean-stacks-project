@@ -71,22 +71,39 @@ extend_map_of_im_unit.is_ring_hom f _
 
 theorem unit_of_in_S (s : S) : ∃ y : loc α S, (of_comm_ring α S s) * y = 1 :=
 ⟨⟦(1, s)⟧, by cases s; apply quotient.sound; existsi (1:α); existsi is_submonoid.one_mem S; simp⟩
-
+set_option pp.proofs true
 -- extensions are R-algebra homomorphisms
 theorem extend_map_extends (H : ∀ s ∈ S, ∃ t, f s * t = 1) : 
-  ∀ r : α, extend_map_of_im_unit f H (of_comm_ring _ _ r) = f r := sorry
+  ∀ r : α, extend_map_of_im_unit f H (of_comm_ring _ _ r) = f r :=
+λ r, calc f r * classical.some (H 1 (of_comm_ring._proof_1 α S))
+        = f r * (f 1 * classical.some (H 1 (of_comm_ring._proof_1 α S))) : by simp [is_ring_hom.map_one f]
+    ... = f r : by simp [classical.some_spec (H 1 (of_comm_ring._proof_1 α S))]
 
 -- R-algebra hom extensions are unique
-theorem extend_map_unique (H : ∀ s ∈ S, ∃ t, f s * t = 1) (phi : loc α S → β) (R_phi : is_ring_hom phi)
-(R_alg_hom : ∀ r : α, phi (of_comm_ring _ _ r) = f r) : phi = extend_map_of_im_unit f H := sorry
+theorem extend_map_unique (H : ∀ s ∈ S, ∃ t, f s * t = 1) (phi : loc α S → β) [is_ring_hom phi]
+  (R_alg_hom : ∀ r : α, phi (of_comm_ring _ _ r) = f r) : phi = extend_map_of_im_unit f H :=
+funext $ quotient.ind begin
+  intro f,
+  rcases f with ⟨r, s, hs⟩,
+  dsimp [extend_map_of_im_unit],
+  rw [← localization.mul_inv_denom, is_ring_hom.map_mul phi, R_alg_hom],
+  congr,
+  have h1 : of_comm_ring α S 1 = 1 := rfl,
+  exact calc phi ⟦(1, ⟨s, hs⟩)⟧
+           = phi ⟦(1, ⟨s, hs⟩)⟧ * (f s * classical.some (H s hs)) : by simp [classical.some_spec (H s hs)]
+       ... = phi ⟦(1, ⟨s, hs⟩)⟧ * (phi (of_comm_ring _ _ s) * classical.some (H s hs)) : by rw R_alg_hom
+       ... = classical.some (H s hs) : by rw [← mul_assoc, ← is_ring_hom.map_mul phi, localization.mul_denom, h1, is_ring_hom.map_one phi, one_mul]
+end
 
 -- very common use case corollaries (proofs should be trivial consequences of the above)
 
 theorem away.extend_map_extends {x : α} (H : ∃ y, f x * y = 1) :
-  ∀ r : α, away.extend_map_of_im_unit f H (of_comm_ring _ _ r) = f r := sorry 
+  ∀ r : α, away.extend_map_of_im_unit f H (of_comm_ring _ _ r) = f r :=
+extend_map_extends f _
 
-theorem away.extension_unique {x : α} (H : ∃ y, f x * y = 1) (phi : away x → β) (R_phi : is_ring_hom phi)
-(R_alg_hom : ∀ r : α, phi (of_comm_ring _ _ r) = f r) : phi = away.extend_map_of_im_unit f H := sorry
+theorem away.extension_unique {x : α} (H : ∃ y, f x * y = 1) (phi : away x → β) [is_ring_hom phi]
+  (R_alg_hom : ∀ r : α, phi (of_comm_ring _ _ r) = f r) : phi = away.extend_map_of_im_unit f H :=
+extend_map_unique f _ phi R_alg_hom
 
 -- do we also have that the composite of two ring homs is a ring hom?
 
