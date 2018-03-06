@@ -2,7 +2,7 @@ import analysis.topology.topological_space data.set
 import analysis.topology.continuity 
 import Kenny_comm_alg.Zariski
 import Kenny_comm_alg.temp
--- import tag00EJ_statement -- will need this to prove O_X is a sheaf on affine scheme I think
+import tag00EJ_statement
 import localization
 import localization_UMP
 import tag00E0
@@ -248,6 +248,7 @@ noncomputable definition canonical_map {R : Type*} [comm_ring R] (g : R) (u : X 
   ∀ (R : Type u_1) [_inst_1 : comm_ring R] (f : R) (I : set R) [_inst_2 : is_ideal I],
     f ∈ I → Spec.D' f ∩ Spec.V I = ∅
     -/
+local attribute [instance] localization.away.extend_map_of_im_unit.is_ring_hom
 
 definition structure_presheaf_of_types_on_affine_scheme (R : Type*) [comm_ring R] 
 : presheaf_of_types (X R) :=
@@ -260,19 +261,36 @@ definition structure_presheaf_of_types_on_affine_scheme (R : Type*) [comm_ring R
     cases f.property P (H HVP) with g Hg,
     -- P is in V, so there exists h such that P in D(h) in V by 00E0(14)
     cases OV with T HT,
-    have H3 : ¬ (T = ∅),
-      intro Hempty,
-      rw Hempty at HT,
-      have H4 : P ∈ Spec.V (∅: set R),
-        unfold Spec.V,
-        apply set.empty_subset,
-      rw HT at H4,
-      exact H4 HVP,
-      apply set.exists_mem_of_ne_empty
+    cases (tag00E0.cor_to_14 R T V HT P HVP) with h Hh,
+      existsi (g*h),
+      split,
+      { -- proof that P is in D(gh)
+        rw tag00E0.lemma15,
+        exact ⟨Hg.1,Hh.1⟩
+      },
+      split,
+      { -- proof that D(gh) is a sub of V
+        rw tag00E0.lemma15,
+        refine set.subset.trans _ Hh.2,
+        exact set.inter_subset_right _ _,
+      },
+      cases Hg.2.2 with r Hr,
+      -- r in R[1/g] but I need it in R[1/gh]
+      existsi (localise_more_left g h r),
+      intros v H2,
+      -- Hr is the assertion that f is on both sides
+      -- and this should boil down to f(P) = f(P)
+      
     end⟩,
   Hid := sorry,
   Hcomp := sorry
 }
+#check localization.away.extend_map_of_im_unit
+#check localization.unit_of_in_S 
+
+#check tag00E0.lemma14
+--  ∀ (R : Type u_1) [_inst_1 : comm_ring R] (I : set R) [_inst_2 : is_ideal I] (P : X R),
+--    P ∉ Spec.V I → (∃ (f : R), P ∈ Spec.D' f ∧ Spec.D' f ∩ Spec.V I = ∅)
 
 definition structure_presheaf_of_rings_on_affine_scheme (R : Type*) [comm_ring R] 
 : presheaf_of_rings (X R)
