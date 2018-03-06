@@ -5,6 +5,7 @@ import Kenny_comm_alg.temp
 -- import tag00EJ_statement -- will need this to prove O_X is a sheaf on affine scheme I think
 import localization
 import localization_UMP
+import tag00E0
 
 universes u v 
 
@@ -240,12 +241,35 @@ noncomputable definition canonical_map {R : Type*} [comm_ring R] (g : R) (u : X 
 
 
   
+  #check set.exists_mem_of_ne_empty
+
+#check tag00E0.lemma14
+/-
+  ∀ (R : Type u_1) [_inst_1 : comm_ring R] (f : R) (I : set R) [_inst_2 : is_ideal I],
+    f ∈ I → Spec.D' f ∩ Spec.V I = ∅
+    -/
+
 definition structure_presheaf_of_types_on_affine_scheme (R : Type*) [comm_ring R] 
 : presheaf_of_types (X R) :=
 { F := λ U HU, { f : Π P : {u : X R // U u}, @localization.at_prime R _ P.val.val P.val.property // 
-  ∀ u : X R, U u → ∃ g : R, Π H : u ∈ Spec.D' g, Π H2 : Spec.D' g ⊆ U, ∃ r : localization.away g, ∀ v : {v : X R // Spec.D' g v},
-  f ⟨v.val, H2 (v.property)⟩ = canonical_map g v v.property r },
-  res := λ U V OU OV H f,⟨(λ ⟨P,VP⟩,_),_⟩,
+  ∀ u : X R, U u → ∃ g : R, u ∈ Spec.D' g ∧ Spec.D' g ⊆ U ∧ ∃ r : localization.away g, ∀ v : {v : X R // U v},
+  Π H2 : v.val ∈ Spec.D' g, f ⟨v.val,v.property⟩ = canonical_map g v H2 r },
+  res := λ U V OU OV H f,⟨(λ ⟨P,VP⟩,f.val ⟨P,H VP⟩),begin
+    intros P HVP,
+    -- P is in U, so existence of f says there exists g...
+    cases f.property P (H HVP) with g Hg,
+    -- P is in V, so there exists h such that P in D(h) in V by 00E0(14)
+    cases OV with T HT,
+    have H3 : ¬ (T = ∅),
+      intro Hempty,
+      rw Hempty at HT,
+      have H4 : P ∈ Spec.V (∅: set R),
+        unfold Spec.V,
+        apply set.empty_subset,
+      rw HT at H4,
+      exact H4 HVP,
+      apply set.exists_mem_of_ne_empty
+    end⟩,
   Hid := sorry,
   Hcomp := sorry
 }
