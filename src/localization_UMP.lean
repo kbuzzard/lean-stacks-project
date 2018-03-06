@@ -72,4 +72,30 @@ extend_map_of_im_unit.is_ring_hom f _
 theorem unit_of_in_S (s : S) : ∃ y : loc α S, (of_comm_ring α S s) * y = 1 :=
 ⟨⟦(1, s)⟧, by cases s; apply quotient.sound; existsi (1:α); existsi is_submonoid.one_mem S; simp⟩
 
+-- extensions are R-algebra homomorphisms
+theorem extend_map_extends (H : ∀ s ∈ S, ∃ t, f s * t = 1) : 
+  ∀ r : α, extend_map_of_im_unit f H (of_comm_ring _ _ r) = f r := sorry
+
+-- R-algebra hom extensions are unique
+theorem extend_map_unique (H : ∀ s ∈ S, ∃ t, f s * t = 1) (phi : loc α S → β) (R_phi : is_ring_hom phi)
+(R_alg_hom : ∀ r : α, phi (of_comm_ring _ _ r) = f r) : phi = extend_map_of_im_unit f H := sorry
+
+-- very common use case corollaries (proofs should be trivial consequences of the above)
+
+theorem away.extend_map_extends {x : α} (H : ∃ y, f x * y = 1) :
+  ∀ r : α, away.extend_map_of_im_unit f H (of_comm_ring _ _ r) = f r := sorry 
+
+theorem away.extension_unique {x : α} (H : ∃ y, f x * y = 1) (phi : away x → β) (R_phi : is_ring_hom phi)
+(R_alg_hom : ∀ r : α, phi (of_comm_ring _ _ r) = f r) : phi = away.extend_map_of_im_unit f H := sorry
+
+-- do we also have that the composite of two ring homs is a ring hom?
+
+-- What is going on here is that to prove that the association sending U=D(f) to R[1/f] is a presheaf
+-- we need to verify that if W=D(fgh) subseteq V=D(fg) subseteq U=D(f) then the composite of the
+-- restriction maps is the restriction map (this is part of the definition of a functor, and a presheaf
+-- is a functor). In ring terms, we need that the composite of the
+-- canonical maps R[1/f]->R[1/fg]->R[1/fgh] equals the canonical map R[1/f]->R[1/fgh] and I propose
+-- that we prove this by noting that the composite is an R-algebra homomorphism extending the
+-- canonical localisation map and is hence the right one
+
 end localization
