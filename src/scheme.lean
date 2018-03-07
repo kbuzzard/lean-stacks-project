@@ -307,27 +307,48 @@ definition structure_presheaf_of_types_on_affine_scheme (R : Type*) [comm_ring R
   Hcomp := λ U V W OU OV OW HUV HVW,funext (λ f,subtype.eq (funext (λ P,rfl)))
 }
 
+definition structure_presheaf_value {R : Type*} [comm_ring R] (U : set (X R)) (HU : is_open U) :=
+(structure_presheaf_of_types_on_affine_scheme R).F U HU
+
+definition structure_presheaf_value_has_add {R : Type*} [comm_ring R] (U : set (X R)) (HU : is_open U)
+: has_add (structure_presheaf_value U HU) 
+:= ⟨λ f₁ f₂, ⟨λ P HP, f₁.val P HP + f₂.val P HP,sorry⟩⟩ 
+
+definition structure_presheaf_value_has_neg {R : Type*} [comm_ring R] (U : set (X R)) (HU : is_open U)
+: has_neg (structure_presheaf_value U HU) 
+:= ⟨λ f₁, ⟨λ P HP, -(f₁.val P HP),sorry⟩⟩ 
+
+instance structure_presheaf_value_has_mul {R : Type*} [comm_ring R] (U : set (X R)) (HU : is_open U)
+: has_mul (structure_presheaf_value U HU) 
+:= ⟨λ f₁ f₂, ⟨λ P HP, f₁.val P HP * f₂.val P HP,sorry⟩⟩
+
+instance structure_presheaf_value_has_zero {R : Type*} [comm_ring R] (U : set (X R)) (HU : is_open U)
+: has_zero (structure_presheaf_value U HU) 
+:= ⟨⟨λ P HP, 0,sorry⟩⟩
+
+instance structure_presheaf_value_has_one {R : Type*} [comm_ring R] (U : set (X R)) (HU : is_open U)
+: has_one (structure_presheaf_value U HU)
+:= ⟨⟨λ P HP, 1, sorry⟩⟩  
+
 definition structure_presheaf_value_is_comm_ring {R : Type*} [comm_ring R] (U : set (X R)) (HU : is_open U)
-: comm_ring { f : Π P : X R, P ∈ U → @localization.at_prime R _ P.val P.property // 
-  ∀ u : X R, U u → ∃ g : R, u ∈ Spec.D' g ∧ Spec.D' g ⊆ U ∧ ∃ r : localization.away g, ∀ Q : X R, 
-  Π HQQ : Q ∈ U, Π H2 : Q ∈ Spec.D' g, f Q HQQ = canonical_map g Q H2 r }
+: comm_ring (structure_presheaf_value U HU)
 := {
-  add := λ f₁ f₂, ⟨λ P HP, f₁.val P HP + f₂.val P HP,_⟩,
-  mul := sorry,
-  add_comm := sorry,
-  zero := sorry,
-  zero_add := sorry,
-  add_zero := sorry,
-  neg := sorry,
-  add_left_neg := sorry,
-  add_assoc := sorry,
-  mul_assoc := sorry,
-  one := sorry,
-  one_mul := sorry,
-  mul_one := sorry,
-  left_distrib := sorry,
-  right_distrib := sorry,
-  mul_comm := sorry
+  add := (structure_presheaf_value_has_add U HU).add,
+  mul := (structure_presheaf_value_has_mul U HU).mul,
+  zero := (structure_presheaf_value_has_zero U HU).zero,
+  one := (structure_presheaf_value_has_one U HU).one,
+  add_comm := by simp,
+  zero_add := by simp,
+  add_zero := by simp,
+  neg := (structure_presheaf_value_has_neg U HU).neg,
+  add_left_neg := by simp,
+  add_assoc := by simp,
+  mul_assoc := by simp [mul_assoc],
+  one_mul := by simp,
+  mul_one := by simp,
+  left_distrib := by simp [left_distrib],
+  right_distrib := by simp [right_distrib],
+  mul_comm := by simp [mul_comm]
 }
 
 definition structure_presheaf_of_rings_on_affine_scheme (R : Type*) [comm_ring R] 
