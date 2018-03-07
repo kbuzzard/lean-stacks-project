@@ -306,35 +306,39 @@ definition structure_presheaf_of_types_on_affine_scheme (R : Type*) [comm_ring R
   Hid := λ U OU,funext (λ f,subtype.eq (funext (λ P,rfl))),
   Hcomp := λ U V W OU OV OW HUV HVW,funext (λ f,subtype.eq (funext (λ P,rfl)))
 }
-#check localization.away.extend_map_of_im_unit
-#check localization.unit_of_in_S 
 
-#check tag00E0.lemma14
---  ∀ (R : Type u_1) [_inst_1 : comm_ring R] (I : set R) [_inst_2 : is_ideal I] (P : X R),
---    P ∉ Spec.V I → (∃ (f : R), P ∈ Spec.D' f ∧ Spec.D' f ∩ Spec.V I = ∅)
+definition structure_presheaf_value_is_comm_ring {R : Type*} [comm_ring R] (U : set (X R)) (HU : is_open U)
+: comm_ring { f : Π P : X R, P ∈ U → @localization.at_prime R _ P.val P.property // 
+  ∀ u : X R, U u → ∃ g : R, u ∈ Spec.D' g ∧ Spec.D' g ⊆ U ∧ ∃ r : localization.away g, ∀ Q : X R, 
+  Π HQQ : Q ∈ U, Π H2 : Q ∈ Spec.D' g, f Q HQQ = canonical_map g Q H2 r }
+:= {
+  add := λ f₁ f₂, ⟨λ P HP, f₁.val P HP + f₂.val P HP,_⟩,
+  mul := sorry,
+  add_comm := sorry,
+  zero := sorry,
+  zero_add := sorry,
+  add_zero := sorry,
+  neg := sorry,
+  add_left_neg := sorry,
+  add_assoc := sorry,
+  mul_assoc := sorry,
+  one := sorry,
+  one_mul := sorry,
+  mul_one := sorry,
+  left_distrib := sorry,
+  right_distrib := sorry,
+  mul_comm := sorry
+}
 
 definition structure_presheaf_of_rings_on_affine_scheme (R : Type*) [comm_ring R] 
 : presheaf_of_rings (X R)
 := { PT := structure_presheaf_of_types_on_affine_scheme R,
-    Fring := λ U OU,{
-      add := sorry,
-      zero := sorry,
-      add_comm := _,
-      add_assoc := sorry,
-      one := sorry,
-      zero_add := sorry,
-      neg := sorry,
-      add_left_neg := _,
-      mul := sorry,
-      mul_assoc := _,
-      add_zero := _,
-      one_mul := _,
-      mul_one := _,
-      left_distrib := _,
-      right_distrib := _,
-      mul_comm := _ 
-    },
-    res_is_ring_morphism := sorry,
+    Fring := λ U OU,structure_presheaf_value_is_comm_ring U OU,
+    res_is_ring_morphism := λ U V OU OV H, {
+      map_add := sorry,
+      map_mul := sorry,
+      map_one := sorry
+    }
 }
 
 definition structure_sheaf_of_rings_on_affine_scheme (R : Type*) [comm_ring R] 
