@@ -304,7 +304,7 @@ definition structure_presheaf_of_types_on_affine_scheme (R : Type*) [comm_ring R
       admit,
     end⟩,
   Hid := λ U OU,funext (λ f,subtype.eq (funext (λ P,rfl))),
-  Hcomp := sorry
+  Hcomp := λ U V W OU OV OW HUV HVW,funext (λ f,subtype.eq (funext (λ P,rfl)))
 }
 #check localization.away.extend_map_of_im_unit
 #check localization.unit_of_in_S 
@@ -316,7 +316,24 @@ definition structure_presheaf_of_types_on_affine_scheme (R : Type*) [comm_ring R
 definition structure_presheaf_of_rings_on_affine_scheme (R : Type*) [comm_ring R] 
 : presheaf_of_rings (X R)
 := { PT := structure_presheaf_of_types_on_affine_scheme R,
-    Fring := sorry,
+    Fring := λ U OU,{
+      add := sorry,
+      zero := sorry,
+      add_comm := _,
+      add_assoc := sorry,
+      one := sorry,
+      zero_add := sorry,
+      neg := sorry,
+      add_left_neg := _,
+      mul := sorry,
+      mul_assoc := _,
+      add_zero := _,
+      one_mul := _,
+      mul_one := _,
+      left_distrib := _,
+      right_distrib := _,
+      mul_comm := _ 
+    },
     res_is_ring_morphism := sorry,
 }
 
