@@ -415,9 +415,9 @@ definition structure_presheaf_of_rings_on_affine_scheme (R : Type*) [comm_ring R
 := { PT := structure_presheaf_of_types_on_affine_scheme R,
     Fring := λ U OU,structure_presheaf_value_is_comm_ring U OU,
     res_is_ring_morphism := λ U V OU OV H, {
-      map_add := sorry,
-      map_mul := sorry,
-      map_one := sorry
+      map_add := λ x y,subtype.eq (funext (λ _,funext (λ _,rfl))),
+      map_mul := λ x y,subtype.eq (funext (λ _,funext (λ _,rfl))),
+      map_one := subtype.eq (funext (λ _,funext (λ _,rfl))),
     }
 }
 
