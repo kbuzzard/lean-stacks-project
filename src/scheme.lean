@@ -252,7 +252,8 @@ noncomputable definition canonical_map {R : Type*} [comm_ring R] (g : R) (u : X 
 local attribute [instance] localization.away.extend_map_of_im_unit.is_ring_hom
 
 --set_option pp.notation false 
-
+--set_option pp.proofs true
+--set_option pp.implicit true
 definition structure_presheaf_of_types_on_affine_scheme (R : Type*) [comm_ring R] 
 : presheaf_of_types (X R) :=
 { F := 
@@ -301,40 +302,62 @@ definition structure_presheaf_of_types_on_affine_scheme (R : Type*) [comm_ring R
         exact congr_fun this r,
       apply eq.symm,
       unfold canonical_map,
-      admit,
+      exact @@localization.away.extension_unique _ _
+        (@@localization.of_comm_ring R _ (set.compl (Q.val)) (@canonical_map._proof_4 R _inst_1 Q)) _
+        (canonical_map._proof_6 g Q (H5.left))
+        (localization.away.extend_map_of_im_unit (@@localization.of_comm_ring R _ (set.compl (Q.val)) (@canonical_map._proof_4 R _inst_1 Q))
+           (canonical_map._proof_6 (g * h) Q H2) ∘
+           localise_more_left g h)
+        (@@is_ring_hom.comp _ _ _ _ _ (localization.away.extend_map_of_im_unit.is_ring_hom _ _) _)
+        (λ r, by dsimp; simp [localise_more_left, localization.away.extend_map_extends])
     end⟩,
   Hid := λ U OU,funext (λ f,subtype.eq (funext (λ P,rfl))),
   Hcomp := λ U V W OU OV OW HUV HVW,funext (λ f,subtype.eq (funext (λ P,rfl)))
 }
-#check localization.away.extend_map_of_im_unit
-#check localization.unit_of_in_S 
 
-#check tag00E0.lemma14
---  ∀ (R : Type u_1) [_inst_1 : comm_ring R] (I : set R) [_inst_2 : is_ideal I] (P : X R),
---    P ∉ Spec.V I → (∃ (f : R), P ∈ Spec.D' f ∧ Spec.D' f ∩ Spec.V I = ∅)
+definition structure_presheaf_value {R : Type*} [comm_ring R] (U : set (X R)) (HU : is_open U) :=
+(structure_presheaf_of_types_on_affine_scheme R).F U HU
+
+instance structure_presheaf_value_has_add {R : Type*} [comm_ring R] (U : set (X R)) (HU : is_open U)
+: has_add (structure_presheaf_value U HU) 
+:= ⟨λ f₁ f₂, ⟨λ P HP, f₁.val P HP + f₂.val P HP,sorry⟩⟩ 
+
+instance structure_presheaf_value_has_neg {R : Type*} [comm_ring R] (U : set (X R)) (HU : is_open U)
+: has_neg (structure_presheaf_value U HU) 
+:= ⟨λ f₁, ⟨λ P HP, -(f₁.val P HP),sorry⟩⟩ 
+
+instance structure_presheaf_value_has_mul {R : Type*} [comm_ring R] (U : set (X R)) (HU : is_open U)
+: has_mul (structure_presheaf_value U HU) 
+:= ⟨λ f₁ f₂, ⟨λ P HP, f₁.val P HP * f₂.val P HP,sorry⟩⟩
+
+instance structure_presheaf_value_has_zero {R : Type*} [comm_ring R] (U : set (X R)) (HU : is_open U)
+: has_zero (structure_presheaf_value U HU) 
+:= ⟨⟨λ P HP, 0,sorry⟩⟩
+
+instance structure_presheaf_value_has_one {R : Type*} [comm_ring R] (U : set (X R)) (HU : is_open U)
+: has_one (structure_presheaf_value U HU)
+:= ⟨⟨λ P HP, 1, sorry⟩⟩  
+
+definition structure_presheaf_value_is_comm_ring {R : Type*} [comm_ring R] (U : set (X R)) (HU : is_open U)
+: comm_ring (structure_presheaf_value U HU) :=
+by refine {
+  add := (+),
+  zero := 0,
+  neg := ((structure_presheaf_value_has_neg U HU).neg),
+  mul := (*),
+  one := 1,
+  .. };
+{simp [mul_assoc, left_distrib, right_distrib]} <|> simp [mul_comm]
 
 definition structure_presheaf_of_rings_on_affine_scheme (R : Type*) [comm_ring R] 
 : presheaf_of_rings (X R)
 := { PT := structure_presheaf_of_types_on_affine_scheme R,
-    Fring := λ U OU,{
-      add := sorry,
-      zero := sorry,
-      add_comm := _,
-      add_assoc := sorry,
-      one := sorry,
-      zero_add := sorry,
-      neg := sorry,
-      add_left_neg := _,
-      mul := sorry,
-      mul_assoc := _,
-      add_zero := _,
-      one_mul := _,
-      mul_one := _,
-      left_distrib := _,
-      right_distrib := _,
-      mul_comm := _ 
-    },
-    res_is_ring_morphism := sorry,
+    Fring := λ U OU,structure_presheaf_value_is_comm_ring U OU,
+    res_is_ring_morphism := λ U V OU OV H, {
+      map_add := sorry,
+      map_mul := sorry,
+      map_one := sorry
+    }
 }
 
 definition structure_sheaf_of_rings_on_affine_scheme (R : Type*) [comm_ring R] 
@@ -357,7 +380,7 @@ structure scheme :=
       (structure_presheaf_of_rings_on_affine_scheme R)
 )
 
-#print axioms scheme 
+#print axioms scheme.mk
 /-
 definition presheaf_of_rings_pullback_under_open_immersion
   {α : Type*} [Tα : topological_space α]
