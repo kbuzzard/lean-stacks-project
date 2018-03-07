@@ -240,8 +240,32 @@ noncomputable definition canonical_map {R : Type*} [comm_ring R] (g : R) (u : X 
      g 
      (@localization.unit_of_in_S R _ (set.compl u.val) (@localization.prime.is_submonoid _ _ u.val u.property) ⟨g,H⟩)
 
+instance canonical_map.is_ring_hom {R : Type*} [comm_ring R] (g : R) (u : X R) (H : u ∈ Spec.D' g) :
+  is_ring_hom (canonical_map g u H) :=
+localization.away.extend_map_of_im_unit.is_ring_hom _ _
 
-  
+theorem canonical_map.canonical_left {R : Type*} [comm_ring R] (g h : R) (Q : X R) (H : Q ∈ Spec.D' (g * h)) :
+  ∀ x, canonical_map (g * h) Q H (localise_more_left g h x) = canonical_map g Q (mt (@@is_ideal.mul_right _ Q.2.1.1) H) x :=
+congr_fun $ @@localization.away.extension_unique _ _
+  (@@localization.of_comm_ring R _ (set.compl (Q.val)) (@canonical_map._proof_4 R _inst_1 Q)) _
+  (canonical_map._proof_6 g Q (mt (@@is_ideal.mul_right _ Q.2.1.1) H))
+  (localization.away.extend_map_of_im_unit (@@localization.of_comm_ring R _ (set.compl (Q.val)) (@canonical_map._proof_4 R _inst_1 Q))
+     (canonical_map._proof_6 (g * h) Q H) ∘
+     localise_more_left g h)
+  (@@is_ring_hom.comp _ _ _ _ _ (localization.away.extend_map_of_im_unit.is_ring_hom _ _) (localization.away.extend_map_of_im_unit.is_ring_hom _ _))
+  (λ r, by dsimp; simp [localise_more_left, localization.away.extend_map_extends])
+
+theorem canonical_map.canonical_right {R : Type*} [comm_ring R] (g h : R) (Q : X R) (H : Q ∈ Spec.D' (g * h)) :
+  ∀ x, canonical_map (g * h) Q H (localise_more_right g h x) = canonical_map h Q (mt (@@is_ideal.mul_left _ Q.2.1.1) H) x :=
+congr_fun $ @@localization.away.extension_unique _ _
+  (@@localization.of_comm_ring R _ (set.compl (Q.val)) (@canonical_map._proof_4 R _inst_1 Q)) _
+  (canonical_map._proof_6 h Q (mt (@@is_ideal.mul_left _ Q.2.1.1) H))
+  (localization.away.extend_map_of_im_unit (@@localization.of_comm_ring R _ (set.compl (Q.val)) (@canonical_map._proof_4 R _inst_1 Q))
+     (canonical_map._proof_6 (g * h) Q H) ∘
+     localise_more_right g h)
+  (@@is_ring_hom.comp _ _ _ _ _ (localization.away.extend_map_of_im_unit.is_ring_hom _ _) (localization.away.extend_map_of_im_unit.is_ring_hom _ _))
+  (λ r, by dsimp; simp [localise_more_right, localization.away.extend_map_extends])
+ 
   #check set.exists_mem_of_ne_empty
 
 #check tag00E0.lemma14
@@ -301,15 +325,8 @@ definition structure_presheaf_of_types_on_affine_scheme (R : Type*) [comm_ring R
       suffices : canonical_map g Q H5.left = (canonical_map (g * h) Q H2) ∘ (localise_more_left g h),
         exact congr_fun this r,
       apply eq.symm,
-      unfold canonical_map,
-      exact @@localization.away.extension_unique _ _
-        (@@localization.of_comm_ring R _ (set.compl (Q.val)) (@canonical_map._proof_4 R _inst_1 Q)) _
-        (canonical_map._proof_6 g Q (H5.left))
-        (localization.away.extend_map_of_im_unit (@@localization.of_comm_ring R _ (set.compl (Q.val)) (@canonical_map._proof_4 R _inst_1 Q))
-           (canonical_map._proof_6 (g * h) Q H2) ∘
-           localise_more_left g h)
-        (@@is_ring_hom.comp _ _ _ _ _ (localization.away.extend_map_of_im_unit.is_ring_hom _ _) _)
-        (λ r, by dsimp; simp [localise_more_left, localization.away.extend_map_extends])
+      funext,
+      exact canonical_map.canonical_left _ _ _ _ _
     end⟩,
   Hid := λ U OU,funext (λ f,subtype.eq (funext (λ P,rfl))),
   Hcomp := λ U V W OU OV OW HUV HVW,funext (λ f,subtype.eq (funext (λ P,rfl)))
@@ -318,17 +335,52 @@ definition structure_presheaf_of_types_on_affine_scheme (R : Type*) [comm_ring R
 definition structure_presheaf_value {R : Type*} [comm_ring R] (U : set (X R)) (HU : is_open U) :=
 (structure_presheaf_of_types_on_affine_scheme R).F U HU
 
-instance structure_presheaf_value_has_add {R : Type*} [comm_ring R] (U : set (X R)) (HU : is_open U)
-: has_add (structure_presheaf_value U HU) 
-:= ⟨λ f₁ f₂, ⟨λ P HP, f₁.val P HP + f₂.val P HP,sorry⟩⟩ 
+instance structure_presheaf_value_has_add {R : Type*} [comm_ring R] (U : set (X R)) (HU : is_open U) :
+  has_add (structure_presheaf_value U HU) :=
+⟨λ f₁ f₂, ⟨λ P HP, f₁.val P HP + f₂.val P HP, λ u hu,
+let ⟨g₁, h1, h2, r₁, h3⟩ := f₁.2 u hu in
+let ⟨g₂, h4, h5, r₂, h6⟩ := f₂.2 u hu in
+⟨g₁ * g₂,
+ by rw tag00E0.lemma15; exact ⟨h1, h4⟩,
+ by rw tag00E0.lemma15; exact λ z hz, h2 hz.1,
+ localise_more_left _ _ r₁ + localise_more_right _ _ r₂,
+ λ Q HQQ H2, begin
+   have H3 := H2,
+   rw tag00E0.lemma15 at H2,
+   rw [h3 Q HQQ H2.1, h6 Q HQQ H2.2],
+   rw [is_ring_hom.map_add (canonical_map (g₁ * g₂) Q H3)],
+   rw [canonical_map.canonical_left, canonical_map.canonical_right],
+   refl
+ end⟩⟩⟩
 
 instance structure_presheaf_value_has_neg {R : Type*} [comm_ring R] (U : set (X R)) (HU : is_open U)
 : has_neg (structure_presheaf_value U HU) 
-:= ⟨λ f₁, ⟨λ P HP, -(f₁.val P HP),sorry⟩⟩ 
+:= ⟨λ f₁, ⟨λ P HP, -(f₁.val P HP), λ u hu,
+let ⟨g₁, h1, h2, r₁, h3⟩ := f₁.2 u hu in
+⟨g₁, h1, h2, -r₁,
+ λ Q HQQ H2, begin
+   rw [is_ring_hom.map_neg (canonical_map g₁ Q H2)],
+   rw [h3 Q HQQ H2]
+ end⟩⟩⟩
+
 
 instance structure_presheaf_value_has_mul {R : Type*} [comm_ring R] (U : set (X R)) (HU : is_open U)
 : has_mul (structure_presheaf_value U HU) 
-:= ⟨λ f₁ f₂, ⟨λ P HP, f₁.val P HP * f₂.val P HP,sorry⟩⟩
+:= ⟨λ f₁ f₂, ⟨λ P HP, f₁.val P HP * f₂.val P HP, λ u hu,
+let ⟨g₁, h1, h2, r₁, h3⟩ := f₁.2 u hu in
+let ⟨g₂, h4, h5, r₂, h6⟩ := f₂.2 u hu in
+⟨g₁ * g₂,
+ by rw tag00E0.lemma15; exact ⟨h1, h4⟩,
+ by rw tag00E0.lemma15; exact λ z hz, h2 hz.1,
+ localise_more_left _ _ r₁ * localise_more_right _ _ r₂,
+ λ Q HQQ H2, begin
+   have H3 := H2,
+   rw tag00E0.lemma15 at H2,
+   rw [h3 Q HQQ H2.1, h6 Q HQQ H2.2],
+   rw [is_ring_hom.map_mul (canonical_map (g₁ * g₂) Q H3)],
+   rw [canonical_map.canonical_left, canonical_map.canonical_right],
+   refl
+ end⟩⟩⟩
 
 instance structure_presheaf_value_has_zero {R : Type*} [comm_ring R] (U : set (X R)) (HU : is_open U)
 : has_zero (structure_presheaf_value U HU) 
