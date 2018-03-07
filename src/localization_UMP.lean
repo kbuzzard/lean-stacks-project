@@ -105,14 +105,5 @@ theorem away.extension_unique {x : α} (H : ∃ y, f x * y = 1) (phi : away x �
   (R_alg_hom : ∀ r : α, phi (of_comm_ring _ _ r) = f r) : phi = away.extend_map_of_im_unit f H :=
 extend_map_unique f _ phi R_alg_hom
 
--- do we also have that the composite of two ring homs is a ring hom?
-
--- What is going on here is that to prove that the association sending U=D(f) to R[1/f] is a presheaf
--- we need to verify that if W=D(fgh) subseteq V=D(fg) subseteq U=D(f) then the composite of the
--- restriction maps is the restriction map (this is part of the definition of a functor, and a presheaf
--- is a functor). In ring terms, we need that the composite of the
--- canonical maps R[1/f]->R[1/fg]->R[1/fgh] equals the canonical map R[1/f]->R[1/fgh] and I propose
--- that we prove this by noting that the composite is an R-algebra homomorphism extending the
--- canonical localisation map and is hence the right one
 
 end localization
