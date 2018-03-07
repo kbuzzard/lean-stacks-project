@@ -224,6 +224,7 @@ structure is_sheaf_of_rings {α : Type*} [T : topological_space α]
 --#check @localization.at_prime
 -- #check @sheaf_of_rings 
 
+/-
 #print Spec.V'
 #print is_ring_hom 
 #check @localization.away.extend_map_of_im_unit
@@ -231,7 +232,7 @@ structure is_sheaf_of_rings {α : Type*} [T : topological_space α]
 #check @localization.prime.is_submonoid
 #check @localization.unit_of_in_S
 #check localization.away.extend_map_of_im_unit.is_ring_hom
-
+-/
 
 noncomputable definition canonical_map {R : Type*} [comm_ring R] (g : R) (u : X R) (H : u ∈ Spec.D' g) 
 : localization.away g → @localization.at_prime R _ u.val u.property 
@@ -267,13 +268,6 @@ congr_fun $ @@localization.away.extension_unique _ _
   (@@is_ring_hom.comp _ _ _ _ _ (localization.away.extend_map_of_im_unit.is_ring_hom _ _) (localization.away.extend_map_of_im_unit.is_ring_hom _ _))
   (λ r, by dsimp; simp [localise_more_right, localization.away.extend_map_extends])
  
-  #check set.exists_mem_of_ne_empty
-
-#check tag00E0.lemma14
-/-
-  ∀ (R : Type u_1) [_inst_1 : comm_ring R] (f : R) (I : set R) [_inst_2 : is_ideal I],
-    f ∈ I → Spec.D' f ∩ Spec.V I = ∅
-    -/
 local attribute [instance] localization.away.extend_map_of_im_unit.is_ring_hom
 
 --set_option pp.notation false 
@@ -395,16 +389,26 @@ instance structure_presheaf_value_has_one {R : Type*} [comm_ring R] (U : set (X 
 let ⟨V, ⟨f, hf⟩, huV, hVU⟩ := (D_f_form_basis R).2 U HU u hu in
 ⟨f, hf ▸ huV, hf ▸ hVU, 1, λ Q hQ h2, eq.symm $ is_ring_hom.map_one _⟩⟩⟩
 
-definition structure_presheaf_value_is_comm_ring {R : Type*} [comm_ring R] (U : set (X R)) (HU : is_open U) :
+instance structure_presheaf_value_is_comm_ring {R : Type*} [comm_ring R] (U : set (X R)) (HU : is_open U) :
   comm_ring (structure_presheaf_value U HU) :=
-by refine {
+ {
   add := (structure_presheaf_value_has_add U HU).add,
   zero := (structure_presheaf_value_has_zero U HU).zero,
   neg := (structure_presheaf_value_has_neg U HU).neg,
   mul := (structure_presheaf_value_has_mul U HU).mul,
   one := (structure_presheaf_value_has_one U HU).one,
-  .. };
-{simp [mul_assoc, left_distrib, right_distrib]} <|> simp [mul_comm]
+  mul_assoc := λ _ _ _,subtype.eq (funext (λ _,funext (λ _,mul_assoc _ _ _))),
+  add_assoc := λ _ _ _,subtype.eq (funext (λ _,funext (λ _,add_assoc _ _ _))),
+  zero_add := λ _,subtype.eq (funext (λ _,funext (λ _,zero_add _))),
+  add_zero := λ _,subtype.eq (funext (λ _,funext (λ _,add_zero _))),
+  add_left_neg := λ _,subtype.eq (funext (λ _,funext (λ _,add_left_neg _))),
+  add_comm := λ _ _,subtype.eq (funext (λ _,funext (λ _,add_comm _ _))),
+  one_mul := λ _,subtype.eq (funext (λ _,funext (λ _,one_mul _))),
+  mul_one := λ _,subtype.eq (funext (λ _,funext (λ _,mul_one _))),
+  left_distrib := λ _ _ _,subtype.eq (funext (λ _,funext (λ _,left_distrib _ _ _))),
+  right_distrib := λ _ _ _,subtype.eq (funext (λ _,funext (λ _,right_distrib _ _ _))),
+  mul_comm := λ _ _,subtype.eq (funext (λ _,funext (λ _,mul_comm _ _)))
+}
 
 definition structure_presheaf_of_rings_on_affine_scheme (R : Type*) [comm_ring R] 
 : presheaf_of_rings (X R)
