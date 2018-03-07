@@ -6,6 +6,7 @@ import tag00EJ_statement
 import localization
 import localization_UMP
 import tag00E0
+import tag00DY
 import Kenny_comm_alg.temp
 
 universes u v 
@@ -353,9 +354,9 @@ let ⟨g₂, h4, h5, r₂, h6⟩ := f₂.2 u hu in
    refl
  end⟩⟩⟩
 
-instance structure_presheaf_value_has_neg {R : Type*} [comm_ring R] (U : set (X R)) (HU : is_open U)
-: has_neg (structure_presheaf_value U HU) 
-:= ⟨λ f₁, ⟨λ P HP, -(f₁.val P HP), λ u hu,
+instance structure_presheaf_value_has_neg {R : Type*} [comm_ring R] (U : set (X R)) (HU : is_open U) :
+  has_neg (structure_presheaf_value U HU) :=
+⟨λ f₁, ⟨λ P HP, -(f₁.val P HP), λ u hu,
 let ⟨g₁, h1, h2, r₁, h3⟩ := f₁.2 u hu in
 ⟨g₁, h1, h2, -r₁,
  λ Q HQQ H2, begin
@@ -364,9 +365,9 @@ let ⟨g₁, h1, h2, r₁, h3⟩ := f₁.2 u hu in
  end⟩⟩⟩
 
 
-instance structure_presheaf_value_has_mul {R : Type*} [comm_ring R] (U : set (X R)) (HU : is_open U)
-: has_mul (structure_presheaf_value U HU) 
-:= ⟨λ f₁ f₂, ⟨λ P HP, f₁.val P HP * f₂.val P HP, λ u hu,
+instance structure_presheaf_value_has_mul {R : Type*} [comm_ring R] (U : set (X R)) (HU : is_open U) :
+  has_mul (structure_presheaf_value U HU) :=
+⟨λ f₁ f₂, ⟨λ P HP, f₁.val P HP * f₂.val P HP, λ u hu,
 let ⟨g₁, h1, h2, r₁, h3⟩ := f₁.2 u hu in
 let ⟨g₂, h4, h5, r₂, h6⟩ := f₂.2 u hu in
 ⟨g₁ * g₂,
@@ -382,22 +383,26 @@ let ⟨g₂, h4, h5, r₂, h6⟩ := f₂.2 u hu in
    refl
  end⟩⟩⟩
 
-instance structure_presheaf_value_has_zero {R : Type*} [comm_ring R] (U : set (X R)) (HU : is_open U)
-: has_zero (structure_presheaf_value U HU) 
-:= ⟨⟨λ P HP, 0,sorry⟩⟩
+instance structure_presheaf_value_has_zero {R : Type*} [comm_ring R] (U : set (X R)) (HU : is_open U) :
+  has_zero (structure_presheaf_value U HU) :=
+⟨⟨λ P HP, 0, λ u hu,
+let ⟨V, ⟨f, hf⟩, huV, hVU⟩ := (D_f_form_basis R).2 U HU u hu in
+⟨f, hf ▸ huV, hf ▸ hVU, 0, λ Q hQ h2, eq.symm $ is_ring_hom.map_zero _⟩⟩⟩
 
-instance structure_presheaf_value_has_one {R : Type*} [comm_ring R] (U : set (X R)) (HU : is_open U)
-: has_one (structure_presheaf_value U HU)
-:= ⟨⟨λ P HP, 1, sorry⟩⟩  
+instance structure_presheaf_value_has_one {R : Type*} [comm_ring R] (U : set (X R)) (HU : is_open U) :
+  has_one (structure_presheaf_value U HU) :=
+⟨⟨λ P HP, 1, λ u hu,
+let ⟨V, ⟨f, hf⟩, huV, hVU⟩ := (D_f_form_basis R).2 U HU u hu in
+⟨f, hf ▸ huV, hf ▸ hVU, 1, λ Q hQ h2, eq.symm $ is_ring_hom.map_one _⟩⟩⟩
 
-definition structure_presheaf_value_is_comm_ring {R : Type*} [comm_ring R] (U : set (X R)) (HU : is_open U)
-: comm_ring (structure_presheaf_value U HU) :=
+definition structure_presheaf_value_is_comm_ring {R : Type*} [comm_ring R] (U : set (X R)) (HU : is_open U) :
+  comm_ring (structure_presheaf_value U HU) :=
 by refine {
-  add := (+),
-  zero := 0,
-  neg := ((structure_presheaf_value_has_neg U HU).neg),
-  mul := (*),
-  one := 1,
+  add := (structure_presheaf_value_has_add U HU).add,
+  zero := (structure_presheaf_value_has_zero U HU).zero,
+  neg := (structure_presheaf_value_has_neg U HU).neg,
+  mul := (structure_presheaf_value_has_mul U HU).mul,
+  one := (structure_presheaf_value_has_one U HU).one,
   .. };
 {simp [mul_assoc, left_distrib, right_distrib]} <|> simp [mul_comm]
 

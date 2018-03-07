@@ -13,9 +13,8 @@ import Kenny_comm_alg.temp Kenny_comm_alg.Zariski
 local attribute [instance] classical.prop_decidable
 
 lemma D_f_form_basis (R : Type) [comm_ring R] : 
-  topological_space.is_topological_basis {U : set (X R) | ∃ f : R, U = Spec.D'(f)} := 
+  topological_space.is_topological_basis' {U : set (X R) | ∃ f : R, U = Spec.D'(f)} := 
 begin
-  rw basis_is_basis',
   split,
   { intros U H,
     cases H with f Hf,
