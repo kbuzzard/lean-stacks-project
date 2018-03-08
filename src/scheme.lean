@@ -375,11 +375,10 @@ by refine
   one := (structure_presheaf_value_has_one U HU).one,
   zero_add := λ _, structure_presheaf_value.ext _ _ _ _ $ λ _ _, zero_add _,
   add_zero := λ _, structure_presheaf_value.ext _ _ _ _ $ λ _ _, add_zero _,
-  add_left_neg := λ _, structure_presheaf_value.ext _ _ _ _ $ λ _ _, add_left_neg _,
   one_mul := λ _, structure_presheaf_value.ext _ _ _ _ $ λ _ _, one_mul _,
   mul_one := λ _, structure_presheaf_value.ext _ _ _ _ $ λ _ _, mul_one _,
   .. };
-{ intros, apply structure_presheaf_value.ext, intros, { simp [mul_assoc, mul_add, add_mul] } <|> simp [mul_comm] }
+{ intros, apply structure_presheaf_value.ext, intros, { simp [mul_assoc, mul_add, add_mul], try {refl} } <|> simp [mul_comm] }
 
 definition structure_presheaf_of_rings_on_affine_scheme (R : Type*) [comm_ring R] :
   presheaf_of_rings (X R) :=
