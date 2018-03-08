@@ -76,13 +76,6 @@ structure open_immersion
 
 --set_option pp.notation false 
 
-lemma inclusion_of_inclusion
-  {α : Type*} [Tα : topological_space α]
-  {β : Type*} [Tβ : topological_space β]
-  (f : α → β)
-  (U V : set α)
-  : (V ⊆ U) → (f '' V) ⊆ (f '' U) := λ H2 a ⟨x,Hx⟩,⟨x,H2 Hx.1,Hx.2⟩
-
 lemma immersion_sends_opens_to_opens 
   {α : Type*} [Tα : topological_space α]
   {β : Type*} [Tβ : topological_space β]
@@ -98,10 +91,10 @@ definition presheaf_of_types_pullback_under_open_immersion
 : presheaf_of_types α := {
 F := λ U HU,PT.F (f '' U) ((H.fopens U).1 HU),
 res := λ U V OU OV H2,PT.res (f '' U) (f '' V) ((H.fopens U).1 OU) ((H.fopens V).1 OV)
-  (inclusion_of_inclusion f U V H2),
+  (set.image_subset f H2),
 Hid := λ _ _,PT.Hid _ _,
 Hcomp := λ U V W _ _ _ HUV HVW, 
-  PT.Hcomp _ _ _ _ _ _ (inclusion_of_inclusion f U V HUV) (inclusion_of_inclusion f V W HVW)
+  PT.Hcomp _ _ _ _ _ _ (set.image_subset f HUV) (set.image_subset f HVW)
 } 
 
 definition presheaf_of_rings_pullback_under_open_immersion
@@ -116,7 +109,7 @@ definition presheaf_of_rings_pullback_under_open_immersion
   res_is_ring_morphism := λ U V OU OV H2,PR.res_is_ring_morphism (f '' U) (f '' V)
     (immersion_sends_opens_to_opens f H U OU)
     (immersion_sends_opens_to_opens f H V OV) 
-    (inclusion_of_inclusion f U V H2),
+    (set.image_subset f H2),
 } 
 
 structure morphism_of_presheaves_of_types {α : Type*} [Tα : topological_space α] 
