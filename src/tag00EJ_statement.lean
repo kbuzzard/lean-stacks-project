@@ -134,7 +134,7 @@ localization.away.extend_map_of_im_unit (localization.of_comm_ring R _) $
 
 lemma lemma_standard_covering {R : Type} [comm_ring R] (L : list R) 
 (H : (1:R) ∈ generate {x : R | x ∈ L}) :
-  let n := list.length L in 
+  let n := list.length L in
   let f := λ i : fin n, list.nth_le L i.val i.is_lt in
   let α : R → Π (i : fin n), localization.loc R (powers (f i)) 
         := λ r i, localization.of_comm_ring R _ r in
