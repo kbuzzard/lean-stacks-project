@@ -1,13 +1,14 @@
 import algebra.group_power Kenny_comm_alg.temp set_theory.cardinal
 
-local attribute [instance] classical.prop_decidable
-
 universes u v
 
 class linear_ordered_comm_group (α : Type u)
     extends comm_group α, linear_order α :=
 (mul_le_mul_left : ∀ {a b : α}, a ≤ b → ∀ c : α, c * a ≤ c * b)
-(mul_lt_mul_left : ∀ {a b : α}, a < b → ∀ c : α, c * a < c * b)
+
+class linear_ordered_comm_monoid (α : Type u)
+    extends comm_monoid α, linear_order α :=
+(mul_le_mul_left : ∀ {a b : α}, a ≤ b → ∀ c : α, c * a ≤ c * b)
 
 local infix ^ := monoid.pow
 
@@ -124,10 +125,199 @@ theorem ker.is_convex (f : α → β) (hf : is_hom f) : is_convex (ker f hf) :=
 def height (α : Type u) [linear_ordered_comm_group α] : cardinal :=
 cardinal.mk {S : set α // is_proper_convex S}
 
-theorem height_zero_iff_subsingleton : height α = 0 ↔ subsingleton α :=
-not_iff_not.1 ⟨λ h1 h2, let ⟨⟨S, hs⟩⟩ := cardinal.ne_zero_iff_nonempty.1 h1 in
-    let ⟨x, y, hx, hy, hnxy⟩ := @@is_proper_convex.exists_ne _ S hs in
-    hnxy $ @@subsingleton.elim h2 x y,
-  λ h1, cardinal.ne_zero_iff_nonempty.2 $ sorry⟩
+namespace extend
+
+def mul : option α → option α → option α
+| (some x) (some y) := some (x * y)
+| _        _        := none
+
+theorem mul_assoc : ∀ (x y z : option α), mul (mul x y) z = mul x (mul y z)
+| (some x) (some y) (some z) := congr_arg some $ _root_.mul_assoc x y z
+| (some _) (some _) none     := rfl
+| (some _) none     (some z) := rfl
+| (some _) none     none     := rfl
+| none     (some _) (some z) := rfl
+| none     (some _) none     := rfl
+| none     none     (some z) := rfl
+| none     none     none     := rfl
+
+def one : option α := some 1
+
+def one_mul : ∀ x : option α, mul one x = x
+| (some x) := congr_arg some $ _root_.one_mul x
+| none     := rfl
+
+def mul_one : ∀ x : option α, mul x one = x
+| (some x) := congr_arg some $ _root_.mul_one x
+| none     := rfl
+
+def mul_comm : ∀ (x y : option α), mul x y = mul y x
+| (some x) (some y) := congr_arg some $ _root_.mul_comm x y
+| (some x) none     := rfl
+| none     (some _) := rfl
+| none     none     := rfl
+
+def le : option α → option α → Prop
+| (some x) (some y) := x ≤ y
+| (some _) none     := false
+| none     _        := true
+
+theorem le_refl : ∀ x : option α, le x x
+| (some x) := _root_.le_refl x
+| none     := trivial
+
+theorem le_trans : ∀ x y z : option α, le x y → le y z → le x z
+| (some x) (some y) (some z) hxy hyz := _root_.le_trans hxy hyz
+| (some _) (some _) none     hxy hyz := false.elim hyz
+| (some _) none     _        hxy hyz := false.elim hxy
+| none     _        _        hxy hyz := trivial
+
+theorem le_antisymm : ∀ x y : option α, le x y → le y x → x = y
+| (some x) (some y) hxy hyx := congr_arg some $ _root_.le_antisymm hxy hyx
+| (some _) none     hxy hyx := false.elim hxy
+| none     (some _) hxy hyx := false.elim hyx
+| none     none     hxy hyx := rfl
+
+theorem le_total : ∀ x y : option α, le x y ∨ le y x
+| (some x) (some y) := _root_.le_total x y
+| none     _        := or.inl trivial
+| _        none     := or.inr trivial
+
+theorem mul_le_mul_left : ∀ x y : option α, le x y → ∀ z : option α, le (mul z x) (mul z y)
+| (some x) (some y) hxy (some z) := linear_ordered_comm_group.mul_le_mul_left hxy z
+| _        _        hxy none     := trivial
+| (some _) none     hxy _        := false.elim hxy
+| none     _        hxy (some _) := trivial
+
+instance : linear_ordered_comm_monoid (option α) :=
+{ mul             := mul,
+  mul_assoc       := mul_assoc,
+  one             := one,
+  one_mul         := one_mul,
+  mul_one         := mul_one,
+  mul_comm        := mul_comm,
+  le              := le,
+  le_refl         := le_refl,
+  le_trans        := le_trans,
+  le_antisymm     := le_antisymm,
+  le_total        := le_total,
+  mul_le_mul_left := mul_le_mul_left }
+
+instance : has_zero (option α) := ⟨none⟩
+
+theorem zero_mul : ∀ x : option α, 0 * x = 0
+| _ := rfl
+
+theorem mul_zero : ∀ x : option α, x * 0 = 0
+| (some _) := rfl
+| none     := rfl
+
+theorem none_mul : ∀ x : option α, none * x = none := zero_mul
+theorem mul_none : ∀ x : option α, x * none = none := mul_zero
+
+theorem eq_zero_or_eq_zero_of_mul_eq_zero : ∀ x y : option α, x * y = 0 → x = 0 ∨ y = 0
+| (some x) (some y) hxy := false.elim $ option.no_confusion hxy
+| none     _        hxy := or.inl rfl
+| _        none     hxy := or.inr rfl
+
+end extend
 
 end linear_ordered_comm_group
+
+class is_valuation {α : Type u} [linear_ordered_comm_group α]
+  {R : Type v} [comm_ring R] (f : R → option α) : Prop :=
+(map_zero : f 0 = 0)
+(map_one  : f 1 = 1)
+(map_mul  : ∀ x y, f (x * y) = f x * f y)
+(map_add  : ∀ x y, f (x + y) ≤ f x ∨ f (x + y) ≤ f y)
+
+namespace is_valuation
+
+variables {α : Type u} [linear_ordered_comm_group α]
+variables {R : Type v} [comm_ring R] (f : R → option α)
+variables [is_valuation f] {x y z : R}
+
+theorem map_unit : x * y = 1 → option.is_some (f x) :=
+begin
+  intro h,
+  have h1 := map_mul f x y,
+  rw [h, map_one f] at h1,
+  cases (f x),
+  { exfalso,
+    exact option.no_confusion h1 },
+  { constructor }
+end
+
+theorem map_neg_one : f (-1) = 1 :=
+begin
+  have h1 : (-1 : R) * (-1) = 1 := by simp,
+  have h2 := map_unit f h1,
+  have h3 := map_mul f (-1) (-1),
+  rw [option.is_some_iff_exists] at h2,
+  cases h2 with x h,
+  rw h at h3 ⊢,
+  congr,
+  rw [h1, map_one f] at h3,
+  replace h3 := eq.symm (option.some.inj h3),
+  have h4 : x^2 = 1 := by simpa [monoid.pow] using h3,
+  exact linear_ordered_comm_group.eq_one_of_pow_eq_one h4
+end
+
+namespace trivial
+
+variables (S : set R) [is_prime_ideal S] [decidable_pred S]
+
+instance : is_valuation (λ x, if x ∈ S then (0 : option α) else 1) :=
+{ map_zero := if_pos (is_ideal.zero S),
+  map_one  := if_neg is_proper_ideal.one_not_mem,
+  map_mul  := λ x y, begin
+      by_cases hx : x ∈ S,
+      { rw if_pos hx,
+        rw linear_ordered_comm_group.extend.zero_mul,
+        rw if_pos (is_ideal.mul_right hx) },
+      { by_cases hy : y ∈ S,
+        { rw if_pos hy,
+          rw linear_ordered_comm_group.extend.mul_zero,
+          rw if_pos (is_ideal.mul_left hy) },
+        { have hxy : x * y ∉ S,
+          { intro hxy,
+            cases is_prime_ideal.mem_or_mem_of_mul_mem hxy with h h,
+            { exact hx h },
+            { exact hy h } },
+          { rw [if_neg hx, if_neg hy, if_neg hxy, mul_one] } } }
+    end,
+  map_add  := λ x y, begin
+      by_cases hxy : x + y ∈ S,
+      { rw if_pos hxy, left, trivial },
+      { rw if_neg hxy,
+        by_cases hx : x ∈ S,
+        { have hy : y ∉ S := mt (is_ideal.add hx) hxy,
+          right,
+          rw if_neg hy },
+        { left,
+          rw if_neg hx } }
+    end }
+
+end trivial
+
+def supp : set R := {x | f x = 0}
+
+instance : is_prime_ideal (supp f) :=
+{ zero_ := map_zero f,
+  add_  := λ x y hx hy, or.cases_on (map_add f x y)
+    (λ hxy, le_antisymm (hx ▸ hxy) trivial)
+    (λ hxy, le_antisymm (hy ▸ hxy) trivial),
+  smul  := λ c x hx, calc f (c * x)
+                        = f c * f x : map_mul f c x
+                    ... = f c * 0 : congr_arg _ hx
+                    ... = 0 : linear_ordered_comm_group.extend.mul_zero _,
+  ne_univ := λ h, have h1 : (1:R) ∈ supp f, by rw h; trivial,
+    have h2 : f 1 = 0 := h1,
+    by rw [map_one f] at h2; exact option.no_confusion h2,
+  mem_or_mem_of_mul_mem := λ x y hxy, begin
+      dsimp [supp] at hxy ⊢,
+      rw [map_mul f x y] at hxy,
+      exact linear_ordered_comm_group.extend.eq_zero_or_eq_zero_of_mul_eq_zero _ _ hxy
+    end }
+
+end is_valuation
