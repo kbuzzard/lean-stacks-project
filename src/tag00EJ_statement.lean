@@ -116,8 +116,11 @@ as required.  There the sequence is exact.
 \end{proof}
 -/
 
-import Kenny_comm_alg.Zariski localization_UMP --tactic.find
+import Kenny_comm_alg.Zariski localization_UMP
+import Kenny_comm_alg.ideal_operations
 universe u
+local infix ` ^ ` := monoid.pow 
+
 
 -- I used a list L for [f_1,f_2,...,f_n] (I used [f_0,f_1,...,f_{n-1}] of)
 -- I needed to think of it as a set when claiming it generated R
@@ -132,9 +135,42 @@ noncomputable def localise_more_right {R : Type u} [comm_ring R] (f g) :
 localization.away.extend_map_of_im_unit (localization.of_comm_ring R _) $
 ⟨⟦⟨f, f * g, 1, by simp⟩⟧, by simp [localization.of_comm_ring, localization.mk_eq, localization.mul_frac, mul_comm]⟩
 
+--set_option pp.all true
+theorem weak_binomial {R : Type u} [comm_ring R] (m n : nat) (x y : R) :
+∃ f g : R, (x + y) ^ (m + n) = f * x ^ m + g * y ^ n := 
+begin
+  cases n with n1,
+  { existsi (0:R),
+    existsi (x+y)^m,
+    simp
+  },
+  have H := is_ideal.some_binomial_theorem_boi x y m n1,
+  existsi is_ideal.some_binomial_boi x y m n1 * x,
+  existsi is_ideal.some_binomial_boi y x n1 m,
+  conv in (m + nat.succ n1) {
+  rw nat.succ_eq_add_one,
+  rw ←add_assoc,
+  },
+  rw H,
+--  conv in (is_ideal.some_binomial_boi x y m n1 * x * x ^ m) {
+  rw mul_assoc,
+  refl,
+  end
+
+--import data.list.basic algebra.big_operators data.fintype
+--local infix ` ^ ` := monoid.pow 
+open finset
+example (R : Type) [comm_ring R] (n : ℕ) (a : fin n → R) (e : fin n → ℕ)
+(r : R) (H : ∀ i : fin n, (a i) ^ (e i) * r = 0) :
+(sum (univ) a) ^ (sum (univ) e) * r = 0 := sorry
+
+
+#print monoid.pow
+
+
 lemma lemma_standard_covering {R : Type} [comm_ring R] (L : list R) 
 (H : (1:R) ∈ generate {x : R | x ∈ L}) :
-  let n := list.length L in
+  let n := list.length L in 
   let f := λ i : fin n, list.nth_le L i.val i.is_lt in
   let α : R → Π (i : fin n), localization.loc R (powers (f i)) 
         := λ r i, localization.of_comm_ring R _ r in
