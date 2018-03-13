@@ -1,4 +1,4 @@
-import algebra.ring algebra.module algebra.linear_algebra data.set.basic tactic.ring data.equiv data.quot Kenny_comm_alg.temp
+import algebra.ring algebra.module linear_algebra data.set.basic tactic.ring data.equiv data.quot Kenny_comm_alg.temp
 
 -- remove "data.equiv" in PR version
 -- ring.localization
