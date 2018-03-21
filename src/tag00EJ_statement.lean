@@ -122,9 +122,8 @@ universe u
 local infix ` ^ ` := monoid.pow 
 
 
--- I used a list L for [f_1,f_2,...,f_n] (I used [f_0,f_1,...,f_{n-1}] of)
--- I needed to think of it as a set when claiming it generated R
--- and I needed to define a function f : fin n -> R sending i to f_i.
+-- TODO -- ask Kenny where these two defs should be moved to.
+
 noncomputable def localise_more_left {R : Type u} [comm_ring R] (f g) : 
   localization.loc R (powers f) → localization.loc R (powers (f * g)) :=
 localization.away.extend_map_of_im_unit (localization.of_comm_ring R _) $
@@ -135,7 +134,8 @@ noncomputable def localise_more_right {R : Type u} [comm_ring R] (f g) :
 localization.away.extend_map_of_im_unit (localization.of_comm_ring R _) $
 ⟨⟦⟨f, f * g, 1, by simp⟩⟧, by simp [localization.of_comm_ring, localization.mk_eq, localization.mul_frac, mul_comm]⟩
 
---set_option pp.all true
+/- we no longer need this
+
 theorem weak_binomial {R : Type u} [comm_ring R] (m n : nat) (x y : R) :
 ∃ f g : R, (x + y) ^ (m + n) = f * x ^ m + g * y ^ n := 
 begin
@@ -157,16 +157,22 @@ begin
   refl,
   end
 
---import data.list.basic algebra.big_operators data.fintype
---local infix ` ^ ` := monoid.pow 
+-/
+
+-- TODO (KB) Get chris proof in here. This will tell me how to use generate v span
+
 open finset
 example (R : Type) [comm_ring R] (n : ℕ) (a : fin n → R) (e : fin n → ℕ)
 (r : R) (H : ∀ i : fin n, (a i) ^ (e i) * r = 0) :
 (sum (univ) a) ^ (sum (univ) e) * r = 0 := sorry
 
+-- Should we be using a list?
 
-#print monoid.pow
+#check generate
+#check span 
 
+-- TODO (Kenny?)
+lemma generate_eq_span {R : Type} [comm_ring R] : ∀ S : set R, generate S = span S := sorry 
 
 lemma lemma_standard_covering {R : Type} [comm_ring R] (L : list R) 
 (H : (1:R) ∈ generate {x : R | x ∈ L}) :
@@ -180,3 +186,4 @@ lemma lemma_standard_covering {R : Type} [comm_ring R] (L : list R)
   function.injective α ∧ -- image of α is kernel of β (as maps of abelian groups or R-mods)
     ∀ s : (Π (i : fin n), localization.loc R (powers (f i))), ∀ j k, β s j k = 0 ↔ ∃ r : R, α r = s :=
     sorry 
+
