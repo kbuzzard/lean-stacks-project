@@ -118,6 +118,8 @@ as required.  There the sequence is exact.
 
 import Kenny_comm_alg.Zariski localization_UMP
 import Kenny_comm_alg.ideal_operations
+import chris_ring_lemma
+
 universe u
 local infix ` ^ ` := monoid.pow 
 
@@ -161,10 +163,6 @@ begin
 
 -- TODO (KB) Get chris proof in here. This will tell me how to use generate v span
 
-open finset
-example (R : Type) [comm_ring R] (n : ℕ) (a : fin n → R) (e : fin n → ℕ)
-(r : R) (H : ∀ i : fin n, (a i) ^ (e i) * r = 0) :
-(sum (univ) a) ^ (sum (univ) e) * r = 0 := sorry
 
 -- Should we be using a list?
 
@@ -187,3 +185,18 @@ lemma lemma_standard_covering {R : Type} [comm_ring R] (L : list R)
     ∀ s : (Π (i : fin n), localization.loc R (powers (f i))), ∀ j k, β s j k = 0 ↔ ∃ r : R, α r = s :=
     sorry 
 
+-- in chris_ring_lemma.lean there is
+-- theorem missing1 [comm_semiring α] (n : ℕ) (f : ℕ → α) (e : ℕ → ℕ) (r : ℕ → α)
+--     (s : α) : (∀ i : ℕ, i < n → (f i) ^ (e i) * s = 0) → 
+--     sum (range n) (λ i, f i * r i) = 1 → s = 0 
+
+/-
+#check @or.rec -- dammit, or only eliminates to prop
+open finset
+example (R : Type) [comm_ring R] (n : ℕ) (a : fin n → R) (e : fin n → ℕ)
+(r : R) (H : ∀ i : fin n, (a i) ^ (e i) * r = 0) :
+(sum (univ) a) ^ (sum (univ) e) * r = 0 := missing1 n (λ i, or.elim (decidable.em (i < n)) (λ h, a ⟨i,h⟩) (λ h, 0))
+(λ i, _) (λ i, _) _ r _
+
+KB was working on this but now I have to do admin
+-/
