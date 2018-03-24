@@ -161,16 +161,31 @@ begin
 
 -/
 
--- TODO (KB) Get chris proof in here. This will tell me how to use generate v span
+lemma generate_eq_span {R : Type} [comm_ring R] : ∀ S : set R, generate S = span S := 
+begin
+  intro S,
+  apply set.eq_of_subset_of_subset,
+  { 
+    intros a H,
+    apply H (span S),
+    exact subset_span
+  },
+  { apply span_minimal (generate.is_ideal _) (subset_generate _)
+  }
+end 
 
+lemma generate_1_of_generate_univ {R : Type} [comm_ring R] (S : set R) :
+  generate S = set.univ → ∃ f : lc R R, (∀ x : R, x ∉ S → f x = 0) ∧ 1 = finsupp.sum f (λ r s : R, s * r) := 
+  begin
+  intro H,
+  rw generate_eq_span at H,
+  suffices H2 : (1 : R) ∈ span S,
+    exact H2,
+  simp [H],
+  end 
 
--- Should we be using a list?
+#print nat.no_confusion_type
 
-#check generate
-#check span 
-
--- TODO (Kenny?)
-lemma generate_eq_span {R : Type} [comm_ring R] : ∀ S : set R, generate S = span S := sorry 
 
 lemma lemma_standard_covering {R : Type} [comm_ring R] (L : list R) 
 (H : (1:R) ∈ generate {x : R | x ∈ L}) :
@@ -190,13 +205,9 @@ lemma lemma_standard_covering {R : Type} [comm_ring R] (L : list R)
 --     (s : α) : (∀ i : ℕ, i < n → (f i) ^ (e i) * s = 0) → 
 --     sum (range n) (λ i, f i * r i) = 1 → s = 0 
 
-/-
-#check @or.rec -- dammit, or only eliminates to prop
-open finset
-example (R : Type) [comm_ring R] (n : ℕ) (a : fin n → R) (e : fin n → ℕ)
-(r : R) (H : ∀ i : fin n, (a i) ^ (e i) * r = 0) :
-(sum (univ) a) ^ (sum (univ) e) * r = 0 := missing1 n (λ i, or.elim (decidable.em (i < n)) (λ h, a ⟨i,h⟩) (λ h, 0))
-(λ i, _) (λ i, _) _ r _
+theorem T (p q r : Prop) : p ∧ (q ∨ r) ↔ (p ∧ q) ∨ (p ∧ r) := 
+begin
+cases (classical.em p);cases (classical.em q);cases (classical.em r);simp [*],
+end
 
-KB was working on this but now I have to do admin
--/
+#print axioms T 
