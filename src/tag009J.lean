@@ -23,7 +23,7 @@ def is_sheaf_of_types_on_basis {X : Type*} [T : topological_space X]
   (HB : topological_space.is_topological_basis B)
   (FPTB : presheaf_of_types_on_basis HB)
   (U : set X)
-  [BU : B U]
+  (BU : B U)
   {γ : Type*} (Ui : γ → set X)
   (BUi : ∀ i : γ, B (Ui i))
   (Hcov : (⋃ (x : γ), (Ui x)) = U)
