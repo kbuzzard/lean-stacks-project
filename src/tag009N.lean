@@ -28,8 +28,7 @@ argue as in the proof of Lemma \ref{lemma-sheafification-sheaf}.
 
 -- sheaf on a basis = sheaf on the whole space
 
-import analysis.topology.topological_space
-#check topological_space.is_topological_basis_of_open_of_nhds
+import analysis.topology.topological_space tag009J
 
 definition extend_off_basis {X : Type*} [T : topological_space X] (B : set (set X)) 
-  (HB : topological_space.is_topological_basis B) (P : sheaf_of_sets_on_basis )
+  (HB : topological_space.is_topological_basis B) (FD : presheaf_of_types_on_basis HB)
