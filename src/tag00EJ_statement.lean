@@ -116,12 +116,16 @@ as required.  There the sequence is exact.
 \end{proof}
 -/
 
-import Kenny_comm_alg.Zariski localization_UMP --tactic.find
-universe u
+import Kenny_comm_alg.Zariski localization_UMP
+import Kenny_comm_alg.ideal_operations
+import chris_ring_lemma
 
--- I used a list L for [f_1,f_2,...,f_n] (I used [f_0,f_1,...,f_{n-1}] of)
--- I needed to think of it as a set when claiming it generated R
--- and I needed to define a function f : fin n -> R sending i to f_i.
+universe u
+local infix ` ^ ` := monoid.pow 
+
+
+-- TODO -- ask Kenny where these two defs should be moved to.
+
 noncomputable def localise_more_left {R : Type u} [comm_ring R] (f g) : 
   localization.loc R (powers f) → localization.loc R (powers (f * g)) :=
 localization.away.extend_map_of_im_unit (localization.of_comm_ring R _) $
@@ -131,6 +135,57 @@ noncomputable def localise_more_right {R : Type u} [comm_ring R] (f g) :
   localization.loc R (powers g) → localization.loc R (powers (f * g)) :=
 localization.away.extend_map_of_im_unit (localization.of_comm_ring R _) $
 ⟨⟦⟨f, f * g, 1, by simp⟩⟧, by simp [localization.of_comm_ring, localization.mk_eq, localization.mul_frac, mul_comm]⟩
+
+/- we no longer need this
+
+theorem weak_binomial {R : Type u} [comm_ring R] (m n : nat) (x y : R) :
+∃ f g : R, (x + y) ^ (m + n) = f * x ^ m + g * y ^ n := 
+begin
+  cases n with n1,
+  { existsi (0:R),
+    existsi (x+y)^m,
+    simp
+  },
+  have H := is_ideal.some_binomial_theorem_boi x y m n1,
+  existsi is_ideal.some_binomial_boi x y m n1 * x,
+  existsi is_ideal.some_binomial_boi y x n1 m,
+  conv in (m + nat.succ n1) {
+  rw nat.succ_eq_add_one,
+  rw ←add_assoc,
+  },
+  rw H,
+--  conv in (is_ideal.some_binomial_boi x y m n1 * x * x ^ m) {
+  rw mul_assoc,
+  refl,
+  end
+
+-/
+
+lemma generate_eq_span {R : Type} [comm_ring R] : ∀ S : set R, generate S = span S := 
+begin
+  intro S,
+  apply set.eq_of_subset_of_subset,
+  { 
+    intros a H,
+    apply H (span S),
+    exact subset_span
+  },
+  { apply span_minimal (generate.is_ideal _) (subset_generate _)
+  }
+end 
+
+lemma generate_1_of_generate_univ {R : Type} [comm_ring R] (S : set R) :
+  generate S = set.univ → ∃ f : lc R R, (∀ x : R, x ∉ S → f x = 0) ∧ 1 = finsupp.sum f (λ r s : R, s * r) := 
+  begin
+  intro H,
+  rw generate_eq_span at H,
+  suffices H2 : (1 : R) ∈ span S,
+    exact H2,
+  simp [H],
+  end 
+
+#print nat.no_confusion_type
+
 
 lemma lemma_standard_covering {R : Type} [comm_ring R] (L : list R) 
 (H : (1:R) ∈ generate {x : R | x ∈ L}) :
@@ -144,3 +199,15 @@ lemma lemma_standard_covering {R : Type} [comm_ring R] (L : list R)
   function.injective α ∧ -- image of α is kernel of β (as maps of abelian groups or R-mods)
     ∀ s : (Π (i : fin n), localization.loc R (powers (f i))), ∀ j k, β s j k = 0 ↔ ∃ r : R, α r = s :=
     sorry 
+
+-- in chris_ring_lemma.lean there is
+-- theorem missing1 [comm_semiring α] (n : ℕ) (f : ℕ → α) (e : ℕ → ℕ) (r : ℕ → α)
+--     (s : α) : (∀ i : ℕ, i < n → (f i) ^ (e i) * s = 0) → 
+--     sum (range n) (λ i, f i * r i) = 1 → s = 0 
+
+theorem T (p q r : Prop) : p ∧ (q ∨ r) ↔ (p ∧ q) ∨ (p ∧ r) := 
+begin
+cases (classical.em p);cases (classical.em q);cases (classical.em r);simp [*],
+end
+
+#print axioms T 

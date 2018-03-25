@@ -1,4 +1,4 @@
-import algebra.group_power algebra.linear_algebra.prod_module algebra.module
+import algebra.group_power linear_algebra.prod_module algebra.module
 import data.finsupp data.set.basic tactic.ring Kenny_comm_alg.temp
 noncomputable theory
 

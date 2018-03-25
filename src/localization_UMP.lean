@@ -105,5 +105,17 @@ theorem away.extension_unique {x : α} (H : ∃ y, f x * y = 1) (phi : away x �
   (R_alg_hom : ∀ r : α, phi (of_comm_ring _ _ r) = f r) : phi = away.extend_map_of_im_unit f H :=
 extend_map_unique f _ phi R_alg_hom
 
+-- map is determined by image of ring before localization
+
+theorem unique {f g : loc α S → β} [is_ring_hom f] [is_ring_hom g] (H : ∀ x, f (of_comm_ring _ _ x) = g (of_comm_ring _ _ x)) {x : loc α S} :
+  f x = g x :=
+quotient.induction_on x $ λ ⟨r, s, hs⟩,
+have h1 : f ⟦(1, ⟨s, hs⟩)⟧ = g ⟦(1, ⟨s, hs⟩)⟧,
+from calc f ⟦(1, ⟨s, hs⟩)⟧
+        = g 1 * f ⟦(1, ⟨s, hs⟩)⟧ : by simp [is_ring_hom.map_one g]
+    ... = g ⟦(1, ⟨s, hs⟩)⟧ * f (of_comm_ring _ _ s) * f ⟦(1, ⟨s, hs⟩)⟧ : by rw [H, ← is_ring_hom.map_mul g, mul_denom]; refl
+    ... = g ⟦(1, ⟨s, hs⟩)⟧ * f 1 : by rw [mul_assoc, ← is_ring_hom.map_mul f, mul_comm (of_comm_ring α S s), mul_denom]; refl
+    ... = g ⟦(1, ⟨s, hs⟩)⟧ : by simp [is_ring_hom.map_one f],
+by rw [← mul_inv_denom, is_ring_hom.map_mul f, is_ring_hom.map_mul g, H, h1]
 
 end localization

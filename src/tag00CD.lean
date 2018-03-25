@@ -4,7 +4,7 @@ if R is a ring, I and ideal of R and S a multiplicative subset of R, then S−1I
 [proof omitted]
 -/
 
-import localization algebra.linear_algebra.quotient_module algebra.linear_algebra.linear_map_module
+import localization linear_algebra.quotient_module linear_algebra.linear_map_module
 
 universe u
 
