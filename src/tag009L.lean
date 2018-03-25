@@ -57,7 +57,18 @@ theorem lemma_cofinal_systems_coverings_standard_case
 
   -- the **only property of fintype you will need here**
   -- is basis_is_compact; you definitely do not need
-  -- the fact that a fintype is finite -- I coudl replace
+  -- the fact that a fintype is finite -- I could replace
   -- fintype with some arbitrary typeclass here, as long
   -- as I replace it in both the theorem and the definition.
-  
+
+  -- What I am trying to stress is that this is not an assertion
+  -- about compactness or finite covers, the correct theorem
+  -- is that if the sheaf axiom holds on a "cofinite collection
+  -- of covers" then it holds for all covers. I didn't have time
+  -- to formalise "cofinite collection of covers" so I just
+  -- formalised "finite covers" and put it as an
+  -- axiom that every element of B is compact. Think of the
+  -- compactness assumption HBcompact as saying that every
+  -- cover can be refined to a "special" cover, and that
+  -- if the sheaf axiom is true for "special" covers then
+  -- it's true for all covers.
