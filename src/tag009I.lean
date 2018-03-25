@@ -14,3 +14,13 @@ structure  presheaf_of_types_on_basis {X : Type*} [T : topological_space X] (B :
 (Hcomp : ∀ (U V W : set X) (OU : B U) (OV : B V) (OW : B W)
   (HUV : V ⊆ U) (HVW : W ⊆ V),
   (res U W OU OW (set.subset.trans HVW HUV)) = (res V W OV OW HVW) ∘ (res U V OU OV HUV) )
+
+
+structure morphism_of_presheaves_of_types_on_basis {X : Type*} [TX : topological_space X] 
+  (B : set (set X)) (HB : topological_space.is_topological_basis B)
+  (FPT : presheaf_of_types_on_basis B HB) 
+  (GPT : presheaf_of_types_on_basis B HB) 
+  :=
+(morphism : ∀ U : set X, ∀ HU : B U, (FPT.F U HU) → GPT.F U HU)
+(commutes : ∀ U V : set X, ∀ HU : B U, ∀ HV : B V, ∀ Hsub : V ⊆ U,
+  (GPT.res U V HU HV Hsub) ∘ (morphism U HU) = (morphism V HV) ∘ (FPT.res U V HU HV Hsub))
