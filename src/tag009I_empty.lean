@@ -1,4 +1,0 @@
--- here we define a presheaf of types on a basis of a top space;
--- sections only defined on a basis
--- restriction maps are just from basis elt to basis elt
--- 
