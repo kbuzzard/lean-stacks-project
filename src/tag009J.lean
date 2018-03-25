@@ -18,7 +18,7 @@ def helper3 {X : Type*} {γ : Type*} {Ui : γ → set X}
 { β : γ → γ → Type*} {Uijk : Π (i j : γ), β i j → set X} {i j : γ} {k : β i j}
 : (⋃ (k' : β i j), Uijk i j k') = Ui i ∩ Ui j → Uijk i j k ⊆ Ui j := sorry
 
-def is_sheaf_of_types_on_basis {X : Type*} [T : topological_space X] 
+theorem is_sheaf_of_types_on_basis {X : Type*} [T : topological_space X] 
   {B : set (set X)}
   {HB : topological_space.is_topological_basis B}
   (FPTB : presheaf_of_types_on_basis HB) : Prop :=
