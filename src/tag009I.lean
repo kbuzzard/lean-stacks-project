@@ -5,7 +5,7 @@
 
 import analysis.topology.topological_space
 
-structure  presheaf_of_types_on_basis {X : Type*} [T : topological_space X] (B : set (set X)) 
+structure presheaf_of_types_on_basis {X : Type*} [TX : topological_space X] {B : set (set X)}
   (HB : topological_space.is_topological_basis B) := 
 (F : Π U : set X, B U → Type*)
 (res : ∀ (U V : set X) (OU : B U) (OV : B V) (H : V ⊆ U), 
@@ -18,8 +18,8 @@ structure  presheaf_of_types_on_basis {X : Type*} [T : topological_space X] (B :
 
 structure morphism_of_presheaves_of_types_on_basis {X : Type*} [TX : topological_space X] 
   (B : set (set X)) (HB : topological_space.is_topological_basis B)
-  (FPT : presheaf_of_types_on_basis B HB) 
-  (GPT : presheaf_of_types_on_basis B HB) 
+  (FPT : presheaf_of_types_on_basis HB) 
+  (GPT : presheaf_of_types_on_basis HB) 
   :=
 (morphism : ∀ U : set X, ∀ HU : B U, (FPT.F U HU) → GPT.F U HU)
 (commutes : ∀ U V : set X, ∀ HU : B U, ∀ HV : B V, ∀ Hsub : V ⊆ U,
