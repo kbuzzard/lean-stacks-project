@@ -28,7 +28,25 @@ argue as in the proof of Lemma \ref{lemma-sheafification-sheaf}.
 
 -- sheaf on a basis = sheaf on the whole space
 
-import analysis.topology.topological_space tag009J
+import analysis.topology.topological_space tag009J scheme 
+
+theorem basis_element_is_open {X : Type*} [T : topological_space X]
+ {B : set (set X)} (HB : topological_space.is_topological_basis B)
+ {U : set X} (BU : B U) : T.is_open U := sorry 
+
+ definition restriction_of_presheaf_to_basis {X : Type*} [T : topological_space X]
+ {B : set (set X)} {HB : topological_space.is_topological_basis B}
+ (FP : presheaf_of_types X) : presheaf_of_types_on_basis HB :=
+ { F := λ U BU, FP.F U (basis_element_is_open HB BU),
+   res := λ {U V} BU BV H, FP.res U V (basis_element_is_open HB BU) (basis_element_is_open HB BV) H,
+   Hid := λ U BU, FP.Hid U (basis_element_is_open HB BU),
+   Hcomp := λ U V W BU BV BW,FP.Hcomp U V W (basis_element_is_open HB BU)
+   (basis_element_is_open HB BV) (basis_element_is_open HB BW)
+ }
 
 definition extend_off_basis {X : Type*} [T : topological_space X] (B : set (set X)) 
-  (HB : topological_space.is_topological_basis B) (FD : presheaf_of_types_on_basis HB)
+  (HB : topological_space.is_topological_basis B) (FB : presheaf_of_types_on_basis HB)
+  (HF : ∀ U BU (Ui : _ → set X) BUi Hcov Uijk BUijk Hcov2,
+    is_sheaf_of_types_on_basis B HB FB U BU Ui BUi Hcov Uijk BUijk Hcov2)
+  : ∃ FP : presheaf_of_types X,
+  --  ∃ isom : Π U : set X, (∀ BU : B U, FB.F BU → FP.F U (basis_element_is_open BU),
