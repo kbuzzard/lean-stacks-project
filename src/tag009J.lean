@@ -19,19 +19,14 @@ def helper3 {X : Type*} {γ : Type*} {Ui : γ → set X}
 : (⋃ (k' : β i j), Uijk i j k') = Ui i ∩ Ui j → Uijk i j k ⊆ Ui j := sorry
 
 def is_sheaf_of_types_on_basis {X : Type*} [T : topological_space X] 
-  (B : set (set X)) 
-  (HB : topological_space.is_topological_basis B)
-  (FPTB : presheaf_of_types_on_basis HB)
-  (U : set X)
-  (BU : B U)
-  {γ : Type*} (Ui : γ → set X)
-  (BUi : ∀ i : γ, B (Ui i))
+  {B : set (set X)}
+  {HB : topological_space.is_topological_basis B}
+  (FPTB : presheaf_of_types_on_basis HB) : Prop :=
+  ∀ {U : set X} (BU : B U) {γ : Type*} (Ui : γ → set X) (BUi : ∀ i : γ, B (Ui i))
   (Hcov : (⋃ (x : γ), (Ui x)) = U)
   { β : γ → γ → Type*} (Uijk : Π (i j : γ), β i j → set X)
   (BUijk : ∀ i j : γ, ∀ k : β i j, B (Uijk i j k) )
-  (Hcov2 : ∀ i j : γ, (⋃ (k : β i j), Uijk i j k )= Ui i ∩ Ui j)
-  -- that's the set-up, here's the axiom  
-  : Prop :=
+  (Hcov2 : ∀ i j : γ, (⋃ (k : β i j), Uijk i j k )= Ui i ∩ Ui j),
   ∀ (si : Π (i : γ), FPTB.F (BUi i)),-- sections on the cover
   -- if they agree on overlaps
   (∀ i j : γ, ∀ k : β i j, 
