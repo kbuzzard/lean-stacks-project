@@ -17,10 +17,43 @@ structure presheaf_of_types_on_basis {X : Type*} [TX : topological_space X] {B :
 
 
 structure morphism_of_presheaves_of_types_on_basis {X : Type*} [TX : topological_space X] 
-  (B : set (set X)) (HB : topological_space.is_topological_basis B)
+  {B : set (set X)} {HB : topological_space.is_topological_basis B}
   (FPT : presheaf_of_types_on_basis HB) 
   (GPT : presheaf_of_types_on_basis HB) 
   :=
 (morphism : ∀ U : set X, ∀ HU : B U, (FPT.F HU) → GPT.F HU)
 (commutes : ∀ U V : set X, ∀ HU : B U, ∀ HV : B V, ∀ Hsub : V ⊆ U,
   (GPT.res HU HV Hsub) ∘ (morphism U HU) = (morphism V HV) ∘ (FPT.res HU HV Hsub))
+
+definition composition_of_morphism_of_presheaves_of_types_on_basis
+{X : Type*} [TX : topological_space X] 
+  {B : set (set X)} {HB : topological_space.is_topological_basis B}
+  {FPT : presheaf_of_types_on_basis HB} 
+  {GPT : presheaf_of_types_on_basis HB} 
+  {HPT : presheaf_of_types_on_basis HB}
+  (phi : morphism_of_presheaves_of_types_on_basis FPT GPT)
+  (psi : morphism_of_presheaves_of_types_on_basis GPT HPT)
+  : morphism_of_presheaves_of_types_on_basis FPT HPT :=
+{
+  morphism := λ U HU, (psi.morphism U HU) ∘ (phi.morphism U HU),
+  commutes := λ U V HU HV Hsub, --by simp [psi.commutes U V HU HV Hsub,phi.commutes U V HU HV Hsub]
+  by rw [←function.comp.assoc,psi.commutes,function.comp.assoc,phi.commutes],
+}
+
+definition is_identity_morphism_of_presheaves_of_types_on_basis {X : Type*} [TX : topological_space X] 
+  {B : set (set X)} {HB : topological_space.is_topological_basis B}
+  {FPT : presheaf_of_types_on_basis HB} (phi : morphism_of_presheaves_of_types_on_basis FPT FPT)
+  : Prop :=
+  ∀ U : set X, ∀ HU : B U, phi.morphism U HU = id 
+
+definition is_isomorphism_of_presheaves_of_types_on_basis 
+{X : Type*} [TX : topological_space X] 
+  {B : set (set X)} {HB : topological_space.is_topological_basis B}
+  {FPT : presheaf_of_types_on_basis HB}
+  {GPT : presheaf_of_types_on_basis HB}
+  (phi : morphism_of_presheaves_of_types_on_basis FPT GPT) : Prop := 
+  ∃ psi :  morphism_of_presheaves_of_types_on_basis GPT FPT,
+  is_identity_morphism_of_presheaves_of_types_on_basis (composition_of_morphism_of_presheaves_of_types_on_basis phi psi)
+  ∧ is_identity_morphism_of_presheaves_of_types_on_basis (composition_of_morphism_of_presheaves_of_types_on_basis psi phi)
+
+  
