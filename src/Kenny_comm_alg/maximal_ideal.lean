@@ -59,7 +59,7 @@ end maximal_ideal
 section nonunits
 
 parameters {α : Type u} [comm_ring α]
-parameters (x : α) (hx : x ∈ nonunits' α)
+parameters (x : α) (hx : x ∈ nonunits α)
 
 include hx
 
