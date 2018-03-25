@@ -1,0 +1,1 @@
+This version of lean stacks project (commit 7466afb5e276e1adceef75bfe07969cc398880a9) seems to work fine with lean commit 07bb7d809b6be49f38ce4e427c54a82708ae281f and mathlib commit b97b7c38416d4f6f258882f807458d4f980976ef
