@@ -26,12 +26,12 @@ def is_sheaf_of_types_on_basis {X : Type*} [T : topological_space X]
   (Hcov : (⋃ (x : γ), (Ui x)) = U)
   { β : γ → γ → Type*} (Uijk : Π (i j : γ), β i j → set X)
   (BUijk : ∀ i j : γ, ∀ k : β i j, B (Uijk i j k) )
-  (Hcov2 : ∀ i j : γ, (⋃ (k : β i j), Uijk i j k )= Ui i ∩ Ui j),
-  ∀ (si : Π (i : γ), FPTB.F (BUi i)),-- sections on the cover
+  (Hcov2 : ∀ i j : γ, (⋃ (k : β i j), Uijk i j k )= Ui i ∩ Ui j)
+  (si : Π (i : γ), FPTB.F (BUi i))-- sections on the cover
   -- if they agree on overlaps
-  (∀ i j : γ, ∀ k : β i j, 
+  (Hagree : ∀ i j : γ, ∀ k : β i j, 
     FPTB.res (BUi i) (BUijk i j k) (helper2 (Hcov2 i j): Uijk i j k ⊆ Ui i) (si i)
-    = FPTB.res (BUi j) (BUijk i j k) (helper3 (Hcov2 i j) : Uijk i j k ⊆ Ui j) (si j))
+    = FPTB.res (BUi j) (BUijk i j k) (helper3 (Hcov2 i j) : Uijk i j k ⊆ Ui j) (si j)),
   -- then there's a unique global section which agrees with all of them.
-  → ∃! s : FPTB.F BU, ∀ i : γ, FPTB.res BU (BUi i) ((helper1 Hcov) : Ui i ⊆ U) s = si i 
+  ∃! s : FPTB.F BU, ∀ i : γ, FPTB.res BU (BUi i) ((helper1 Hcov) : Ui i ⊆ U) s = si i
    
