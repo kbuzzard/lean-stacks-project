@@ -1,3 +1,7 @@
+-- IMPORTANT -- I PROPOSE WE SKIP THIS TAG FOR NOW AS WE DON'T NEED IT
+-- We only need 009L, the special case where the intersection of two
+-- basis elements is a basis element.
+
 /-
 \begin{lemma}
 \label{lemma-cofinal-systems-coverings}
@@ -89,4 +93,7 @@ Hence by the uniqueness part seen above we win.
 \end{proof}
 -/
 
--- Here we will prove that if F is a sheaf-of-types-on-a-basis
+
+-- IMPORTANT -- I PROPOSE WE SKIP THIS TAG FOR NOW AS WE DON'T NEED IT
+-- We only need 009L, the special case where the intersection of two
+-- basis elements is a basis element.
