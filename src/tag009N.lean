@@ -44,9 +44,39 @@ theorem basis_element_is_open {X : Type*} [T : topological_space X]
    (basis_element_is_open HB BV) (basis_element_is_open HB BW)
  }
 
-definition extend_off_basis {X : Type*} [T : topological_space X] (B : set (set X)) 
-  (HB : topological_space.is_topological_basis B) (FB : presheaf_of_types_on_basis HB)
-  (HF : ∀ U BU (Ui : _ → set X) BUi Hcov Uijk BUijk Hcov2,
-    is_sheaf_of_types_on_basis B HB FB U BU Ui BUi Hcov Uijk BUijk Hcov2)
-  : ∃ FP : presheaf_of_types X,
-  --  ∃ isom : Π U : set X, (∀ BU : B U, FB.F BU → FP.F U (basis_element_is_open BU),
+definition extend_off_basis {X : Type*} [T : topological_space X] {B : set (set X)} 
+  {HB : topological_space.is_topological_basis B} (FB : presheaf_of_types_on_basis HB)
+  (HF : is_sheaf_of_types_on_basis FB)
+  : presheaf_of_types X := sorry -- explicit construction of extension sheaf here
+
+variables {X : Type*} [T : topological_space X] {B : set (set X)} 
+  {HB : topological_space.is_topological_basis B} (FB : presheaf_of_types_on_basis HB)
+  (HF : is_sheaf_of_types_on_basis FB)
+#check HF
+
+theorem extension_is_sheaf {X : Type*} [T : topological_space X] {B : set (set X)} 
+  {HB : topological_space.is_topological_basis B} (FB : presheaf_of_types_on_basis HB)
+  (HF : is_sheaf_of_types_on_basis FB)
+  : is_sheaf_of_types (extend_off_basis FB HF) := sorry
+
+definition extend_off_basis_map {X : Type*} [T : topological_space X] {B : set (set X)} 
+  {HB : topological_space.is_topological_basis B} (FB : presheaf_of_types_on_basis HB)
+  (HF : is_sheaf_of_types_on_basis FB) :
+  morphism_of_presheaves_of_types_on_basis FB (restriction_of_presheaf_to_basis (extend_off_basis FB HF)) := sorry
+
+theorem extension_extends {X : Type*} [T : topological_space X] {B : set (set X)} 
+  {HB : topological_space.is_topological_basis B} (FB : presheaf_of_types_on_basis HB)
+  (HF : is_sheaf_of_types_on_basis FB) : 
+  is_isomorphism_of_presheaves_of_types_on_basis (extend_off_basis_map FB HF) := sorry 
+
+theorem extension_unique {X : Type*} [T : topological_space X] {B : set (set X)} 
+  {HB : topological_space.is_topological_basis B} (FB : presheaf_of_types_on_basis HB)
+  (HF : is_sheaf_of_types_on_basis FB) (G : presheaf_of_types X)
+  (HG : is_sheaf_of_types G) (psi : morphism_of_presheaves_of_types_on_basis FB (restriction_of_presheaf_to_basis G))
+  (HI : is_isomorphism_of_presheaves_of_types_on_basis psi) -- we have an extension which agrees with FB on B
+  : ∃ rho : morphism_of_presheaves_of_types (extend_off_basis FB HF) G, -- I would happily change the direction of the iso rho
+    is_isomorphism_of_presheaves_of_types rho ∧ 
+    ∀ (U : set X) (BU : B U), 
+      (rho.morphism U (basis_element_is_open HB BU)) ∘ ((extend_off_basis_map FB HF).morphism U BU) = (psi.morphism U BU) := sorry
+
+
