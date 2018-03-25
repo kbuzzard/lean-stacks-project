@@ -8,22 +8,25 @@ universes u v
 -- <migrations>
 -- <move to algebra.group>
 
+/-
 class is_submonoid (α : Type u) [monoid α] (S : set α) : Prop :=
 (one_mem : (1:α) ∈ S)
 (mul_mem : ∀ {s t}, s ∈ S → t ∈ S → s*t ∈ S)
-
+-/
 -- </move>
 
 -- <move to algebra.group_power>
 
 local infix ^ := monoid.pow
 
+/-
 def powers {α : Type u} [monoid α] (x : α) : set α := {y | ∃ n, x^n = y}
-
+-/
+/-
 instance powers.is_submonoid {α : Type u} [monoid α] (x : α)  : is_submonoid α (powers x) :=
 { one_mem := ⟨0, by simp⟩,
   mul_mem := λ x₁ x₂ ⟨n₁, hn₁⟩ ⟨n₂, hn₂⟩, ⟨n₁ + n₂, by simp [pow_add, *]⟩ }
-
+-/
 -- </move>
 
 -- <move to algebra.ring>
