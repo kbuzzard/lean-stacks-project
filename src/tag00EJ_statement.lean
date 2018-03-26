@@ -129,16 +129,6 @@ local infix ` ^ ` := monoid.pow
 
 -- TODO -- ask Kenny where these two defs should be moved to.
 
-noncomputable def localize_more_left {R : Type u} [comm_ring R] (f g) : 
-  localization.loc R (powers f) → localization.loc R (powers (f * g)) :=
-localization.away.extend_map_of_im_unit (localization.of_comm_ring R _) $
-⟨⟦⟨g, f * g, 1, by simp⟩⟧, by simp [localization.of_comm_ring, localization.mk_eq, localization.mul_frac]⟩
-
-noncomputable def localize_more_right {R : Type u} [comm_ring R] (f g) :
-  localization.loc R (powers g) → localization.loc R (powers (f * g)) :=
-localization.away.extend_map_of_im_unit (localization.of_comm_ring R _) $
-⟨⟦⟨f, f * g, 1, by simp⟩⟧, by simp [localization.of_comm_ring, localization.mk_eq, localization.mul_frac, mul_comm]⟩
-
 /- we no longer need this
 
 theorem weak_binomial {R : Type u} [comm_ring R] (m n : nat) (x y : R) :
@@ -247,10 +237,12 @@ private def α (x : R) : Π i : fin L.length, localization.loc R (powers (f L i)
 
 private noncomputable def β (r : Π i : fin L.length, localization.loc R (powers (f L i))) (j k : fin L.length) :
     localization.loc R (powers (f L j * f L k)) :=
-localize_more_left (f L j) (f L k) (r j) - localize_more_right (f L j) (f L k) (r k)
+localization.localize_more_left (f L j) (f L k) (r j) - localization.localize_more_right (f L j) (f L k) (r k)
 
-lemma lemma_00EJ_missing (r : R) (j k : fin L.length) : localize_more_left (f L j) (f L k) (localization.of_comm_ring R (powers (f j)) r) =
-    localize_more_right (f L j) (f L k) (localization.of_comm_ring R (powers (f L k)) r) := sorry
+lemma lemma_00EJ_missing (r : R) (j k : fin L.length) : localization.localize_more_left (f L j) (f L k) (localization.of_comm_ring R (powers (f j)) r) =
+    localization.localize_more_right (f L j) (f L k) (localization.of_comm_ring R (powers (f L k)) r) := sorry
+
+#check lemma_00EJ_missing
 
 lemma lemma_standard_covering {R : Type*} [comm_ring R] (L : list R) 
 (H : (1:R) ∈ generate {x : R | x ∈ L}) :
