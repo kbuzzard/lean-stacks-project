@@ -24,25 +24,20 @@ def helper3 {X : Type*} {γ : Type*} {Ui : γ → set X}
 from λ z hz, H ▸ ⟨_, ⟨_, rfl⟩, hz⟩,
 set.subset.trans H1 (set.inter_subset_right _ _)
 
-def is_sheaf_of_types_on_basis {X : Type*} [T : topological_space X] 
-  (B : set (set X)) 
-  (HB : topological_space.is_topological_basis B)
-  (FPTB : presheaf_of_types_on_basis HB)
-  (U : set X)
-  [BU : B U]
-  {γ : Type*} (Ui : γ → set X)
-  (BUi : ∀ i : γ, B (Ui i))
+theorem is_sheaf_of_types_on_basis {X : Type*} [T : topological_space X] 
+  {B : set (set X)}
+  {HB : topological_space.is_topological_basis B}
+  (FPTB : presheaf_of_types_on_basis HB) : Prop :=
+  ∀ {U : set X} (BU : B U) {γ : Type*} (Ui : γ → set X) (BUi : ∀ i : γ, B (Ui i))
   (Hcov : (⋃ (x : γ), (Ui x)) = U)
   { β : γ → γ → Type*} (Uijk : Π (i j : γ), β i j → set X)
   (BUijk : ∀ i j : γ, ∀ k : β i j, B (Uijk i j k) )
   (Hcov2 : ∀ i j : γ, (⋃ (k : β i j), Uijk i j k )= Ui i ∩ Ui j)
-  -- that's the set-up, here's the axiom  
-  : Prop :=
-  ∀ (si : Π (i : γ), FPTB.F (BUi i)),-- sections on the cover
+  (si : Π (i : γ), FPTB.F (BUi i))-- sections on the cover
   -- if they agree on overlaps
-  (∀ i j : γ, ∀ k : β i j, 
+  (Hagree : ∀ i j : γ, ∀ k : β i j, 
     FPTB.res (BUi i) (BUijk i j k) (helper2 (Hcov2 i j): Uijk i j k ⊆ Ui i) (si i)
-    = FPTB.res (BUi j) (BUijk i j k) (helper3 (Hcov2 i j) : Uijk i j k ⊆ Ui j) (si j))
+    = FPTB.res (BUi j) (BUijk i j k) (helper3 (Hcov2 i j) : Uijk i j k ⊆ Ui j) (si j)),
   -- then there's a unique global section which agrees with all of them.
-  → ∃! s : FPTB.F BU, ∀ i : γ, FPTB.res BU (BUi i) ((helper1 Hcov) : Ui i ⊆ U) s = si i 
+  ∃! s : FPTB.F BU, ∀ i : γ, FPTB.res BU (BUi i) ((helper1 Hcov) : Ui i ⊆ U) s = si i
    

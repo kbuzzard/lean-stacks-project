@@ -131,23 +131,27 @@ morphism_of_presheaves_of_types FPT HPT :=
     rw ←fg.commutes U V HU HV Hsub,
   end }
 
-def identity_morphism_of_presheaves_of_types {α : Type*} [Tα : topological_space α]
-  (FPT : presheaf_of_types α) : morphism_of_presheaves_of_types FPT FPT :=
-{ morphism := λ _ _, id,
-  commutes := λ _ _ _ _ _, rfl }
+def is_identity_morphism_of_presheaves_of_types {α : Type*} [Tα : topological_space α]
+  {FPT : presheaf_of_types α} (phi: morphism_of_presheaves_of_types FPT FPT) :=
+  ∀ (U : set α) (OU : Tα.is_open U), phi.morphism U OU = id
+
+def is_isomorphism_of_presheaves_of_types {α : Type*} [Tα : topological_space α]
+  {FPT : presheaf_of_types α} {GPT : presheaf_of_types α} (phi: morphism_of_presheaves_of_types FPT GPT) :=
+  ∃ psi : morphism_of_presheaves_of_types GPT FPT, 
+  is_identity_morphism_of_presheaves_of_types (composition_of_morphisms_of_presheaves_of_types phi psi)
+  ∧ is_identity_morphism_of_presheaves_of_types (composition_of_morphisms_of_presheaves_of_types psi phi)
 
 def are_isomorphic_presheaves_of_types {α : Type} [Tα : topological_space α]
 (FPT : presheaf_of_types α) (GPT : presheaf_of_types α) : Prop :=
 ∃ (fg : morphism_of_presheaves_of_types FPT GPT) (gf : morphism_of_presheaves_of_types GPT FPT),
-  composition_of_morphisms_of_presheaves_of_types fg gf = identity_morphism_of_presheaves_of_types FPT
-  ∧ composition_of_morphisms_of_presheaves_of_types gf fg = identity_morphism_of_presheaves_of_types GPT
+  is_identity_morphism_of_presheaves_of_types (composition_of_morphisms_of_presheaves_of_types fg gf)
+  ∧ is_identity_morphism_of_presheaves_of_types (composition_of_morphisms_of_presheaves_of_types gf fg)
 
 def are_isomorphic_presheaves_of_rings {α : Type} [Tα : topological_space α]
   (FPR : presheaf_of_rings α) (GPR : presheaf_of_rings α) : Prop := 
 ∃ (fg : morphism_of_presheaves_of_rings FPR GPR) (gf : morphism_of_presheaves_of_rings GPR FPR),
-  composition_of_morphisms_of_presheaves_of_types fg.morphism gf.morphism = identity_morphism_of_presheaves_of_types FPR.to_presheaf_of_types
-  ∧ composition_of_morphisms_of_presheaves_of_types gf.morphism fg.morphism = identity_morphism_of_presheaves_of_types GPR.to_presheaf_of_types
-
+  is_identity_morphism_of_presheaves_of_types (composition_of_morphisms_of_presheaves_of_types fg.morphism gf.morphism)
+  ∧ is_identity_morphism_of_presheaves_of_types( composition_of_morphisms_of_presheaves_of_types gf.morphism fg.morphism)
 
 def res_to_inter_left {α : Type*} [T : topological_space α] 
   (FT : presheaf_of_types α)
