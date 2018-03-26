@@ -1,18 +1,33 @@
-universe u 
-variables (X : Type u) (P : set (set X))
+-- stuff mentioned in section "Bases and sheaves" (6.30; tag 009H)
+-- but not in any definition etc
 
-definition stalk1 (x : X) :=
-Σ U : {U : set X // x ∈ U ∧ P U}, ℕ
+import tag009I 
 
-definition stalk2 (x : X) (U : set X) (Hx : x ∈ U) :=
-Σ (PU : P U), ℕ
+-- definition after 6.30.1 and before 6.30.2
 
-structure stalk3 (x : X) :=
-(U : set X) (Hx : x ∈ U) (PU : P U) (n : ℕ)
+section presheaf_on_basis_stalk 
 
-#check stalk3 
+parameters {X : Type*} [TX : topological_space X] 
+  {B : set (set X)}
+  {HB : topological_space.is_topological_basis B}
+  (FPTB : presheaf_of_types_on_basis HB) (x : X)
 
-definition r (X) (P) (x)  : stalk3 X P x → stalk3 X P x → Prop := sorry 
+structure presheaf_on_basis_stalk.aux :=
+(U : set X)
+(BU : U ∈ B)
+(Hx : x ∈ U)
+(s : FPTB.F BU)
 
+instance presheaf_on_basis_stalk.setoid : setoid presheaf_on_basis_stalk.aux :=
+{ r := sorry,
+  iseqv := sorry
+}
 
-#print and 
+definition presheaf_on_basis_stalk : Type* :=
+quotient presheaf_on_basis_stalk.setoid
+
+#check presheaf_on_basis_stalk 
+
+end presheaf_on_basis_stalk
+
+#check presheaf_on_basis_stalk 
