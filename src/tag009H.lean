@@ -7,7 +7,7 @@ import tag009I
 
 definition presheaf_on_basis_stalk {X : Type*} [TX : topological_space X] 
   {B : set (set X)}
-  (HB : topological_space.is_topological_basis B) 
+  {HB : topological_space.is_topological_basis B}
   (FPTB : presheaf_of_types_on_basis HB) (x : X) : Type :=
 sorry
 -- 
