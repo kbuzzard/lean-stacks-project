@@ -252,7 +252,15 @@ lemma lemma_standard_covering {R : Type*} [comm_ring R] (L : list R)
 begin 
   assume x hx,
   replace hx := congr_fun hx,
-  have : ∀ f' ∈ L, ∃ e : ℕ, f' ^ e * x = 0 := sorry,
+  have : ∀ f' ∈ L, ∃ e : ℕ, f' ^ e * x = 0 := λ f' hf', begin
+    have := hx ⟨list.index_of f' L, list.index_of_lt_length.2 hf'⟩,
+    simp [α, localization.of_comm_ring] at this,
+    have := quotient.eq.1 this,
+    rcases this with ⟨r, hr₁, hr₂⟩,
+    cases hr₁ with e he,
+    simp [f] at he hr₂,
+    exact ⟨e,
+  end,
   let e : R → ℕ := λ f', if h : f' ∈ L then classical.some (this f' h) else 0,
   have hL : {x : R | x ∈ L} = {x : R | x ∈ list.to_finset L} := set.ext (λ y, by simp),
   rw [generate_eq_span, hL] at H,
@@ -264,6 +272,11 @@ begin
   exact missing4 (list.to_finset L) e r x he hr
 end, λ s j k, ⟨λ h, begin
   let x := λ i : fin L.length, quotient.out (s i),
+  rw [← quotient.out_eq (0 : localization.loc R (powers (f L j * f L k))),
+    ← quotient.out_eq (β _ _ _ _), quotient.eq] at h,
+  rcases h with ⟨e, he, hne⟩,
+  cases he with n hn,
+
   unfold β at h,
 end,
   
