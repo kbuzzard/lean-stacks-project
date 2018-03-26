@@ -186,10 +186,10 @@ begin
 end 
 
 section
-variables {α : Type*} {β : Type*} [rα : comm_ring α] [rβ : comm_ring β]
-include rα rβ
+variables {α : Type*} [rα : comm_ring α]
+include rα
 
-lemma inj_of_bla {f : α → β} [hf : is_ring_hom f] (h : ∀ {x}, f x = 0 → x = 0) : function.injective f := 
+lemma inj_of_bla {β : Type*} [comm_ring β] {f : α → β} [hf : is_ring_hom f] (h : ∀ {x}, f x = 0 → x = 0) : function.injective f := 
 λ x y hxy, by rw [← sub_eq_zero_iff_eq, ← is_ring_hom.map_sub f] at hxy;
   exact sub_eq_zero_iff_eq.1 (h hxy)
 
@@ -238,44 +238,46 @@ or.by_cases (classical.em (L = ∅)) (λ h, by simp [h] at *; rw [← mul_one s,
 by have := missing3 L e r s h @hf;
   rwa [hL, one_pow, one_mul] at this
 
-variables {R : Type*} [comm_ring R] {L : list R}
+variables {R : Type*} [comm_ring R] (L : list R)
 
 private def f (i : fin L.length) := list.nth_le L i.1 i.2
 
-private def α (x : R) (i : fin L.length) : localization.loc R (powers (f i)) :=
-  localization.of_comm_ring R _ x
+private def α (x : R) : Π i : fin L.length, localization.loc R (powers (f L i)) :=
+  λ i, localization.of_comm_ring R _ x
 
-private noncomputable def β (r : Π i : fin L.length, localization.loc R (powers (f i))) (j k : fin L.length) :
-    localization.loc R (powers (f j * f k)) :=
-localize_more_left (f j) (f k) (r j) - localize_more_right (f j) (f k) (r k)
+private noncomputable def β (r : Π i : fin L.length, localization.loc R (powers (f L i))) (j k : fin L.length) :
+    localization.loc R (powers (f L j * f L k)) :=
+localize_more_left (f L j) (f L k) (r j) - localize_more_right (f L j) (f L k) (r k)
 
-lemma lemma_00EJ_missing (r : R) (j k : fin L.length) : localize_more_left (f j) (f k) (localization.of_comm_ring R (powers (f j)) r) =
-    localize_more_right (f j) (f k) (localization.of_comm_ring R (powers (f k)) r) := sorry
+lemma lemma_00EJ_missing (r : R) (j k : fin L.length) : localize_more_left (f L j) (f L k) (localization.of_comm_ring R (powers (f j)) r) =
+    localize_more_right (f L j) (f L k) (localization.of_comm_ring R (powers (f L k)) r) := sorry
 
 lemma lemma_standard_covering {R : Type*} [comm_ring R] (L : list R) 
 (H : (1:R) ∈ generate {x : R | x ∈ L}) :
   function.injective (@α R _ L) ∧ -- image of α is kernel of β (as maps of abelian groups or R-mods)
-    ∀ s : (Π (i : fin L.length), localization.loc R (powers (f i))), ∀ j k, β s j k = 0 ↔ ∃ r : R, α r = s :=
-⟨inj_of_bla begin 
+    ∀ s : (Π (i : fin L.length), localization.loc R (powers (f L i))), ∀ j k, β L s j k = 0 ↔ ∃ r : R, α L r = s :=
+⟨@inj_of_bla _ _ _ _ (@α R _ L) (@indexed_product.is_ring_hom _ _ _ _ _ (@α R _ L) (λ i, by unfold α; apply_instance))
+begin 
   assume x hx,
-  have : ∀ f ∈ L, ∃ e : ℕ, f ^ e * x = 0 := sorry,
-  let e : R → ℕ := λ f, if h : f ∈ L then classical.some (this f h) else 0,
+  replace hx := congr_fun hx,
+  have : ∀ f' ∈ L, ∃ e : ℕ, f' ^ e * x = 0 := sorry,
+  let e : R → ℕ := λ f', if h : f' ∈ L then classical.some (this f' h) else 0,
   have hL : {x : R | x ∈ L} = {x : R | x ∈ list.to_finset L} := set.ext (λ y, by simp),
   rw [generate_eq_span, hL] at H,
   cases span_finset H with r hr,
-  have he : ∀ f : R, f ∈ list.to_finset L → f ^ e f * x = 0 := λ f hf,
+  have he : ∀ f' : R, f' ∈ list.to_finset L → f' ^ e f' * x = 0 := λ f' hf,
     by rw list.mem_to_finset at hf;
     simp only [e, dif_pos hf];
-    exact classical.some_spec (this f hf),
-  exact missing4 (list.to_finset L) e r x he hr,
-end, λ s j k, ⟨sorry, λ ⟨r, hr⟩, begin
-  rw ← hr,
-  unfold β α,
-  rw sub_eq_zero_iff_eq,
+    exact classical.some_spec (this f' hf),
+  exact missing4 (list.to_finset L) e r x he hr
+end, λ s j k, ⟨λ h, begin
+  let x := λ i : fin L.length, quotient.out (s i),
+  unfold β at h,
+end,
   
 
-end ⟩ ⟩
-
+sorry ⟩ ⟩ 
+#print quotient.exact
 -- in chris_ring_lemma.lean there is
 -- theorem missing1 [comm_semiring R] (n : ℕ) (f : ℕ → R) (e : ℕ → ℕ) (r : ℕ → R)
 --     (s : R) : (∀ i : ℕ, i < n → (f i) ^ (e i) * s = 0) → 
