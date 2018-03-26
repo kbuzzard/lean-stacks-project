@@ -28,7 +28,7 @@ argue as in the proof of Lemma \ref{lemma-sheafification-sheaf}.
 
 -- sheaf on a basis = sheaf on the whole space
 
-import analysis.topology.topological_space tag009J scheme 
+import analysis.topology.topological_space tag009J tag009H scheme 
 
 theorem basis_element_is_open {X : Type*} [T : topological_space X]
  {B : set (set X)} (HB : topological_space.is_topological_basis B)
@@ -53,7 +53,12 @@ end
 definition extend_off_basis {X : Type*} [T : topological_space X] {B : set (set X)} 
   {HB : topological_space.is_topological_basis B} (FB : presheaf_of_types_on_basis HB)
   (HF : is_sheaf_of_types_on_basis FB)
-  : presheaf_of_types X := sorry -- explicit construction of extension sheaf here
+  : presheaf_of_types X := 
+  { F := λ U OU,{ s : Π (x : U), presheaf_on_basis_stalk FB x // locally a section},
+    res := _,
+    Hid := _,
+    Hcomp := _
+  }
 
 variables {X : Type*} [T : topological_space X] {B : set (set X)} 
   {HB : topological_space.is_topological_basis B} (FB : presheaf_of_types_on_basis HB)
