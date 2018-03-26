@@ -32,7 +32,13 @@ import analysis.topology.topological_space tag009J scheme
 
 theorem basis_element_is_open {X : Type*} [T : topological_space X]
  {B : set (set X)} (HB : topological_space.is_topological_basis B)
- {U : set X} (BU : B U) : T.is_open U := sorry 
+ {U : set X} (BU : B U) : T.is_open U := 
+ begin
+ have : T = topological_space.generate_from B := HB.2.2,
+ rw this,
+show topological_space.generate_open B U,
+refine topological_space.generate_open.basic U BU,
+end 
 
  definition restriction_of_presheaf_to_basis {X : Type*} [T : topological_space X]
  {B : set (set X)} {HB : topological_space.is_topological_basis B}
