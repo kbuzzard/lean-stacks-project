@@ -129,12 +129,12 @@ local infix ` ^ ` := monoid.pow
 
 -- TODO -- ask Kenny where these two defs should be moved to.
 
-noncomputable def localise_more_left {R : Type u} [comm_ring R] (f g) : 
+noncomputable def localize_more_left {R : Type u} [comm_ring R] (f g) : 
   localization.loc R (powers f) → localization.loc R (powers (f * g)) :=
 localization.away.extend_map_of_im_unit (localization.of_comm_ring R _) $
 ⟨⟦⟨g, f * g, 1, by simp⟩⟧, by simp [localization.of_comm_ring, localization.mk_eq, localization.mul_frac]⟩
 
-noncomputable def localise_more_right {R : Type u} [comm_ring R] (f g) :
+noncomputable def localize_more_right {R : Type u} [comm_ring R] (f g) :
   localization.loc R (powers g) → localization.loc R (powers (f * g)) :=
 localization.away.extend_map_of_im_unit (localization.of_comm_ring R _) $
 ⟨⟦⟨f, f * g, 1, by simp⟩⟧, by simp [localization.of_comm_ring, localization.mk_eq, localization.mul_frac, mul_comm]⟩
@@ -173,7 +173,17 @@ begin
 #check span 
 
 -- TODO (Kenny?)
-lemma generate_eq_span {R : Type*} [comm_ring R] (S : set R) : generate S = span S := sorry 
+lemma generate_eq_span {R : Type*} [comm_ring R] (S : set R) : generate S = span S := 
+begin
+  apply set.eq_of_subset_of_subset,
+  { 
+    intros a H,
+    apply H (span S),
+    exact subset_span
+  },
+  { apply span_minimal (generate.is_ideal _) (subset_generate _)
+  }
+end 
 
 section
 variables {α : Type*} {β : Type*} [rα : comm_ring α] [rβ : comm_ring β]
@@ -191,11 +201,9 @@ instance indexed_product.is_ring_hom {I : Type*} {f : I → Type*} [∀ i : I, c
 end
 
 open finset
-#print span
-#print lc.is_linear_map_sum
+
 lemma span_finset {α β : Type*} {x : β} [ring α] [module α β] {s : finset β} 
-    (h : x ∈ span {x : β | x ∈ s}) :
-    ∃ r : β → α, s.sum (λ y, r y • y) = x :=
+    (h : x ∈ span {x : β | x ∈ s}) : ∃ r : β → α, s.sum (λ y, r y • y) = x :=
 let ⟨r, hr⟩ := h in
 have h₁ : r.support ⊆ s := λ x hx, by_contradiction (λ h₁, ((finsupp.mem_support_iff r _).1 hx) (hr.1 _ h₁)),
 have h₂ : sum (s \ r.support) (λ y, r y • y) = 0 := begin 
@@ -230,17 +238,24 @@ or.by_cases (classical.em (L = ∅)) (λ h, by simp [h] at *; rw [← mul_one s,
 by have := missing3 L e r s h @hf;
   rwa [hL, one_pow, one_mul] at this
 
+variables {R : Type*} [comm_ring R] {L : list R}
+
+private def f (i : fin L.length) := list.nth_le L i.1 i.2
+
+private def α (x : R) (i : fin L.length) : localization.loc R (powers (f i)) :=
+  localization.of_comm_ring R _ x
+
+private noncomputable def β (r : Π i : fin L.length, localization.loc R (powers (f i))) (j k : fin L.length) :
+    localization.loc R (powers (f j * f k)) :=
+localize_more_left (f j) (f k) (r j) - localize_more_right (f j) (f k) (r k)
+
+lemma lemma_00EJ_missing (r : R) (j k : fin L.length) : localize_more_left (f j) (f k) (localization.of_comm_ring R (powers (f j)) r) =
+    localize_more_right (f j) (f k) (localization.of_comm_ring R (powers (f k)) r) := sorry
+
 lemma lemma_standard_covering {R : Type*} [comm_ring R] (L : list R) 
 (H : (1:R) ∈ generate {x : R | x ∈ L}) :
-  let n := list.length L in 
-  let f := λ i : fin n, list.nth_le L i.val i.is_lt in
-  let α : R → Π (i : fin n), localization.loc R (powers (f i)) 
-        := λ r i, localization.of_comm_ring R _ r in
-  let β : (Π (i : fin n), localization.loc R (powers (f i))) → 
-            Π (j : fin n), Π (k : fin n), localization.loc R (powers (f j * f k)) 
-        := λ r, λ j k, localise_more_left (f j) (f k) (r j) - localise_more_right (f j) (f k) (r k) in
-  function.injective α ∧ -- image of α is kernel of β (as maps of abelian groups or R-mods)
-    ∀ s : (Π (i : fin n), localization.loc R (powers (f i))), ∀ j k, β s j k = 0 ↔ ∃ r : R, α r = s :=
+  function.injective (@α R _ L) ∧ -- image of α is kernel of β (as maps of abelian groups or R-mods)
+    ∀ s : (Π (i : fin L.length), localization.loc R (powers (f i))), ∀ j k, β s j k = 0 ↔ ∃ r : R, α r = s :=
 ⟨inj_of_bla begin 
   assume x hx,
   have : ∀ f ∈ L, ∃ e : ℕ, f ^ e * x = 0 := sorry,
@@ -253,10 +268,13 @@ lemma lemma_standard_covering {R : Type*} [comm_ring R] (L : list R)
     simp only [e, dif_pos hf];
     exact classical.some_spec (this f hf),
   exact missing4 (list.to_finset L) e r x he hr,
-end, begin
+end, λ s j k, ⟨sorry, λ ⟨r, hr⟩, begin
+  rw ← hr,
+  unfold β α,
+  rw sub_eq_zero_iff_eq,
+  
 
-
-end⟩
+end ⟩ ⟩
 
 -- in chris_ring_lemma.lean there is
 -- theorem missing1 [comm_semiring R] (n : ℕ) (f : ℕ → R) (e : ℕ → ℕ) (r : ℕ → R)
