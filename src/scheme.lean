@@ -7,26 +7,13 @@ import localization
 import localization_UMP
 import tag00E0
 import tag00DY
+impoty tag006E -- presheaf of sets
 import Kenny_comm_alg.temp
 
 universes u v 
-/-
-structure ring_morphism {α : Type*} {β : Type*} (Ra : comm_ring α) (Rb : comm_ring β) (f : α → β) :=
-(f_zero : f 0 = 0)
-(f_one : f 1 = 1)
-(f_add : ∀ {a₁ a₂ : α}, f (a₁ + a₂) = f a₁ + f a₂)
-(f_mul : ∀ {a₁ a₂ : α}, f (a₁ * a₂) = f a₁ * f a₂) 
--/
+
 local attribute [class] topological_space.is_open 
 
-structure presheaf_of_types (α : Type*) [T : topological_space α] := 
-(F : Π U : set α, T.is_open U → Type*)
-(res : ∀ (U V : set α) (OU : T.is_open U) (OV : T.is_open V) (H : V ⊆ U), 
-  (F U OU) → (F V OV))
-(Hid : ∀ (U : set α) (OU : T.is_open U), (res U U OU _ (set.subset.refl U)) = id)  
-(Hcomp : ∀ (U V W : set α) (OU : T.is_open U) (OV : T.is_open V) (OW : T.is_open W)
-  (HUV : V ⊆ U) (HVW : W ⊆ V),
-  (res U W OU OW (set.subset.trans HVW HUV)) = (res V W OV _ HVW) ∘ (res U V _ _ HUV) )
 
 structure presheaf_of_rings (α : Type*) [T : topological_space α] extends presheaf_of_types α :=
 (Fring : ∀ U OU, comm_ring (F U OU))
@@ -107,45 +94,11 @@ definition presheaf_of_rings_pullback_under_open_immersion
     (set.image_subset f H2),
   .. presheaf_of_types_pullback_under_open_immersion PR.to_presheaf_of_types f H }
 
-structure morphism_of_presheaves_of_types {α : Type*} [Tα : topological_space α] 
-  (FPT : presheaf_of_types α) (GPT : presheaf_of_types α) :=
-(morphism : ∀ U : set α, ∀ HU : Tα.is_open U, (FPT.F U HU) → GPT.F U HU)
-(commutes : ∀ U V : set α, ∀ HU : Tα.is_open U, ∀ HV : Tα.is_open V, ∀ Hsub : V ⊆ U,
-  (GPT.res U V HU HV Hsub) ∘ (morphism U HU) = (morphism V HV) ∘ (FPT.res U V HU HV Hsub))
-
 structure morphism_of_presheaves_of_rings {α : Type*} [Tα : topological_space α]
   (FPR : presheaf_of_rings α) (GPR : presheaf_of_rings α) :=
 (morphism : morphism_of_presheaves_of_types FPR.to_presheaf_of_types GPR.to_presheaf_of_types)
 (ring_homs : ∀ U : set α, ∀ HU : is_open U, 
   @is_ring_hom _ _ (FPR.Fring U HU) (GPR.Fring U HU) (morphism.morphism U HU))
-
-def composition_of_morphisms_of_presheaves_of_types {α : Type*} [Tα : topological_space α]
-  {FPT GPT HPT : presheaf_of_types α} (fg : morphism_of_presheaves_of_types FPT GPT)
-  (gh : morphism_of_presheaves_of_types GPT HPT) :
-morphism_of_presheaves_of_types FPT HPT :=
-{ morphism := λ U HU, gh.morphism U HU ∘ fg.morphism U HU,
-  commutes := λ U V HU HV Hsub, begin
-    show (HPT.res U V HU HV Hsub ∘ gh.morphism U HU) ∘ fg.morphism U HU =
-    gh.morphism V HV ∘ (fg.morphism V HV ∘ FPT.res U V HU HV Hsub),
-    rw gh.commutes U V HU HV Hsub,
-    rw ←fg.commutes U V HU HV Hsub,
-  end }
-
-def is_identity_morphism_of_presheaves_of_types {α : Type*} [Tα : topological_space α]
-  {FPT : presheaf_of_types α} (phi: morphism_of_presheaves_of_types FPT FPT) :=
-  ∀ (U : set α) (OU : Tα.is_open U), phi.morphism U OU = id
-
-def is_isomorphism_of_presheaves_of_types {α : Type*} [Tα : topological_space α]
-  {FPT : presheaf_of_types α} {GPT : presheaf_of_types α} (phi: morphism_of_presheaves_of_types FPT GPT) :=
-  ∃ psi : morphism_of_presheaves_of_types GPT FPT, 
-  is_identity_morphism_of_presheaves_of_types (composition_of_morphisms_of_presheaves_of_types phi psi)
-  ∧ is_identity_morphism_of_presheaves_of_types (composition_of_morphisms_of_presheaves_of_types psi phi)
-
-def are_isomorphic_presheaves_of_types {α : Type} [Tα : topological_space α]
-(FPT : presheaf_of_types α) (GPT : presheaf_of_types α) : Prop :=
-∃ (fg : morphism_of_presheaves_of_types FPT GPT) (gf : morphism_of_presheaves_of_types GPT FPT),
-  is_identity_morphism_of_presheaves_of_types (composition_of_morphisms_of_presheaves_of_types fg gf)
-  ∧ is_identity_morphism_of_presheaves_of_types (composition_of_morphisms_of_presheaves_of_types gf fg)
 
 def are_isomorphic_presheaves_of_rings {α : Type} [Tα : topological_space α]
   (FPR : presheaf_of_rings α) (GPR : presheaf_of_rings α) : Prop := 
