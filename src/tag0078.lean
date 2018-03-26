@@ -7,17 +7,17 @@ universe u
 parameters {X : Type u} [TX : topological_space X] (FPT : presheaf_of_types X) (x : X)
 
 -- set Z is pairs (U,s) with U an open in X and x in U and s in FPT.F(U)
-definition stalk.aux :=
-Σ U : {U : set X // x ∈ U ∧ is_open U}, FPT.F U.1 U.2.2
+structure stalk.aux :=
+(U : set X) (Hx : x ∈ U) (HU : TX.is_open U) (s : FPT.F U HU)
 
 -- equiv reln on Z : (U,s) tilde (V,t) iff there exists W open 
 -- such that x in W, W in U, W in V, and FPT.res (U to W) s = FPT.res (V to W) t
 instance stalk.setoid : setoid stalk.aux :=
-{ r := λ Us Vt, ∃ W (H1 : is_open W) (H2 : x ∈ W) (H3 : W ⊆ Us.1.1) (H4 : W ⊆ Vt.1.1),
-    FPT.res Us.1.1 W Us.1.2.2 H1 H3 Us.2 = FPT.res Vt.1.1 W Vt.1.2.2 H1 H4 Vt.2,
-  iseqv := ⟨λ ⟨⟨U, HU1, HU2⟩, s⟩, ⟨U, HU2, HU1, set.subset.refl _, set.subset.refl _, rfl⟩,
+{ r := λ Us Vt, ∃ W (H1 : is_open W) (H2 : x ∈ W) (H3 : W ⊆ Us.U) (H4 : W ⊆ Vt.U),
+    FPT.res Us.U W Us.HU H1 H3 Us.s = FPT.res Vt.U W Vt.HU H1 H4 Vt.s,
+  iseqv := ⟨λ ⟨U, HU1, HU2, s⟩, ⟨U, HU2, HU1, set.subset.refl _, set.subset.refl _, rfl⟩,
     λ Us Vt ⟨W, H1, H2, H3, H4, H5⟩, ⟨W, H1, H2, H4, H3, H5.symm⟩,
-    λ ⟨⟨U, HU1, HU2⟩, s⟩ ⟨⟨V, HV1, HV2⟩, t⟩ ⟨⟨W, HW1, HW2⟩, u⟩ ⟨W1, H1, H2, H3, H4, H5⟩ ⟨W2, H6, H7, H8, H9, H0⟩,
+    λ ⟨U, HU1, HU2, s⟩ ⟨V, HV1, HV2, t⟩ ⟨W, HW1, HW2, u⟩ ⟨W1, H1, H2, H3, H4, H5⟩ ⟨W2, H6, H7, H8, H9, H0⟩,
     ⟨W1 ∩ W2, is_open_inter H1 H6, ⟨H2, H7⟩, λ z hz, H3 hz.1, λ z hz, H9 hz.2,
     have h1 : _ := FPT.Hcomp U W1 (W1 ∩ W2) HU2 H1 (is_open_inter H1 H6) H3 (set.inter_subset_left _ _),
     have h2 : _ := FPT.Hcomp V W1 (W1 ∩ W2) HV2 H1 (is_open_inter H1 H6) H4 (set.inter_subset_left _ _),
