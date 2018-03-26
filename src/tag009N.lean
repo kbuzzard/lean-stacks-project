@@ -50,6 +50,8 @@ end
    (basis_element_is_open HB BV) (basis_element_is_open HB BW)
  }
 
+#check presheaf_on_basis_stalk
+
 definition extend_off_basis {X : Type*} [T : topological_space X] {B : set (set X)} 
   {HB : topological_space.is_topological_basis B} (FB : presheaf_of_types_on_basis HB)
   (HF : is_sheaf_of_types_on_basis FB)
