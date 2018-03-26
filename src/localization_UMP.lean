@@ -131,7 +131,12 @@ localization.away.extend_map_of_im_unit (localization.of_comm_ring R _) $
 
 theorem loc_commutes (f g r : α) : 
   localize_more_left f g (localization.of_comm_ring α (powers f) r) =
-   localize_more_right f g (localization.of_comm_ring α (powers g) r) := sorry 
+  localize_more_right f g (localization.of_comm_ring α (powers g) r) :=
+begin
+  dsimp [localize_more_left, localize_more_right],
+  rw away.extend_map_extends,
+  rw away.extend_map_extends
+end
 
 
 
