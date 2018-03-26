@@ -1,0 +1,20 @@
+009L input is:
+
+  (∀ U : set X, ∀ BU : B U,
+  ∀ γ : Type*, fintype γ → -- note fintype here
+  ∀ Ui : γ → set X,
+  ∀ BUi :  ∀ i : γ, B (Ui i),
+  ∀ Hcover: (⋃ (i : γ), (Ui i)) = U,
+  sheaf_property HB FPTB Hstandard U BU γ Ui BUi Hcover)
+
+
+-- In practice,
+
+-- U = Spec(R)
+-- BU is true by definition
+-- gamma is a fintype
+-- Ui and BUi are a map gamma -> R
+-- Hcover is equivalence to "the ideal generated (or spanned)
+--   by the image of gamma is the whole ring"
+-- sheaf_property blah is the assertion that the sequence
+-- 0 -> R -> prod_{i in gamma} R[1/f_i] -> prod_{i,j}... is exact
