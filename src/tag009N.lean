@@ -59,7 +59,7 @@ definition extend_off_basis {X : Type*} [T : topological_space X] {B : set (set 
   { F := λ U OU, { s : Π (x ∈ U), presheaf_on_basis_stalk FB x //
       -- s is locally a section -- condition (*) of tag 009M
       ∀ (x ∈ U), ∃ (V : set X) ( BV : V ∈ B) (Hx : x ∈ V) (sigma : FB.F BV), 
-        ∀ (y ∈ U ∩ V), s y = ⟦(sigma)⟧ 
+        ∀ (y ∈ U ∩ V), s y = λ _,⟦{U := V, BU := BV, Hx := H.2, s := sigma}⟧  
 
     },
     res := _,
