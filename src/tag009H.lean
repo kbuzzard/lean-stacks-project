@@ -7,18 +7,22 @@ import tag009I
 
 section presheaf_on_basis_stalk 
 
-parameters {X : Type*} [TX : topological_space X] 
+structure presheaf_on_basis_stalk.aux 
+{X : Type*} [TX : topological_space X] 
   {B : set (set X)}
   {HB : topological_space.is_topological_basis B}
-  (FPTB : presheaf_of_types_on_basis HB) (x : X)
-
-structure presheaf_on_basis_stalk.aux :=
+  (FPTB : presheaf_of_types_on_basis HB) (x : X) :=
 (U : set X)
 (BU : U ∈ B)
 (Hx : x ∈ U)
 (s : FPTB.F BU)
 
-instance presheaf_on_basis_stalk.setoid : setoid presheaf_on_basis_stalk.aux :=
+instance presheaf_on_basis_stalk.setoid 
+{X : Type*} [TX : topological_space X] 
+  {B : set (set X)}
+  {HB : topological_space.is_topological_basis B}
+  (FPTB : presheaf_of_types_on_basis HB) (x : X) :
+   setoid (presheaf_on_basis_stalk.aux FPTB x) :=
 { r := λ Us Vt, ∃ (W : set X) (Hx : x ∈ W) (BW : W ∈ B) (HWU : W ⊆ Us.U) (HWV : W ⊆ Vt.U), 
    FPTB.res Us.BU BW HWU Us.s = FPTB.res Vt.BU BW HWV Vt.s,
   iseqv := ⟨
@@ -47,7 +51,7 @@ definition presheaf_on_basis_stalk {X : Type*} [TX : topological_space X]
   {B : set (set X)}
   {HB : topological_space.is_topological_basis B}
   (FPTB : presheaf_of_types_on_basis HB) (x : X) : Type* :=
-quotient presheaf_on_basis_stalk.setoid
+quotient (presheaf_on_basis_stalk.setoid FPTB x)
 -- 
 -- set Z is pairs (U,s) with U in B and x in U and s in FPTB.F(U)
 -- equiv reln on Z : (U,s) tilde (V,t) iff there exists W in B 
@@ -57,3 +61,5 @@ quotient presheaf_on_basis_stalk.setoid
 -- Will need this for transitivity
 
 end presheaf_on_basis_stalk
+
+
