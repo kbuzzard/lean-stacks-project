@@ -54,7 +54,12 @@ definition extend_off_basis {X : Type*} [T : topological_space X] {B : set (set 
   {HB : topological_space.is_topological_basis B} (FB : presheaf_of_types_on_basis HB)
   (HF : is_sheaf_of_types_on_basis FB)
   : presheaf_of_types X := 
-  { F := λ U OU,{ s : Π (x : U), presheaf_on_basis_stalk FB x // locally a section},
+  { F := λ U OU, { s : Π (x ∈ U), presheaf_on_basis_stalk FB x //
+      -- s is locally a section -- condition (*) of tag 009M
+      ∀ (x ∈ U), ∃ (V : set X) ( BV : V ∈ B) (Hx : x ∈ V) (sigma : FB.F BV), 
+        ∀ (y ∈ U ∩ V), s y = ⟦(sigma)⟧ 
+
+    },
     res := _,
     Hid := _,
     Hcomp := _
