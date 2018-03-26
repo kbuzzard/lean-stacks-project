@@ -12,9 +12,22 @@ parameters {X : Type*} [TX : topological_space X]
   {HB : topological_space.is_topological_basis B}
   (FPTB : presheaf_of_types_on_basis HB) (x : X)
 
+structure presheaf_on_basis_stalk.aux :=
+(U : set X)
+(BU : U ∈ B)
+(Hx : x ∈ U)
+(s : FPTB.F BU)
 
-definition presheaf_on_basis_stalk.aux :=
-Σ U : {U : set X // x ∈ U ∧ U ∈ B}, FPTB.F U.2.2
+instance presheaf_on_basis_stalk.setoid : setoid presheaf_on_basis_stalk.aux :=
+{ r := λ Us Vt, ∃ (W : set X) (Hx : x ∈ W) (BW : W ∈ B) (HWU : W ⊆ Us.U) (HWV : W ⊆ Vt.U), 
+   FPTB.res Us.BU BW HWU Us.s = FPTB.res Vt.BU BW HWV Vt.s,
+  iseqv := ⟨
+    -- reflexive
+    λ Us,⟨Us.U,Us.Hx,Us.BU,set.subset.refl _,set.subset.refl _,rfl⟩,
+    -- symmetric
+    λ ⟨U,BU,Hx,s⟩ ⟨V,BV,HVx,t⟩ H,_
+    ,_⟩
+}
 
 definition presheaf_on_basis_stalk {X : Type*} [TX : topological_space X] 
   {B : set (set X)}

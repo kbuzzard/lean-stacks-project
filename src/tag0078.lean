@@ -10,7 +10,6 @@ parameters {X : Type u} [TX : topological_space X] (FPT : presheaf_of_types X) (
 definition stalk.aux :=
 Σ U : {U : set X // x ∈ U ∧ is_open U}, FPT.F U.1 U.2.2
 
-definition test := Σ (U : set X) (Hx : x ∈ U) (OU : is_open U), FPT.F U OU
 -- equiv reln on Z : (U,s) tilde (V,t) iff there exists W open 
 -- such that x in W, W in U, W in V, and FPT.res (U to W) s = FPT.res (V to W) t
 instance stalk.setoid : setoid stalk.aux :=
