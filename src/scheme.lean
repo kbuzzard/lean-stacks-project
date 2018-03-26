@@ -7,7 +7,7 @@ import localization
 import localization_UMP
 import tag00E0
 import tag00DY
-impoty tag006E -- presheaf of sets
+import tag006E -- presheaf of sets
 import Kenny_comm_alg.temp
 
 universes u v 
