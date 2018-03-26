@@ -118,7 +118,10 @@ as required.  There the sequence is exact.
 
 import Kenny_comm_alg.Zariski localization_UMP
 import Kenny_comm_alg.ideal_operations
+import massot_indexed_products
 import chris_ring_lemma
+import data.fintype
+local attribute [instance] classical.prop_decidable
 
 universe u
 local infix ` ^ ` := monoid.pow 
@@ -161,33 +164,73 @@ begin
 
 -/
 
-lemma generate_eq_span {R : Type} [comm_ring R] : ∀ S : set R, generate S = span S := 
-begin
-  intro S,
-  apply set.eq_of_subset_of_subset,
-  { 
-    intros a H,
-    apply H (span S),
-    exact subset_span
-  },
-  { apply span_minimal (generate.is_ideal _) (subset_generate _)
-  }
-end 
-
-lemma generate_1_of_generate_univ {R : Type} [comm_ring R] (S : set R) :
-  generate S = set.univ → ∃ f : lc R R, (∀ x : R, x ∉ S → f x = 0) ∧ 1 = finsupp.sum f (λ r s : R, s * r) := 
-  begin
-  intro H,
-  rw generate_eq_span at H,
-  suffices H2 : (1 : R) ∈ span S,
-    exact H2,
-  simp [H],
-  end 
-
-#print nat.no_confusion_type
+-- TODO (KB) Get chris proof in here. This will tell me how to use generate v span
 
 
-lemma lemma_standard_covering {R : Type} [comm_ring R] (L : list R) 
+-- Should we be using a list?
+
+#check generate
+#check span 
+
+-- TODO (Kenny?)
+lemma generate_eq_span {R : Type*} [comm_ring R] (S : set R) : generate S = span S := sorry 
+
+section
+variables {α : Type*} {β : Type*} [rα : comm_ring α] [rβ : comm_ring β]
+include rα rβ
+
+lemma inj_of_bla {f : α → β} [hf : is_ring_hom f] (h : ∀ {x}, f x = 0 → x = 0) : function.injective f := 
+λ x y hxy, by rw [← sub_eq_zero_iff_eq, ← is_ring_hom.map_sub f] at hxy;
+  exact sub_eq_zero_iff_eq.1 (h hxy)
+
+instance indexed_product.is_ring_hom {I : Type*} {f : I → Type*} [∀ i : I, comm_ring (f i)]
+(g : α → Π i : I, f i) [rh : ∀ i : I, is_ring_hom (λ a : α, g a i)] : is_ring_hom g :=
+{ map_add := λ x y, funext $ λ i, @is_ring_hom.map_add _ _ _ _ _ (rh i) x y,
+  map_mul := λ x y, funext $ λ i, @is_ring_hom.map_mul _ _ _ _ _ (rh i) x y,
+  map_one := funext $ λ i, @is_ring_hom.map_one _ _ _ _ _ (rh i) }
+end
+
+open finset
+#print span
+#print lc.is_linear_map_sum
+lemma span_finset {α β : Type*} {x : β} [ring α] [module α β] {s : finset β} 
+    (h : x ∈ span {x : β | x ∈ s}) :
+    ∃ r : β → α, s.sum (λ y, r y • y) = x :=
+let ⟨r, hr⟩ := h in
+have h₁ : r.support ⊆ s := λ x hx, by_contradiction (λ h₁, ((finsupp.mem_support_iff r _).1 hx) (hr.1 _ h₁)),
+have h₂ : sum (s \ r.support) (λ y, r y • y) = 0 := begin 
+  rw ← @finset.sum_const_zero _ _ (s \ r.support),
+  refine finset.sum_congr rfl _,
+  assume x hx,
+  rw [mem_sdiff, finsupp.mem_support_iff, ne.def, not_not] at hx,
+  simp [hx.2],
+end,
+⟨r, by rw [hr.2, ← finset.sum_sdiff h₁, h₂, zero_add]; refl⟩
+
+theorem missing3 {R : Type*} [comm_semiring R] (L : finset R) (e : R → ℕ) 
+    (r : R → R) (s : R) : L ≠ ∅ → (∀ {f} (hfL : f ∈ L), f ^ (e f) * s = 0) →
+    L.sum (λ x, r x * x) ^ L.sum e * s = 0 :=
+finset.induction_on L (by simp) $ λ a L has hi _ hf, or.by_cases (classical.em (L = ∅)) 
+(λ h, by simp [h, mul_pow, mul_assoc, hf (mem_insert_self a _)]) $ λ h, begin
+  rw [sum_insert has, sum_insert has, add_pow, sum_mul, ← @sum_const_zero _ _ (range (nat.succ (e a + sum L e)))],
+  refine finset.sum_congr rfl (λ m hm, _),
+  cases le_total m (e a) with hm' hm',
+  { rw [add_comm (e a), nat.add_sub_assoc hm', _root_.pow_add],
+    simp only [mul_assoc, mul_left_comm (sum L (λ (x : R), r x * x) ^ sum L e)],
+    simp [hi h (λ f h, hf (mem_insert_of_mem h))] },
+  { rw [← nat.add_sub_cancel' hm', _root_.pow_add, mul_pow],
+    simp only [mul_assoc, mul_left_comm (a ^ e a)],
+    simp [hf (mem_insert_self a _)] }
+end
+
+theorem missing4 {R : Type*} [comm_semiring R] (L : finset R) (e : R → ℕ)
+    (r : R → R) (s : R) (hf : ∀ {f} (hfL : f ∈ L), f ^ (e f) * s = 0)
+    (hL : L.sum (λ x, r x * x) = 1) : s = 0 :=
+or.by_cases (classical.em (L = ∅)) (λ h, by simp [h] at *; rw [← mul_one s, ← hL, mul_zero]) $ λ h,
+by have := missing3 L e r s h @hf;
+  rwa [hL, one_pow, one_mul] at this
+
+lemma lemma_standard_covering {R : Type*} [comm_ring R] (L : list R) 
 (H : (1:R) ∈ generate {x : R | x ∈ L}) :
   let n := list.length L in 
   let f := λ i : fin n, list.nth_le L i.val i.is_lt in
@@ -198,20 +241,35 @@ lemma lemma_standard_covering {R : Type} [comm_ring R] (L : list R)
         := λ r, λ j k, localise_more_left (f j) (f k) (r j) - localise_more_right (f j) (f k) (r k) in
   function.injective α ∧ -- image of α is kernel of β (as maps of abelian groups or R-mods)
     ∀ s : (Π (i : fin n), localization.loc R (powers (f i))), ∀ j k, β s j k = 0 ↔ ∃ r : R, α r = s :=
-    sorry 
+⟨inj_of_bla begin 
+  assume x hx,
+  have : ∀ f ∈ L, ∃ e : ℕ, f ^ e * x = 0 := sorry,
+  let e : R → ℕ := λ f, if h : f ∈ L then classical.some (this f h) else 0,
+  have hL : {x : R | x ∈ L} = {x : R | x ∈ list.to_finset L} := set.ext (λ y, by simp),
+  rw [generate_eq_span, hL] at H,
+  cases span_finset H with r hr,
+  have he : ∀ f : R, f ∈ list.to_finset L → f ^ e f * x = 0 := λ f hf,
+    by rw list.mem_to_finset at hf;
+    simp only [e, dif_pos hf];
+    exact classical.some_spec (this f hf),
+  exact missing4 (list.to_finset L) e r x he hr,
+end, begin
+
+
+end⟩
 
 -- in chris_ring_lemma.lean there is
--- theorem missing1 [comm_semiring α] (n : ℕ) (f : ℕ → α) (e : ℕ → ℕ) (r : ℕ → α)
---     (s : α) : (∀ i : ℕ, i < n → (f i) ^ (e i) * s = 0) → 
+-- theorem missing1 [comm_semiring R] (n : ℕ) (f : ℕ → R) (e : ℕ → ℕ) (r : ℕ → R)
+--     (s : R) : (∀ i : ℕ, i < n → (f i) ^ (e i) * s = 0) → 
 --     sum (range n) (λ i, f i * r i) = 1 → s = 0 
 
-theorem T (p q r : Prop) : p ∧ (q ∨ r) ↔ (p ∧ q) ∨ (p ∧ r) := 
-begin
-cases (classical.em p);cases (classical.em q);cases (classical.em r);simp [*],
-end
+/-
+#check @or.rec -- dammit, or only eliminates to prop
+open finset
+example (R : Type) [comm_ring R] (n : ℕ) (a : fin n → R) (e : fin n → ℕ)
+(r : R) (H : ∀ i : fin n, (a i) ^ (e i) * r = 0) :
+(sum (univ) a) ^ (sum (univ) e) * r = 0 := missing1 n (λ i, or.elim (decidable.em (i < n)) (λ h, a ⟨i,h⟩) (λ h, 0))
+(λ i, _) (λ i, _) _ r _
 
-theorem T' (p q r : Prop) : p ∧ (q ∨ r) ↔ (p ∧ q) ∨ (p ∧ r) := 
-and_or_distrib_left
-
-#print axioms T 
-#print axioms T'
+KB was working on this but now I have to do admin
+-/
