@@ -5,6 +5,17 @@ import tag009I
 
 -- definition after 6.30.1 and before 6.30.2
 
+section presheaf_on_basis_stalk 
+
+parameters {X : Type*} [TX : topological_space X] 
+  {B : set (set X)}
+  {HB : topological_space.is_topological_basis B}
+  (FPTB : presheaf_of_types_on_basis HB) (x : X)
+
+
+definition presheaf_on_basis_stalk.aux :=
+Σ U : {U : set X // x ∈ U ∧ U ∈ B}, FPTB.F U.2.2
+
 definition presheaf_on_basis_stalk {X : Type*} [TX : topological_space X] 
   {B : set (set X)}
   {HB : topological_space.is_topological_basis B}
