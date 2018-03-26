@@ -210,4 +210,8 @@ begin
 cases (classical.em p);cases (classical.em q);cases (classical.em r);simp [*],
 end
 
+theorem T' (p q r : Prop) : p ∧ (q ∨ r) ↔ (p ∧ q) ∨ (p ∧ r) := 
+and_or_distrib_left
+
 #print axioms T 
+#print axioms T'
