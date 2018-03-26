@@ -118,4 +118,21 @@ from calc f ⟦(1, ⟨s, hs⟩)⟧
     ... = g ⟦(1, ⟨s, hs⟩)⟧ : by simp [is_ring_hom.map_one f],
 by rw [← mul_inv_denom, is_ring_hom.map_mul f, is_ring_hom.map_mul g, H, h1]
 
+
+noncomputable def localize_more_left {R : Type u} [comm_ring R] (f g) : 
+  localization.loc R (powers f) → localization.loc R (powers (f * g)) :=
+localization.away.extend_map_of_im_unit (localization.of_comm_ring R _) $
+⟨⟦⟨g, f * g, 1, by simp⟩⟧, by simp [localization.of_comm_ring, localization.mk_eq, localization.mul_frac]⟩
+
+noncomputable def localize_more_right {R : Type u} [comm_ring R] (f g) :
+  localization.loc R (powers g) → localization.loc R (powers (f * g)) :=
+localization.away.extend_map_of_im_unit (localization.of_comm_ring R _) $
+⟨⟦⟨f, f * g, 1, by simp⟩⟧, by simp [localization.of_comm_ring, localization.mk_eq, localization.mul_frac, mul_comm]⟩
+
+theorem loc_commutes (f g r : α) : 
+  localize_more_left f g (localization.of_comm_ring α (powers f) r) =
+   localize_more_right f g (localization.of_comm_ring α (powers g) r) := sorry 
+
+
+
 end localization
