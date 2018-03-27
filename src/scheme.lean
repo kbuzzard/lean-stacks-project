@@ -178,26 +178,26 @@ instance canonical_map.is_ring_hom {R : Type*} [comm_ring R] (g : R) (u : X R) (
 localization.away.extend_map_of_im_unit.is_ring_hom _ _
 
 theorem canonical_map.canonical_left {R : Type*} [comm_ring R] (g h : R) (Q : X R) (H : Q ∈ Spec.D' (g * h)) :
-  ∀ x, canonical_map (g * h) Q H (localise_more_left g h x) = canonical_map g Q (mt (@@is_ideal.mul_right _ Q.2.1.1) H) x :=
+  ∀ x, canonical_map (g * h) Q H (localization.localize_more_left g h x) = canonical_map g Q (mt (@@is_ideal.mul_right _ Q.2.1.1) H) x :=
 congr_fun $ @@localization.away.extension_unique _ _
   (@@localization.of_comm_ring R _ (set.compl (Q.val)) (@canonical_map._proof_4 R _inst_1 Q)) _
   (canonical_map._proof_6 g Q (mt (@@is_ideal.mul_right _ Q.2.1.1) H))
   (localization.away.extend_map_of_im_unit (@@localization.of_comm_ring R _ (set.compl (Q.val)) (@canonical_map._proof_4 R _inst_1 Q))
      (canonical_map._proof_6 (g * h) Q H) ∘
-     localise_more_left g h)
+     localization.localize_more_left g h)
   (@@is_ring_hom.comp _ _ _ _ _ (localization.away.extend_map_of_im_unit.is_ring_hom _ _) (localization.away.extend_map_of_im_unit.is_ring_hom _ _))
-  (λ r, by dsimp; simp [localise_more_left, localization.away.extend_map_extends])
+  (λ r, by dsimp; simp [localization.localize_more_left, localization.away.extend_map_extends])
 
 theorem canonical_map.canonical_right {R : Type*} [comm_ring R] (g h : R) (Q : X R) (H : Q ∈ Spec.D' (g * h)) :
-  ∀ x, canonical_map (g * h) Q H (localise_more_right g h x) = canonical_map h Q (mt (@@is_ideal.mul_left _ Q.2.1.1) H) x :=
+  ∀ x, canonical_map (g * h) Q H (localization.localize_more_right g h x) = canonical_map h Q (mt (@@is_ideal.mul_left _ Q.2.1.1) H) x :=
 congr_fun $ @@localization.away.extension_unique _ _
   (@@localization.of_comm_ring R _ (set.compl (Q.val)) (@canonical_map._proof_4 R _inst_1 Q)) _
   (canonical_map._proof_6 h Q (mt (@@is_ideal.mul_left _ Q.2.1.1) H))
   (localization.away.extend_map_of_im_unit (@@localization.of_comm_ring R _ (set.compl (Q.val)) (@canonical_map._proof_4 R _inst_1 Q))
      (canonical_map._proof_6 (g * h) Q H) ∘
-     localise_more_right g h)
+     localization.localize_more_right g h)
   (@@is_ring_hom.comp _ _ _ _ _ (localization.away.extend_map_of_im_unit.is_ring_hom _ _) (localization.away.extend_map_of_im_unit.is_ring_hom _ _))
-  (λ r, by dsimp; simp [localise_more_right, localization.away.extend_map_extends])
+  (λ r, by dsimp; simp [localization.localize_more_right, localization.away.extend_map_extends])
  
 local attribute [instance] localization.away.extend_map_of_im_unit.is_ring_hom
 
@@ -231,7 +231,7 @@ definition structure_presheaf_of_types_on_affine_scheme (R : Type*) [comm_ring R
     split,
     { exact H4 },
     { -- r in R[1/g] but I need it in R[1/gh]
-      existsi (localise_more_left g h r),
+      existsi (localization.localize_more_left g h r),
       intros Q HQ H2,
       -- Hr is the assertion that f is on both sides
       -- and this should boil down to f(Q) = f(Q)
@@ -260,7 +260,7 @@ instance structure_presheaf_value_has_add {R : Type*} [comm_ring R] (U : set (X 
  ⟨g₁ * g₂,
   by rw tag00E0.lemma15; exact ⟨h1, h4⟩,
   by rw tag00E0.lemma15; exact λ z hz, h2 hz.1,
-  localise_more_left _ _ r₁ + localise_more_right _ _ r₂,
+  localization.localize_more_left _ _ r₁ + localization.localize_more_right _ _ r₂,
   λ Q HQQ H2, begin
     have H3 := H2,
     rw tag00E0.lemma15 at H2,
@@ -288,7 +288,7 @@ instance structure_presheaf_value_has_mul {R : Type*} [comm_ring R] (U : set (X 
  ⟨g₁ * g₂,
   by rw tag00E0.lemma15; exact ⟨h1, h4⟩,
   by rw tag00E0.lemma15; exact λ z hz, h2 hz.1,
-  localise_more_left _ _ r₁ * localise_more_right _ _ r₂,
+  localization.localize_more_left _ _ r₁ * localization.localize_more_right _ _ r₂,
   λ Q HQQ H2, begin
     have H3 := H2,
     rw tag00E0.lemma15 at H2,

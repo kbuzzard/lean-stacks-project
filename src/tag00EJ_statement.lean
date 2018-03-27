@@ -126,9 +126,6 @@ local attribute [instance] classical.prop_decidable
 universe u
 local infix ` ^ ` := monoid.pow 
 
-
--- TODO -- ask Kenny where these two defs should be moved to.
-
 /- we no longer need this
 
 theorem weak_binomial {R : Type u} [comm_ring R] (m n : nat) (x y : R) :
