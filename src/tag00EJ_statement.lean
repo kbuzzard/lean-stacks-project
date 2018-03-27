@@ -164,16 +164,9 @@ begin
 
 -- TODO (Kenny?)
 lemma generate_eq_span {R : Type*} [comm_ring R] (S : set R) : generate S = span S := 
-begin
-  apply set.eq_of_subset_of_subset,
-  { 
-    intros a H,
-    apply H (span S),
-    exact subset_span
-  },
-  { apply span_minimal (generate.is_ideal _) (subset_generate _)
-  }
-end 
+set.eq_of_subset_of_subset (λ a H, H (span S) subset_span) (span_minimal (generate.is_ideal _) 
+(subset_generate _))
+
 
 section
 variables {α : Type*} [rα : comm_ring α]
@@ -229,18 +222,18 @@ by have := missing3 L e r s h @hf;
   rwa [hL, one_pow, one_mul] at this
 
 variables {R : Type*} [comm_ring R] (L : list R)
-
+open localization
 private def f (i : fin L.length) := list.nth_le L i.1 i.2
 
-private def α (x : R) : Π i : fin L.length, localization.loc R (powers (f L i)) :=
-  λ i, localization.of_comm_ring R _ x
+private def α (x : R) : Π i : fin L.length, loc R (powers (f L i)) :=
+  λ i, of_comm_ring R _ x
 
-private noncomputable def β (r : Π i : fin L.length, localization.loc R (powers (f L i))) (j k : fin L.length) :
-    localization.loc R (powers (f L j * f L k)) :=
-localization.localize_more_left (f L j) (f L k) (r j) - localization.localize_more_right (f L j) (f L k) (r k)
+private noncomputable def β (r : Π i : fin L.length, loc R (powers (f L i))) (j k : fin L.length) :
+    loc R (powers (f L j * f L k)) :=
+localize_more_left (f L j) (f L k) (r j) - localize_more_right (f L j) (f L k) (r k)
 
-lemma lemma_00EJ_missing (r : R) (j k : fin L.length) : localization.localize_more_left (f L j) (f L k) (localization.of_comm_ring R (powers (f j)) r) =
-    localization.localize_more_right (f L j) (f L k) (localization.of_comm_ring R (powers (f L k)) r) := sorry
+lemma lemma_00EJ_missing (r : R) (j k : fin L.length) : localize_more_left (f L j) (f L k) (of_comm_ring R (powers (f L j)) r) =
+    localize_more_right (f L j) (f L k) (of_comm_ring R (powers (f L k)) r) := sorry
 
 #check lemma_00EJ_missing
 
@@ -254,12 +247,10 @@ begin
   replace hx := congr_fun hx,
   have : ∀ f' ∈ L, ∃ e : ℕ, f' ^ e * x = 0 := λ f' hf', begin
     have := hx ⟨list.index_of f' L, list.index_of_lt_length.2 hf'⟩,
-    simp [α, localization.of_comm_ring] at this,
-    have := quotient.eq.1 this,
-    rcases this with ⟨r, hr₁, hr₂⟩,
+    rcases (quotient.eq.1 this) with ⟨r, hr₁, hr₂⟩,
     cases hr₁ with e he,
     simp [f] at he hr₂,
-    exact ⟨e,
+    exact ⟨e, by rwa [mul_comm, he]⟩
   end,
   let e : R → ℕ := λ f', if h : f' ∈ L then classical.some (this f' h) else 0,
   have hL : {x : R | x ∈ L} = {x : R | x ∈ list.to_finset L} := set.ext (λ y, by simp),
@@ -271,18 +262,17 @@ begin
     exact classical.some_spec (this f' hf),
   exact missing4 (list.to_finset L) e r x he hr
 end, λ s j k, ⟨λ h, begin
-  let x := λ i : fin L.length, quotient.out (s i),
-  rw [← quotient.out_eq (0 : localization.loc R (powers (f L j * f L k))),
-    ← quotient.out_eq (β _ _ _ _), quotient.eq] at h,
+  unfold β at h,
+  rw sub_eq_zero_iff_eq at h,
+  rw [← quotient.out_eq (localize_more_left _ _ _),
+      ← quotient.out_eq (localize_more_right _ _ _), quotient.eq] at h,
   rcases h with ⟨e, he, hne⟩,
   cases he with n hn,
 
   unfold β at h,
 end,
-  
-
-sorry ⟩ ⟩ 
-#print quotient.exact
+λ ⟨r, hr⟩, hr ▸ sub_eq_zero_iff_eq.2 $ localization.loc_commutes _ _ _ ⟩ ⟩ 
+#print list 
 -- in chris_ring_lemma.lean there is
 -- theorem missing1 [comm_semiring R] (n : ℕ) (f : ℕ → R) (e : ℕ → ℕ) (r : ℕ → R)
 --     (s : R) : (∀ i : ℕ, i < n → (f i) ^ (e i) * s = 0) → 
