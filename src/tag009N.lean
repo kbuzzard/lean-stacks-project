@@ -60,22 +60,11 @@ definition extend_off_basis {X : Type*} [T : topological_space X] {B : set (set 
       -- s is locally a section -- condition (*) of tag 009M
       ∀ (x ∈ U), ∃ (V : set X) ( BV : V ∈ B) (Hx : x ∈ V) (sigma : FB.F BV), 
         ∀ (y ∈ U ∩ V), s y = λ _,⟦{U := V, BU := BV, Hx := H.2, s := sigma}⟧  
-
     },
-    res := λ U W OU OW HWU ⟨s,Hs⟩,⟨λ x Hx,s x (HWU Hx),λ x Hx,
-    let ⟨V,BV,Hx,sigma,H4⟩ := Hs x (HWU Hx) in ⟨V,BV,Hx,sigma,λ y Hy,by rw H4 y ⟨HWU Hy.1,Hy.2⟩⟩⟩, -- is this bad?
-    Hid := λ U HU,funext (λ x,subtype.eq (funext (λ y,begin
-    have s := x.val,
-    show (extend_off_basis._match_2 FB U U _ x).val y = x.val y,
-    funext H,
-    simp at x,
-    -- aargh
-    end
-    ))),
-    Hcomp := λ U V W OU Ov OW HUV HVW,_
+    res := _,
+    Hid := _,
+    Hcomp := _
   }
-#check extend_off_basis._match_1
--- (extend_off_basis._match_1 FB U U _ x).val y = (id x).val y
 
 variables {X : Type*} [T : topological_space X] {B : set (set X)} 
   {HB : topological_space.is_topological_basis B} (FB : presheaf_of_types_on_basis HB)
