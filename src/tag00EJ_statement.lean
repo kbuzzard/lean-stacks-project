@@ -156,17 +156,7 @@ begin
 
 
 -- Should we be using a list?
-#print quotient.lift
-#check generate
-#check span 
 open finset nat classical quotient
-example (n : ℕ) : (range (succ n)).sum (λ i, i * i) * 6 = n * (n + 1) * (2 * n + 1) :=
-begin
-  induction n with n hi,
-  refl,
-  rw sum_range_succ,
-  simp only [add_mul, hi, mul_add, succ_eq_add_one], simp, ring,
-end
 
 -- TODO (Kenny?)
 lemma generate_eq_span {R : Type*} [comm_ring R] (S : set R) : generate S = span S := 
