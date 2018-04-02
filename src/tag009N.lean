@@ -81,6 +81,7 @@ variables {X : Type*} [T : topological_space X] {B : set (set X)}
   (HF : is_sheaf_of_types_on_basis FB)
 
 --set_option pp.notation false 
+-- set_option pp.proofs true 
 
 theorem extension_is_sheaf {X : Type*} [T : topological_space X] {B : set (set X)} 
   {HB : topological_space.is_topological_basis B} (FB : presheaf_of_types_on_basis HB)
@@ -139,19 +140,181 @@ theorem extension_is_sheaf {X : Type*} [T : topological_space X] {B : set (set X
         rw HB.2.2,
         exact topological_space.generate_open.basic V BV,
       cases H with W HW,
-      cases HW with HWB H4,
+      cases HW with HWB HW,
       existsi W,
       existsi HWB,
-      existsi H4.1,
+      existsi HW.1,
       cases H3 with sigma Hsigma,
-      existsi FB.res BV HWB (set.subset.trans H4.2 $ set.inter_subset_left _ _) sigma,
+      have HWV := (set.subset.trans HW.2 $ set.inter_subset_left _ _),
+      existsi FB.res BV HWB HWV sigma,
       intros y Hy,
       -- now apply Hsigma
-      admit,
-
+      have Hy2 : y ∈ V ∩ Ui g := HW.2 Hy.2,
+      have Hy3 : y ∈ (Ui g) ∩ V := ⟨Hy2.2,Hy2.1⟩,
+      have H := Hsigma y Hy3,
+      apply funext,
+      intro Hyu,
+      dsimp,
+      /- goal now
+      subtype.rec
+      (λ (Uig : set X) (HUig : ∃ (H : ∃ (i : γ), Uig = Ui i), y ∈ Uig),
+         subtype.rec
+           (λ (H2 : ∃ (i : γ), Uig = Ui i) (HUigx : y ∈ Uig),
+              subtype.rec (λ (g : γ) (Hg : Uig = Ui g), (s.val g).val y _)
+                (classical.indefinite_description (λ (i : γ), Uig = Ui i) H2))
+           (classical.indefinite_description (λ (H : ∃ (i : γ), Uig = Ui i), y ∈ Uig) HUig))
+      (classical.indefinite_description (λ (t : set X), ∃ (H : ∃ (i : γ), t = Ui i), y ∈ t) _) =
+    ⟦{U := W, BU := HWB, Hx := _, s := FB.res BV HWB _ sigma}⟧
+      -/
+      cases (classical.indefinite_description (λ (t : set X), ∃ (H : ∃ (i : γ), t = Ui i), y ∈ t) _) with S HS,
+      dsimp,
+      /- goal now
+      subtype.rec
+      (λ (H2 : ∃ (i : γ), T = Ui i) (HUigx : y ∈ T),
+         subtype.rec (λ (g : γ) (Hg : T = Ui g), (s.val g).val y _)
+           (classical.indefinite_description (λ (i : γ), T = Ui i) H2))
+      (classical.indefinite_description (λ (H : ∃ (i : γ), T = Ui i), y ∈ T) HT) =
+    ⟦{U := W, BU := HWB, Hx := _, s := FB.res BV HWB _ sigma}⟧
+      -/
+      cases (classical.indefinite_description (λ (H : ∃ (i : γ), S = Ui i), y ∈ S) HS) with Hh HyS2,
+      dsimp,
+      /-
+      subtype.rec (λ (g : γ) (Hg : T = Ui g), (s.val g).val y _)
+      (classical.indefinite_description (λ (i : γ), T = Ui i) Hh) =
+    ⟦{U := W, BU := HWB, Hx := _, s := FB.res BV HWB _ sigma}⟧-/
+      cases (classical.indefinite_description (λ (i : γ), S = Ui i) Hh) with h HSUih,
+      dsimp,
+      /-
+      (s.val h).val y _ = ⟦{U := W, BU := HWB, Hx := _, s := FB.res BV HWB _ sigma}⟧
+      -/
+      rw HSUih at HyS2,
+      revert HyS2,
+      intro HyS,
+      suffices : (s.val h).val y HyS = (s.val g).val y Hy2.2,
+        rw this,
+        rw Hsigma y Hy3,
+        apply quotient.sound,
+        existsi W,
+        existsi Hy.2,
+        existsi HWB,
+        existsi HWV,
+        existsi set.subset.refl _,
+        suffices this2 : FB.res _ HWB HWV sigma = FB.res _ HWB _ (FB.res BV HWB HWV sigma),
+        simpa using this2,
+        rw FB.Hid,refl,
+      -- what's left here is (s.val h).val y HyT = (s.val g).val y _
+      have Hy4 : y ∈ Ui g := Hy3.1,
+      show (s.val h).val y HyS = (s.val g).val y Hy4, -- both of type presheaf_on_basis_stalk FB x
+      have H2 := s.property g h,
+      unfold res_to_inter_left at H2,
+      unfold res_to_inter_right at H2,
+      have OUigh : T.is_open (Ui g ∩ Ui h) := T.is_open_inter _ _ (UiO g) (UiO h),
+      have H3 : (s.val g).val y Hy4 = 
+        ((extend_off_basis FB HF).res (Ui g) (Ui g ∩ Ui h) (UiO g) OUigh (set.inter_subset_left _ _) (s.val g)).val y ⟨Hy4,HyS⟩ := rfl,
+      have H4 : (s.val h).val y HyS = 
+        ((extend_off_basis FB HF).res (Ui h) (Ui g ∩ Ui h) (UiO h) OUigh (set.inter_subset_right _ _) (s.val h)).val y ⟨Hy4,HyS⟩ := rfl,
+      rw H3,
+      rw H4,
+      rw H2,
     },
     {
-      admit
+      dsimp,
+      /- goal now
+      gluing (extend_off_basis FB HF) U Ui Hcov
+      ⟨λ (x : X) (HxU : x ∈ U),
+         subtype.rec
+           (λ (Uig : set X) (HUig : ∃ (H : ∃ (i : γ), Uig = Ui i), x ∈ Uig),
+              subtype.rec
+                (λ (H2 : ∃ (i : γ), Uig = Ui i) (HUigx : x ∈ Uig),
+                   subtype.rec (λ (g : γ) (Hg : Uig = Ui g), (s.val g).val x _)
+                     (classical.indefinite_description (λ (i : γ), Uig = Ui i) H2))
+                (classical.indefinite_description (λ (H : ∃ (i : γ), Uig = Ui i), x ∈ Uig) HUig))
+           (classical.indefinite_description (λ (t : set X), ∃ (H : ∃ (i : γ), t = Ui i), x ∈ t) _),
+       _⟩ =
+    s
+    -/
+    unfold gluing,
+
+    apply subtype.eq,
+    dsimp,
+    apply funext,
+    intro i,
+    apply subtype.eq,
+    /- goal now
+     ((extend_off_basis FB HF).res U (Ui i) OU _ _
+       ⟨λ (x : X) (HxU : x ∈ U),
+          subtype.rec
+            (λ (Uig : set X) (HUig : ∃ (H : ∃ (i : γ), Uig = Ui i), x ∈ Uig),
+               subtype.rec
+                 (λ (H2 : ∃ (i : γ), Uig = Ui i) (HUigx : x ∈ Uig),
+                    subtype.rec (λ (g : γ) (Hg : Uig = Ui g), (s.val g).val x _)
+                      (classical.indefinite_description (λ (i : γ), Uig = Ui i) H2))
+                 (classical.indefinite_description (λ (H : ∃ (i : γ), Uig = Ui i), x ∈ Uig) HUig))
+            (classical.indefinite_description (λ (t : set X), ∃ (H : ∃ (i : γ), t = Ui i), x ∈ t) _),
+        _⟩).val =
+    (s.val i).val
+    -/
+    apply funext,
+    intro x,
+    
+    apply funext,
+    intro HxUi,
+    
+    /- goal now
+    ((extend_off_basis FB HF).res U (Ui i) OU _ _
+       ⟨λ (x : X) (HxU : x ∈ U),
+          subtype.rec
+            (λ (Uig : set X) (HUig : ∃ (H : ∃ (i : γ), Uig = Ui i), x ∈ Uig),
+               subtype.rec
+                 (λ (H2 : ∃ (i : γ), Uig = Ui i) (HUigx : x ∈ Uig),
+                    subtype.rec (λ (g : γ) (Hg : Uig = Ui g), (s.val g).val x _)
+                      (classical.indefinite_description (λ (i : γ), Uig = Ui i) H2))
+                 (classical.indefinite_description (λ (H : ∃ (i : γ), Uig = Ui i), x ∈ Uig) HUig))
+            (classical.indefinite_description (λ (t : set X), ∃ (H : ∃ (i : γ), t = Ui i), x ∈ t) _),
+        _⟩).val
+      x
+      HxUi =
+    (s.val i).val x HxUi
+    -/
+    have HxU : x ∈ U := Hcov ▸ (set.subset_Union Ui i) (HxUi),
+    
+    let HHH : presheaf_on_basis_stalk FB x := subtype.rec
+            (λ (Uig : set X) (HUig : ∃ (H : ∃ (i : γ), Uig = Ui i), x ∈ Uig),
+               subtype.rec
+                 (λ (H2 : ∃ (i : γ), Uig = Ui i) (HUigx : x ∈ Uig),
+                    subtype.rec (λ (g : γ) (Hg : Uig = Ui g), (s.val g).val x (Hg ▸ HUigx))
+                      (classical.indefinite_description (λ (i : γ), Uig = Ui i) H2))
+                 (classical.indefinite_description (λ (H : ∃ (i : γ), Uig = Ui i), x ∈ Uig) HUig))
+            (classical.indefinite_description (λ (t : set X), ∃ (H : ∃ (i : γ), t = Ui i), x ∈ t) ⟨Ui i,⟨i,rfl⟩,HxUi⟩),
+
+    suffices : (subtype.rec
+            (λ (Uig : set X) (HUig : ∃ (H : ∃ (i : γ), Uig = Ui i), x ∈ Uig),
+               subtype.rec
+                 (λ (H2 : ∃ (i : γ), Uig = Ui i) (HUigx : x ∈ Uig),
+                    subtype.rec (λ (g : γ) (Hg : Uig = Ui g), (s.val g).val x (Hg ▸ HUigx))
+                      (classical.indefinite_description (λ (i : γ), Uig = Ui i) H2))
+                 (classical.indefinite_description (λ (H : ∃ (i : γ), Uig = Ui i), x ∈ Uig) HUig))
+            (classical.indefinite_description (λ (t : set X), ∃ (H : ∃ (i : γ), t = Ui i), x ∈ t) ⟨Ui i,⟨i,rfl⟩,HxUi⟩) 
+              : presheaf_on_basis_stalk FB x)
+            = (s.val i).val x HxUi,
+      rw ←this,
+      refl,
+    cases (classical.indefinite_description (λ (t : set X), ∃ (H : ∃ (i : γ), t = Ui i), x ∈ t) ⟨Ui i,⟨i,rfl⟩,HxUi⟩) with Uij HUij,
+    dsimp,
+    cases (classical.indefinite_description (λ (H : ∃ (i : γ), Uij = Ui i), x ∈ Uij) HUij) with H2 HxUij,
+    dsimp,
+    cases (classical.indefinite_description (λ (i : γ), Uij = Ui i) H2) with j Hj,
+    dsimp,
+    rw Hj at HxUij,
+    -- HxUi : x in Ui i
+    -- HxUij : x in Ui j 
+    show (s.val j).val x HxUij = (s.val i).val x HxUi,
+    have HxUiUj : x ∈ Ui i ∩ Ui j := ⟨HxUi,HxUij⟩,
+    have Hs := s.property i j,
+    have H3 : (s.val j).val x HxUij = (@res_to_inter_right _ _ (extend_off_basis FB HF) (Ui i) (Ui j) (UiO i) (UiO j) (s.val j)).val x HxUiUj := rfl,
+    rw H3,
+    rw ←Hs,
+    refl,
     }
   }
   end 
@@ -164,6 +327,7 @@ theorem extension_is_sheaf {X : Type*} [T : topological_space X] {B : set (set X
 #print topological_space.generate_from 
 #print topological_space.generate_open
 
+#check @subtype.cases_on
 
 
 
