@@ -121,6 +121,7 @@ import Kenny_comm_alg.ideal_operations
 import massot_indexed_products
 import chris_ring_lemma
 import data.fintype
+import tactic.ring
 local attribute [instance] classical.prop_decidable
 
 universe u
@@ -155,9 +156,17 @@ begin
 
 
 -- Should we be using a list?
-
+#print quotient.lif
 #check generate
 #check span 
+open finset nat classical
+example (n : ℕ) : (range (succ n)).sum (λ i, i * i) * 6 = n * (n + 1) * (2 * n + 1) :=
+begin
+  induction n with n hi,
+  refl,
+  rw sum_range_succ,
+  simp only [add_mul, hi, mul_add, succ_eq_add_one], simp, ring,
+end
 
 -- TODO (Kenny?)
 lemma generate_eq_span {R : Type*} [comm_ring R] (S : set R) : generate S = span S := 
@@ -185,7 +194,8 @@ open finset
 lemma span_finset {α β : Type*} {x : β} [ring α] [module α β] {s : finset β} 
     (h : x ∈ span {x : β | x ∈ s}) : ∃ r : β → α, s.sum (λ y, r y • y) = x :=
 let ⟨r, hr⟩ := h in
-have h₁ : r.support ⊆ s := λ x hx, by_contradiction (λ h₁, ((finsupp.mem_support_iff r _).1 hx) (hr.1 _ h₁)),
+have h₁ : r.support ⊆ s := λ x hx, classical.by_contradiction 
+  (λ h₁, ((finsupp.mem_support_iff r _).1 hx) (hr.1 _ h₁)),
 have h₂ : sum (s \ r.support) (λ y, r y • y) = 0 := begin 
   rw ← @finset.sum_const_zero _ _ (s \ r.support),
   refine finset.sum_congr rfl _,
@@ -233,12 +243,10 @@ lemma lemma_00EJ_missing (r : R) (j k : fin L.length) : localize_more_left (f L 
     localize_more_right (f L j) (f L k) (of_comm_ring R (powers (f L k)) r) := sorry
 
 #check lemma_00EJ_missing
-
-lemma lemma_standard_covering {R : Type*} [comm_ring R] (L : list R) 
-(H : (1:R) ∈ generate {x : R | x ∈ L}) :
-  function.injective (@α R _ L) ∧ -- image of α is kernel of β (as maps of abelian groups or R-mods)
-    ∀ s : (Π (i : fin L.length), localization.loc R (powers (f L i))), ∀ j k, β L s j k = 0 ↔ ∃ r : R, α L r = s :=
-⟨@inj_of_bla _ _ _ _ (@α R _ L) (@indexed_product.is_ring_hom _ _ _ _ _ (@α R _ L) (λ i, by unfold α; apply_instance))
+#print quotient.out
+lemma lemma_standard_covering₁ {R : Type*} [comm_ring R] (L : list R) 
+(H : (1:R) ∈ generate {x : R | x ∈ L}) : function.injective (@α R _ L) :=
+@inj_of_bla _ _ _ _ (@α R _ L) (@indexed_product.is_ring_hom _ _ _ _ _ (@α R _ L) (λ i, by unfold α; apply_instance))
 begin 
   assume x hx,
   replace hx := congr_fun hx,
@@ -258,18 +266,38 @@ begin
     simp only [e, dif_pos hf];
     exact classical.some_spec (this f' hf),
   exact missing4 (list.to_finset L) e r x he hr
-end, λ s j k, ⟨λ h, begin
-  unfold β at h,
-  rw sub_eq_zero_iff_eq at h,
-  rw [← quotient.out_eq (localize_more_left _ _ _),
-      ← quotient.out_eq (localize_more_right _ _ _), quotient.eq] at h,
-  rcases h with ⟨e, he, hne⟩,
-  cases he with n hn,
+end 
 
-  unfold β at h,
+#print quotient
+lemma lemma_standard_convering₂ {R : Type*} [comm_ring R] (L : list R) 
+    (H : (1:R) ∈ generate {x : R | x ∈ L}) (x : Π i : fin L.length, loc R (powers (f L i))) :
+    β L x = 0 ↔ ∃ r : R, α L r = x := 
+⟨λ h, begin
+  have hβ : ∀ i j, localize_more_left (f L i) (f L j) (x i) = localize_more_right (f L i) (f L j) (x j) :=
+    λ i j, sub_eq_zero_iff_eq.1 $ show β L x i j = 0, by rw h; refl,
+  replace hβ : ∀ i j, ⟦quotient.out (localize_more_left (f L i) (f L j) (x i))⟧ = 
+      ⟦quotient.out (localize_more_right (f L i) (f L j) (x j))⟧ := λ i j, by rw hβ,
+  simp only [quotient.eq, has_equiv.equiv, setoid.r, r] at hβ,
+  let βl := λ i j : fin L.length, quotient.out (localize_more_left (f L i) (f L j) (x i)),
+  let βr := λ i j : fin L.length, quotient.out (localize_more_right (f L i) (f L j) (x j)),
+  replace hβ : ∀ i j : fin L.length, ∃ n, ((βl i j).2.1 * (βr i j).1 -
+             (βr i j).2.1 * (βl i j).1) * (f L i * f L j) ^ n = 0 :=
+    λ i j, let ⟨t, ⟨n, hn⟩, ht⟩ := hβ i j in ⟨n, hn.symm ▸ ht⟩,
+  have hL : {x : R | x ∈ L} = {x : R | x ∈ list.to_finset L} := set.ext (λ y, by simp),
+  rw [generate_eq_span, hL] at H,
+  replace H := span_finset H,
+  cases H with s hs,
+  let n  := λ j k, indefinite_description _ (hβ j k),
+  let rj := λ j k, indefinite_description _ (βl j k).2.2,
+  let rk := λ j k, indefinite_description _ (βr j k).2.2,
+  
+
 end,
-λ ⟨r, hr⟩, hr ▸ sub_eq_zero_iff_eq.2 $ localization.loc_commutes _ _ _ ⟩ ⟩ 
-#print list 
+λ ⟨r, hr⟩, hr ▸ show β L (α L r) = λ i j, 0, from funext $ λ i, funext $ λ j, 
+  sub_eq_zero_iff_eq.2 $ loc_commutes _ _ _ ⟩
+
+
+#print extend_map_of_im_unit._match_1
 -- in chris_ring_lemma.lean there is
 -- theorem missing1 [comm_semiring R] (n : ℕ) (f : ℕ → R) (e : ℕ → ℕ) (r : ℕ → R)
 --     (s : R) : (∀ i : ℕ, i < n → (f i) ^ (e i) * s = 0) → 

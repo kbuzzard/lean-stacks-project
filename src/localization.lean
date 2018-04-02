@@ -100,7 +100,7 @@ instance : has_neg (loc α S) :=
    ... = 0 : by rw ht; simp⟩⟩
 
 private def mul_aux : α × S → α × S → loc α S :=
-λ ⟨r₁, s₁, hs₁⟩ ⟨r₂, s₂, hs₂⟩, ⟦⟨r₁ * r₂, s₁ * s₂, is_submonoid.mul_mem hs₁ hs₂⟩⟧
+λ x y, ⟦⟨x.1 * y.1, x.2.1 * y.2.1, is_submonoid.mul_mem x.2.2 y.2.2⟩⟧
 
 instance : has_mul (loc α S) :=
 ⟨quotient.lift₂ (mul_aux α S) $

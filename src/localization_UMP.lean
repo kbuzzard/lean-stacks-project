@@ -10,7 +10,7 @@ variables {S : set α} [is_submonoid α S] (f : α → β) [is_ring_hom f]
 noncomputable def extend_map_of_im_unit
   (H : ∀ s ∈ S, ∃ t, f s * t = 1) : loc α S → β :=
 quotient.lift
-  (λ ⟨r, s, hs⟩, f r * classical.some (H s hs) : α × S → β)
+  (λ r, f r.1 * classical.some (H r.2.1 r.2.2) : α × S → β)
   (λ ⟨r1, s1, hs1⟩ ⟨r2, s2, hs2⟩ ⟨t, hts, ht⟩,
      have h1 : f ((s1 * r2 - s2 * r1) * t) = 0,
        by simpa using ht; simp [ht, is_ring_hom.map_zero f],
@@ -47,7 +47,7 @@ theorem extend_map_of_im_unit.is_ring_hom (H : ∀ s ∈ S, ∃ t, f s * t = 1)
             by simp [is_ring_hom.map_mul f, mul_assoc, mul_comm, mul_left_comm]
     ... = f r1 * classical.some (H s1 hs1) * (f r2 * classical.some (H s2 hs2)) :
             by simp [classical.some_spec (H (s1 * s2) (is_submonoid.mul_mem hs1 hs2))],
-  map_one := classical.some_spec (H 1 _) }
+  map_one := classical.some_spec (H 1 (is_submonoid.one_mem _)) }
 
 noncomputable def away.extend_map_of_im_unit {x : α} (H : ∃ y, f x * y = 1) : away x → β :=
 extend_map_of_im_unit f $ begin
