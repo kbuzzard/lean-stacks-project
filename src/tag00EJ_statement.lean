@@ -156,10 +156,10 @@ begin
 
 
 -- Should we be using a list?
-#print quotient.lif
+#print quotient.lift
 #check generate
 #check span 
-open finset nat classical
+open finset nat classical quotient
 example (n : ℕ) : (range (succ n)).sum (λ i, i * i) * 6 = n * (n + 1) * (2 * n + 1) :=
 begin
   induction n with n hi,
@@ -264,33 +264,26 @@ begin
   have he : ∀ f' : R, f' ∈ list.to_finset L → f' ^ e f' * x = 0 := λ f' hf,
     by rw list.mem_to_finset at hf;
     simp only [e, dif_pos hf];
-    exact classical.some_spec (this f' hf),
+    exact some_spec (this f' hf),
   exact missing4 (list.to_finset L) e r x he hr
-end 
+end
 
-#print quotient
 lemma lemma_standard_convering₂ {R : Type*} [comm_ring R] (L : list R) 
-    (H : (1:R) ∈ generate {x : R | x ∈ L}) (x : Π i : fin L.length, loc R (powers (f L i))) :
-    β L x = 0 ↔ ∃ r : R, α L r = x := 
-⟨λ h, begin
-  have hβ : ∀ i j, localize_more_left (f L i) (f L j) (x i) = localize_more_right (f L i) (f L j) (x j) :=
-    λ i j, sub_eq_zero_iff_eq.1 $ show β L x i j = 0, by rw h; refl,
-  replace hβ : ∀ i j, ⟦quotient.out (localize_more_left (f L i) (f L j) (x i))⟧ = 
-      ⟦quotient.out (localize_more_right (f L i) (f L j) (x j))⟧ := λ i j, by rw hβ,
-  simp only [quotient.eq, has_equiv.equiv, setoid.r, r] at hβ,
-  let βl := λ i j : fin L.length, quotient.out (localize_more_left (f L i) (f L j) (x i)),
-  let βr := λ i j : fin L.length, quotient.out (localize_more_right (f L i) (f L j) (x j)),
-  replace hβ : ∀ i j : fin L.length, ∃ n, ((βl i j).2.1 * (βr i j).1 -
-             (βr i j).2.1 * (βl i j).1) * (f L i * f L j) ^ n = 0 :=
-    λ i j, let ⟨t, ⟨n, hn⟩, ht⟩ := hβ i j in ⟨n, hn.symm ▸ ht⟩,
-  have hL : {x : R | x ∈ L} = {x : R | x ∈ list.to_finset L} := set.ext (λ y, by simp),
-  rw [generate_eq_span, hL] at H,
-  replace H := span_finset H,
-  cases H with s hs,
-  let n  := λ j k, indefinite_description _ (hβ j k),
-  let rj := λ j k, indefinite_description _ (βl j k).2.2,
-  let rk := λ j k, indefinite_description _ (βr j k).2.2,
-  
+    (H : (1:R) ∈ generate {x : R | x ∈ L}) (s : Π i : fin L.length, loc R (powers (f L i))) :
+    β L s = 0 ↔ ∃ r : R, α L r = s := 
+⟨λ h,
+  let t := λ i, ⟦out (s i)⟧ in
+  have hst : s = t := by simp [t, out_eq],
+begin
+  rw hst at *,
+  have hβ : ∀ i j, ⟦((out (s i)).fst, _)⟧ * _ = ⟦((out (s j)).fst, _)⟧ * _ := 
+    λ i j, sub_eq_zero_iff_eq.1 $ show β L t i j = 0, by rw h; refl,
+  conv at hβ in (_ = _) {rw ← out_eq (classical.some _),
+    to_rhs, rw ← out_eq (classical.some _) },
+  have := λ i j, quotient.exact (hβ i j),
+  simp at this,
+  unfold has_equiv.equiv setoid.r r at this,
+  simp [(mul_add _ _ _).symm ] at this,
 
 end,
 λ ⟨r, hr⟩, hr ▸ show β L (α L r) = λ i j, 0, from funext $ λ i, funext $ λ j, 
