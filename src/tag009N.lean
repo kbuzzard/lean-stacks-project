@@ -50,8 +50,6 @@ end
    (basis_element_is_open HB BV) (basis_element_is_open HB BW)
  }
 
-#check presheaf_on_basis_stalk
-
 definition extend_off_basis {X : Type*} [T : topological_space X] {B : set (set X)} 
   {HB : topological_space.is_topological_basis B} (FB : presheaf_of_types_on_basis HB)
   (HF : is_sheaf_of_types_on_basis FB)
@@ -61,20 +59,114 @@ definition extend_off_basis {X : Type*} [T : topological_space X] {B : set (set 
       ∀ (x ∈ U), ∃ (V : set X) ( BV : V ∈ B) (Hx : x ∈ V) (sigma : FB.F BV), 
         ∀ (y ∈ U ∩ V), s y = λ _,⟦{U := V, BU := BV, Hx := H.2, s := sigma}⟧  
     },
-    res := _,
-    Hid := _,
-    Hcomp := _
+    res := λ U W OU OW HWU ssub,⟨λ x HxW,(ssub.val x $ HWU HxW),
+      λ x HxW,begin
+        cases (ssub.property x (HWU HxW)) with V HV,
+        cases HV with BV H2,
+        cases H2 with HxV H3,
+        cases H3 with sigma H4,
+        existsi V, existsi BV, existsi HxV,existsi sigma,
+        intros y Hy,
+        rw (H4 y ⟨HWU Hy.1,Hy.2⟩)
+      end⟩,
+    Hid := λ U OU,funext (λ x,subtype.eq rfl),
+    Hcomp := λ U V W OU OV OW HUV HVW,funext (λ x, subtype.eq rfl)
   }
+
+--  #print subtype.mk_eq_mk -- this is a simp lemma so why can't
+-- I use simp?
 
 variables {X : Type*} [T : topological_space X] {B : set (set X)} 
   {HB : topological_space.is_topological_basis B} (FB : presheaf_of_types_on_basis HB)
   (HF : is_sheaf_of_types_on_basis FB)
-#check HF
+
+--set_option pp.notation false 
 
 theorem extension_is_sheaf {X : Type*} [T : topological_space X] {B : set (set X)} 
   {HB : topological_space.is_topological_basis B} (FB : presheaf_of_types_on_basis HB)
   (HF : is_sheaf_of_types_on_basis FB)
-  : is_sheaf_of_types (extend_off_basis FB HF) := sorry
+  : is_sheaf_of_types (extend_off_basis FB HF) := begin
+  intros U OU γ Ui UiO Hcov,
+  split,
+  { intros b c Hbc,
+    apply subtype.eq,
+    apply funext,
+    intro x,
+    apply funext,
+    intro HxU,
+    rw ←Hcov at HxU,
+    cases HxU with Uig HUig,
+    cases HUig with H2 HUigx,
+    cases H2 with g Hg,
+    rw Hg at HUigx,
+    -- Hbc is the assumption that b and c are locally equal.
+    have Hig := congr_fun (subtype.mk_eq_mk.1 Hbc) g,
+    have H := congr_fun (subtype.mk_eq_mk.1 Hig) x,
+    --exact (congr_fun H HUigx),
+    have H2 := congr_fun H HUigx,
+    exact H2,
+  },
+  { intro s,
+    existsi _,swap,
+    { refine ⟨_,_⟩,
+      { intros x HxU,
+        rw ←Hcov at HxU,
+        cases (classical.indefinite_description _ HxU) with Uig HUig,
+        cases (classical.indefinite_description _ HUig) with H2 HUigx,
+        cases (classical.indefinite_description _ H2) with g Hg,
+        rw Hg at HUigx,
+        have t := (s.val g),
+        exact t.val x HUigx,
+      },
+      intros x HxU,
+      rw ←Hcov at HxU,
+      cases HxU with Uig HUig,
+      cases HUig with H2 HUigx,
+      cases H2 with g Hg,
+      rw Hg at HUigx,
+      cases (s.val g).property x HUigx with V HV,
+      cases HV with BV H2,
+      cases H2 with HxV H3,
+      -- now replace V by W, in B, contained in V and in Uig, and containing x
+      have OUig := UiO g,
+      have H := ((topological_space.mem_nhds_of_is_topological_basis HB).1 _ :
+        ∃ (W : set X) (H : W ∈ B), x ∈ W ∧ W ⊆ (V ∩ Ui g)),
+        swap,
+        have UVUig : T.is_open (V ∩ Ui g) := T.is_open_inter V (Ui g) _ OUig,
+        have HxVUig : x ∈ V ∩ Ui g := ⟨_,HUigx⟩,
+        exact mem_nhds_sets UVUig HxVUig,
+        exact HxV,
+        rw HB.2.2,
+        exact topological_space.generate_open.basic V BV,
+      cases H with W HW,
+      cases HW with HWB H4,
+      existsi W,
+      existsi HWB,
+      existsi H4.1,
+      cases H3 with sigma Hsigma,
+      existsi FB.res BV HWB (set.subset.trans H4.2 $ set.inter_subset_left _ _) sigma,
+      intros y Hy,
+      -- now apply Hsigma
+      admit,
+
+    },
+    {
+      admit
+    }
+  }
+  end 
+  #print filter.sets 
+#print mem_nhds_sets 
+
+--  #print topological_space.nhds 
+
+  #print topological_space.is_topological_basis
+#print topological_space.generate_from 
+#print topological_space.generate_open
+
+
+
+
 
 definition extend_off_basis_map {X : Type*} [T : topological_space X] {B : set (set X)} 
   {HB : topological_space.is_topological_basis B} (FB : presheaf_of_types_on_basis HB)
