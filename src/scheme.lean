@@ -7,8 +7,9 @@ import localization
 import localization_UMP
 import tag00E0
 import tag00DY
-import tag006E -- presheaf of sets
+import tag006E -- presheaf of types
 import tag006N -- presheaf of rings
+import tag006T -- sheaves of types
 import Kenny_comm_alg.temp
 
 universes u v 
@@ -87,42 +88,6 @@ definition presheaf_of_rings_pullback_under_open_immersion
     (immersion_sends_opens_to_opens f H V OV) 
     (set.image_subset f H2),
   .. presheaf_of_types_pullback_under_open_immersion PR.to_presheaf_of_types f H }
-
-
-def res_to_inter_left {α : Type*} [T : topological_space α] 
-  (FT : presheaf_of_types α)
-  (U V : set α) [OU : T.is_open U] [OV : T.is_open V] :
-  (FT.F U OU) → (FT.F (U ∩ V) (T.is_open_inter U V OU OV)) :=
-FT.res U (U ∩ V) OU (T.is_open_inter U V OU OV) (set.inter_subset_left U V)
-
-def res_to_inter_right {α : Type*} [T : topological_space α]
-  (FT : presheaf_of_types α)
-  (U V : set α) [OU : T.is_open U] [OV : T.is_open V] :
-  (FT.F V OV) → (FT.F (U ∩ V) (T.is_open_inter U V OU OV)) :=
-FT.res V (U ∩ V) OV (T.is_open_inter U V OU OV) (set.inter_subset_right U V)
-
-def gluing {α : Type*} [T : topological_space α] (FP : presheaf_of_types α) 
-  (U : set α)
-  [UO : T.is_open U]
-  {γ : Type*} (Ui : γ → set α)
-  [UiO : ∀ i : γ, T.is_open (Ui i)]
-  (Hcov : (⋃ (x : γ), (Ui x)) = U)
-  (r : FP.F U UO) :
-  {a : (Π (x : γ), (FP.F (Ui x) (UiO x))) | ∀ (x y : γ), 
-    (res_to_inter_left FP (Ui x) (Ui y)) (a x) = 
-    (res_to_inter_right FP (Ui x) (Ui y)) (a y)} :=
-⟨λ x,(FP.res U (Ui x) UO (UiO x) (Hcov ▸ set.subset_Union Ui x) r),
- λ x₁ y₁, have Hopen : T.is_open ((Ui x₁) ∩ (Ui y₁)),
-     from (T.is_open_inter _ _ (UiO x₁) (UiO y₁)),
-   show ((FP.res (Ui x₁) ((Ui x₁) ∩ (Ui y₁)) _ Hopen _) ∘ (FP.res U (Ui x₁) _ _ _)) r =
-        ((FP.res (Ui y₁) ((Ui x₁) ∩ (Ui y₁)) _ Hopen _) ∘ (FP.res U (Ui y₁) _ _ _)) r,
-   by rw [← presheaf_of_types.Hcomp, ← presheaf_of_types.Hcomp]⟩
-
-def is_sheaf_of_types {α : Type*} [T : topological_space α]
-  (PT : presheaf_of_types α) : Prop :=
-∀ (U : set α) [OU : T.is_open U] {γ : Type*} (Ui : γ → set α)
-  [UiO : ∀ x : γ, T.is_open (Ui x)] (Hcov : (⋃ (x : γ), (Ui x)) = U),
-function.bijective (@gluing _ _ PT U OU _ Ui UiO Hcov)
 
 /-- This is OK because exactness is same for sheaves of rings and sets-/
 def is_sheaf_of_rings {α : Type*} [T : topological_space α] 

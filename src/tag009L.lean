@@ -1,6 +1,5 @@
 import tag009J 
-universes u v w uu vv ww uuu vvv www 
-
+universe u
 definition sheaf_property 
   {X : Type u} [T : topological_space X] 
   {B : set (set X)} 
@@ -62,26 +61,88 @@ begin
   cases HBcompact U BU β Ui BUi Hcover with γ Hγ,
   cases Hγ with HFinγ Hf,
   cases Hf with f Hfincover,
-  have X := Hfinite U BU γ HFinγ (Ui ∘ f) (λ j, BUi (f j)) Hfincover,
-  
-  admit,
+  have Huniques := Hfinite U BU γ HFinγ (Ui ∘ f) (λ j, BUi (f j)) Hfincover
+    (λ i, si (f i)) (λ i j, Hsiglue (f i) (f j)),
+  cases Huniques with s Hs,
+  existsi s,
+  split,
+  { intro i,
+    let Vj : γ → set X := λ j, Ui (f j) ∩ Ui i,
+    have BVj : ∀ j : γ, B (Vj j) := 
+      λ j, Hstandard (Ui (f j)) (Ui i) (BUi (f j)) (BUi i),
+    have  HVcover : (⋃ (j : γ), Vj j) = Ui i,
+    { apply set.ext,intro x,split,
+      { intro HUn,
+        cases HUn with Uk HUk,
+        cases HUk with Ul HUl,
+        cases Ul with j Hj,
+        rw Hj at HUl,
+        exact HUl.2
+      },
+      { intro Hx,
+        have Hx2 : x ∈ U,
+          rw ←Hcover,exact ⟨(Ui i),⟨i,rfl⟩,Hx⟩,
+        rw ←Hfincover at Hx2,
+        cases Hx2 with Vjj Hx3,
+        cases Hx3 with Hx4 Vjjx,
+        cases Hx4 with j Hj,
+        existsi (Vj j),
+        constructor,existsi j,refl,
+        split,rw Hj at Vjjx,exact Vjjx,
+        exact Hx
+      }
+    },
+    --let x, show x = _,
+    have HV := Hfinite (Ui i) (BUi i) γ HFinγ Vj BVj HVcover
+      (λ j, FPTB.res BU (BVj j) 
+      (set.subset.trans (set.inter_subset_right _ _) 
+        (Hcover ▸ (set.subset_Union Ui i))) s) _,swap,
+    { intros j1 j2,
+      let Vj1 := Vj j1,
+      let Vj2 := Vj j2,
+      let Vj12 := Vj j1 ∩ Vj j2,
+      have BVj1 := BVj j1,
+      have BVj2 := BVj j2,
+      have BVj12 := Hstandard _ _ BVj1 BVj2,
+      show ((FPTB.res BVj1 BVj12 _) ∘ (FPTB.res BU BVj1 _)) s = 
+           ((FPTB.res BVj2 BVj12 _) ∘ (FPTB.res BU BVj2 _)) s,
+      rw ←(FPTB.Hcomp U Vj1 Vj12 BU BVj1 BVj12 _ _),
+      rw ←(FPTB.Hcomp U Vj2 Vj12 BU BVj2 BVj12 _ _),
+    },
+    -- it's "exact HV" -- a fact about Ui i
+    cases HV with s2 Hs2,
+    refine @eq.trans _ _ s2 _ _ _,
+    { -- goal is that restriction of s to Ui i is s2
+      apply Hs2.2,
+      intro j, -- goal is that res from U to Ui i to Vj j.
+      show ((FPTB.res _ _ _) ∘ (FPTB.res BU _ _)) s 
+        = FPTB.res BU _ _ s,
+      rw ←(FPTB.Hcomp U (Ui i) (Vj j) BU _ _ _ _),
+    },
+    { -- goal is s2 = si i on Ui i
+      apply eq.symm,
+      apply Hs2.2,
+      intro j, 
+      -- goal is that si i restricted to Vj j equals s restricted to Vj j
+      -- Hs.1 is the fact that 
+      -- for all j, restriction of
+      -- s to Ui (f j) is si (f j).
+      -- now restrict to Vj j
+      -- and deduce res of s to Vj j equals res of si (f j) to Vj j
+      -- now Hsiglue says that on Vj j = Ui (f j) ∩ Ui i
+      -- si (f j) and si i are equal.
+      -- it says res si (f j) to Ui (f j) cap Ui i = res si i
+      rw ←(Hsiglue), -- that was easy!
+      -- goal now is that si (f j) = s on Ui (f j) cap Ui i
+      have Htemp : si (f j) = _ := eq.symm (Hs.1 j),
+      rw Htemp,
+      show ((FPTB.res _ _ _) ∘ (FPTB.res BU _ _)) s = FPTB.res BU _ _ s,
+      rw ←(FPTB.Hcomp U _ _ BU _ _ _ _),
+    },
+  },
+  { intros s' Hs',
+    apply Hs.2,
+    intro i,
+    exact Hs' (f i)
+  }
 end
-
-
-  -- the **only property of fintype you will need here**
-  -- is basis_is_compact; you definitely do not need
-  -- the fact that a fintype is finite -- I could replace
-  -- fintype with some arbitrary typeclass here, as long
-  -- as I replace it in both the theorem and the definition.
-
-  -- What I am trying to stress is that this is not an assertion
-  -- about compactness or finite covers, the correct theorem
-  -- is that if the sheaf axiom holds on a "cofinite collection
-  -- of covers" then it holds for all covers. I didn't have time
-  -- to formalise "cofinite collection of covers" so I just
-  -- formalised "finite covers" and put it as an
-  -- axiom that every element of B is compact. Think of the
-  -- compactness assumption HBcompact as saying that every
-  -- cover can be refined to a "special" cover, and that
-  -- if the sheaf axiom is true for "special" covers then
-  -- it's true for all covers.
