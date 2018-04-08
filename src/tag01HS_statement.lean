@@ -42,18 +42,18 @@ example (R : Type u) [comm_ring R] (f : R) : topological_space (X R) := by apply
 
 /-- Stacks project tag 01HS -/
 lemma lemma_standard_open_1b (R : Type u) [comm_ring R] (f : R) (g : R) (H : Spec.D'(g) ⊆ Spec.D'(f)) :
-  ∃ e, ∃ a, g^e = a*f :=
+  ∃ e : ℕ, ∃ a, g^e = a*f :=
 have h1 : ¬∀ n, g^n ∉ span {f},
 from λ h,
   let P := @@is_ideal.avoid_powers _ g (span {f}) is_ideal_span h in
-  have h1 : ∀ n, g ^ n ∉ P,
+  have h1 : ∀ n : ℕ, g ^ n ∉ P,
     from @@is_ideal.avoid_powers.avoid_powers _ g (span {f}) is_ideal_span h,
   have h2 : span {f} ⊆ P,
     from @is_ideal.avoid_powers.contains _ _ g (span {f}) is_ideal_span h,
   have h3 : is_prime_ideal P,
     from @@is_ideal.avoid_powers.is_prime_ideal _ g (span {f}) is_ideal_span h,
   have h4 : (⟨P, h3⟩ : X R) ∈ Spec.D' g,
-    from λ h5, h1 1 $ by simpa using h5,
+    from λ h5, h1 1 $ by simpa [monoid.pow] using h5,
   H h4 $ h2 $ subset_span $ set.mem_singleton f,
 begin
   simp [not_forall, span, span_singleton] at h1,
