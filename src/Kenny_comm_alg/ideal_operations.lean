@@ -140,8 +140,6 @@ span_eq is_submodule.single_zero
   (subset_span_of_subset $
    λ x hx, ⟨0, 0, by simp at hx; simp [hx, zero]⟩)
 
-local infix ^ := monoid.pow
-
 /-
 (0,2) -> (x+y, 0)
 (1,0) -> (0, 1) [(x+y)^(1+0-1) = (0)*x^1+(1)*y^0]
@@ -207,10 +205,12 @@ begin
   induction n with n n_ih,
   { simp [some_binomial_boi] },
   { rw nat.zero_add at n_ih ⊢,
+    unfold pow at n_ih ⊢,
     unfold monoid.pow at n_ih ⊢,
     rw n_ih,
     unfold some_binomial_boi,
     rw some_lemma_boi,
+    unfold pow,
     unfold monoid.pow,
     ring },
   { specialize m_ih 0,
@@ -218,6 +218,7 @@ begin
     rw m_ih,
     unfold some_binomial_boi,
     rw some_lemma_boi,
+    unfold pow,
     unfold monoid.pow,
     ring },
   { calc  (x + y) ^ (nat.succ m + nat.succ n + 1)
@@ -228,10 +229,10 @@ begin
             by rw [m_ih, n_ih]
     ... = some_binomial_boi x y (nat.succ m) (nat.succ n) * x ^ (nat.succ m + 1) +
           some_binomial_boi y x (nat.succ n) (nat.succ m) * y ^ (nat.succ n + 1) :
-            by unfold some_binomial_boi; unfold monoid.pow; simp [nat.succ_eq_add_one]; ring SOP; ac_refl }
+            by unfold some_binomial_boi; unfold pow; unfold monoid.pow; simp [nat.succ_eq_add_one]; ring SOP; ac_refl }
 end
 
-def radical : set α := {x | ∃ n, x ^ (n+1) ∈ S}
+def radical : set α := {x | ∃ n : ℕ, x ^ (n+1) ∈ S}
 
 instance radical.is_ideal : is_ideal (radical S) :=
 { zero_ := ⟨0, by simp [is_ideal.zero]⟩,
