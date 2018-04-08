@@ -1,5 +1,5 @@
 import algebra.group_power algebra.big_operators data.nat.choose
-local infix ` ^ ` := monoid.pow
+
 open finset nat
 variable {α : Type*}
 
