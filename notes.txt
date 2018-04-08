@@ -1,0 +1,32 @@
+Things I need:
+
+Lemma: D(f) intersect D(g) = D(fg) is also standard open.
+
+Lemma : D(f) form a basis of opens.
+
+Proof: STP that every open U is a union of D(f)'s. STP that if P is in U
+then there's an f such that P in D(f) in U. Say U=D(T) is primes not
+containing T.  Then T is not a subset of P. Choose f in T not in P.
+Then P is in D(f) and f is in T so D(f) is a sub of D(T).
+
+Lemma (tag 00E4) : R a ring and g in R. Then Spec(R_g) -> Spec(R) is an injection
+with image D(g).
+
+Proof: Map R->R_g induces a map Spec(R_g)->Spec(R) by lemma of Kenny.
+
+https://stacks.math.columbia.edu/tag/00AR
+
+10.3 basic notions
+
+(54) if R is a ring and S is a multiplicative subset of R then S−1R is the zero ring if and only if S contains 0,
+
+(55) if R is a ring and if the multiplicative subset S consists completely of nonzerodivisors, then R→S−1R is injective,
+
+(62) if R is a ring, I and ideal of R and S a multiplicative subset of R, then S−1I is an ideal of S−1R, and we have S−1R/S−1I=S⎯⎯⎯−1(R/I), where S⎯⎯⎯ is the image of S in R/I,
+
+************
+
+Definition of sheaf on basis from Reid Barton:
+
+@kbuzzard Another option is, on D(f), form the ring by inverting all elements h with D(h) containing D(f). Now the ring only depends (up to equality, not isomorphism) on D(f), and you can subsequently show (using Zorn) that R[1/f] -> this ring is an isomorphism.
+This is sort of a low-tech version of your second option, I think.
