@@ -125,7 +125,6 @@ import tactic.ring
 local attribute [instance] classical.prop_decidable
 
 universe u
-local infix ` ^ ` := monoid.pow 
 
 /- we no longer need this
 
@@ -156,7 +155,7 @@ begin
 
 
 -- Should we be using a list?
-open finset nat classical quotient
+open finset classical quotient
 
 -- TODO (Kenny?)
 lemma generate_eq_span {R : Type*} [comm_ring R] (S : set R) : generate S = span S := 
@@ -199,7 +198,7 @@ theorem missing3 {R : Type*} [comm_semiring R] (L : finset R) (e : R → ℕ)
     (r : R → R) (s : R) : L ≠ ∅ → (∀ {f} (hfL : f ∈ L), f ^ (e f) * s = 0) →
     L.sum (λ x, r x * x) ^ L.sum e * s = 0 :=
 finset.induction_on L (by simp) $ λ a L has hi _ hf, or.by_cases (classical.em (L = ∅)) 
-(λ h, by simp [h, mul_pow, mul_assoc, hf (mem_insert_self a _)]) $ λ h, begin
+(λ h, by simp [h, mul_pow, mul_assoc, hf (mem_insert_self a _)] ) $ λ h, begin
   rw [sum_insert has, sum_insert has, add_pow, sum_mul, ← @sum_const_zero _ _ (range (nat.succ (e a + sum L e)))],
   refine finset.sum_congr rfl (λ m hm, _),
   cases le_total m (e a) with hm' hm',
@@ -218,6 +217,12 @@ or.by_cases (classical.em (L = ∅)) (λ h, by simp [h] at *; rw [← mul_one s,
 by have := missing3 L e r s h @hf;
   rwa [hL, one_pow, one_mul] at this
 
+lemma pow_generate_one_of_generate_one {R : Type*} [comm_ring R] (L : finset R) 
+    (n : R → ℕ) : (1 : R) ∈ span (↑L : set R) → 
+    (1 : R) ∈ span ((λ x, x ^ n x) '' (↑L : set R)) :=
+finset.induction_on L (by simp) $ λ a s hi, begin end
+
+
 variables {R : Type*} [comm_ring R] (L : list R)
 open localization
 private def f (i : fin L.length) := list.nth_le L i.1 i.2
@@ -229,11 +234,12 @@ private noncomputable def β (r : Π i : fin L.length, loc R (powers (f L i))) (
     loc R (powers (f L j * f L k)) :=
 localize_more_left (f L j) (f L k) (r j) - localize_more_right (f L j) (f L k) (r k)
 
-lemma lemma_00EJ_missing (r : R) (j k : fin L.length) : localize_more_left (f L j) (f L k) (of_comm_ring R (powers (f L j)) r) =
-    localize_more_right (f L j) (f L k) (of_comm_ring R (powers (f L k)) r) := sorry
+lemma localize_more_left_eq (f g x : R) (n : ℕ) : 
+    localize_more_left f g ⟦⟨x, ⟨f^n, n, rfl⟩⟩⟧ = ⟦⟨x * g^n, (f * g)^n, n, rfl⟩⟧ := sorry
 
-#check lemma_00EJ_missing
-#print quotient.out
+lemma localize_more_right_eq (f g x : R) (n : ℕ) : 
+    localize_more_right f g ⟦⟨x, ⟨g^n, n, rfl⟩⟩⟧ = ⟦⟨x * f^n, (f * g)^n, n, rfl⟩⟧ := sorry
+
 lemma lemma_standard_covering₁ {R : Type*} [comm_ring R] (L : list R) 
 (H : (1:R) ∈ generate {x : R | x ∈ L}) : function.injective (@α R _ L) :=
 @inj_of_bla _ _ _ _ (@α R _ L) (@indexed_product.is_ring_hom _ _ _ _ _ (@α R _ L) (λ i, by unfold α; apply_instance))
@@ -262,19 +268,40 @@ lemma lemma_standard_convering₂ {R : Type*} [comm_ring R] (L : list R)
     (H : (1:R) ∈ generate {x : R | x ∈ L}) (s : Π i : fin L.length, loc R (powers (f L i))) :
     β L s = 0 ↔ ∃ r : R, α L r = s := 
 ⟨λ h,
-  let t := λ i, ⟦out (s i)⟧ in
-  have hst : s = t := by simp [t, out_eq],
+let t := λ i, out (s i) in
+let r := λ i, some (t i).2.2 in
+have hst : ∀ i, s i = ⟦⟨(t i).1, (f L i) ^ (r i), r i, rfl⟩⟧ := 
+    λ i, by simp [r, some_spec (t i).2.2],
+have hi : ∀ i, s i = ⟦⟨(t i).1, (t i).2.1, (t i).2.2⟩⟧ := λ i, by simp,
+have hβ : _ := λ i j, sub_eq_zero_iff_eq.1 $ show β L s i j = 0, by rw h; refl,
 begin
-  rw hst at *,
-  have hβ : ∀ i j, ⟦((out (s i)).fst, _)⟧ * _ = ⟦((out (s j)).fst, _)⟧ * _ := 
-    λ i j, sub_eq_zero_iff_eq.1 $ show β L t i j = 0, by rw h; refl,
-  conv at hβ in (_ = _) {rw ← out_eq (classical.some _),
-    to_rhs, rw ← out_eq (classical.some _) },
-  have := λ i j, quotient.exact (hβ i j),
-  simp at this,
-  unfold has_equiv.equiv setoid.r r at this,
-  simp [(mul_add _ _ _).symm ] at this,
-
+  conv at hβ in (_ = _) {rw [hst, hst,
+      localize_more_left_eq, localize_more_right_eq] },
+  have : ∀ i j, ∃ n, 
+        ((f L i * f L j) ^ r i * ((t j).1 * f L i ^ r j) - 
+        ((f L i * f L j) ^ r j * ((t i).1 * f L j ^ r i)))
+        * (f L i * f L j) ^ n = 0 :=
+    λ i j, let ⟨t, ⟨n, hn⟩, hnt⟩ := quotient.exact (hβ i j) 
+        in ⟨n, by rw hn; exact hnt⟩,
+  let n := λ i j, some (this i j) + r i + r j,
+  have hn : ∀ i j, (f L i ^ r i * (t j).1 - 
+      f L j ^ r j * (t i).1) * (f L i * f L j) ^ n i j = 0 := 
+    λ i j, by rw [← zero_mul (f L i ^ r i), 
+            ← zero_mul (f L j ^ r j), ← some_spec (this i j)];
+      simp [n, pow_add, mul_pow];
+      ring,
+  let N := finset.sum (univ : finset (_ × _)) (λ ij, n ij.1 ij.2),
+  have Nlt : ∀ i j, n i j ≤ N := λ i j, 
+      @single_le_sum _ _ _ _ (λ h : fin L.length × fin L.length, n h.1 h.2)
+      _ (λ _ _, nat.zero_le _) _ (mem_univ (i, j)),
+  have hN : ∀ i j, (f L i ^ r i * (t j).1 - 
+      f L j ^ r j * (t i).1) * (f L i * f L j) ^ N = 0 := λ i j, 
+    begin rw [← nat.sub_add_cancel (Nlt i j), 
+        ← zero_mul ((f L i * f L j) ^ (N - n i j)), ← hn i j, 
+        pow_add _ (N - n i j), mul_pow, mul_pow],
+      simp [mul_add, add_mul, mul_comm, mul_left_comm, mul_assoc],
+    end,
+  existsi
 end,
 λ ⟨r, hr⟩, hr ▸ show β L (α L r) = λ i j, 0, from funext $ λ i, funext $ λ j, 
   sub_eq_zero_iff_eq.2 $ loc_commutes _ _ _ ⟩
