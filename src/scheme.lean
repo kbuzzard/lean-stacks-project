@@ -149,9 +149,15 @@ congr_fun $ @@localization.away.extension_unique _ _
  
 local attribute [instance] localization.away.extend_map_of_im_unit.is_ring_hom
 
---set_option pp.notation false 
---set_option pp.proofs true
---set_option pp.implicit true
+-- This definition, and everything following it which checks it's a presheaf of rings, will
+-- be removed when we have dealt with https://github.com/kbuzzard/lean-stacks-project/issues/6 .
+-- The point is that these definitions below are ad hoc. The construction of O_X and the proof
+-- that it's a sheaf of rings all come via the same package which starts by defining
+-- the presheaf O_X on the basis D(f) of open sets, and then proves that O_X satisfies the sheaf
+-- property for finite covers, and then does a bunch of abstract nonsense to get
+-- both the definition of the presheaf on all opens and the proof that the sheaf
+-- axiom holds for all covers. See the linked issue above for more details.
+
 definition structure_presheaf_of_types_on_affine_scheme (R : Type*) [comm_ring R] : presheaf_of_types (X R) :=
 { F := λ U HU, { f : Π P : X R, P ∈ U → @localization.at_prime R _ P.val P.property // 
     ∀ u : X R, U u → ∃ g : R, u ∈ Spec.D' g ∧ Spec.D' g ⊆ U ∧ ∃ r : localization.away g, ∀ Q : X R, 
@@ -298,7 +304,11 @@ definition structure_presheaf_of_rings_on_affine_scheme (R : Type*) [comm_ring R
 
 definition structure_sheaf_of_rings_on_affine_scheme (R : Type*) [comm_ring R] :
   is_sheaf_of_rings (structure_presheaf_of_rings_on_affine_scheme R) :=
-sorry -- don't need this to define schemes.
+sorry -- don't need this to define schemes. Note also that the natural proof
+      -- that this presheaf is a sheaf goes via making a completely different
+      -- definition, proving that the new definition is a sheaf, and then 
+      -- proving that the new definition is canonically isomorphic to this one.
+      -- This is currently WIP -- see https://github.com/kbuzzard/lean-stacks-project/issues/6
 
 structure scheme :=
 (α : Type u)
@@ -308,7 +318,8 @@ structure scheme :=
 (locally_affine : ∃ β : Type v, ∃ cov : β → {U : set α // T.is_open U}, 
   set.Union (λ b, (cov b).val) = set.univ ∧
   ∀ b : β, ∃ R : Type*, ∃ RR : comm_ring R, ∃ fR : (X R) → α, 
-    Π H : open_immersion fR, 
+    fR '' set.univ = (cov b).val ∧ -- thanks Johan Commelin!!
+    open_immersion fR ∧ Π H : open_immersion fR, 
     are_isomorphic_presheaves_of_rings 
       (presheaf_of_rings_pullback_under_open_immersion O_X fR H)
       (structure_presheaf_of_rings_on_affine_scheme R)
