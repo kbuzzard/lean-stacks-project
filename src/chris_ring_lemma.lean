@@ -36,27 +36,4 @@ have h₃ : (λ m, x * (x^m * y^(n - m) * choose n m) + y * (x^succ m * y^(n - s
 by rw [_root_.pow_succ, add_pow, add_mul, finset.mul_sum, finset.mul_sum, sum_range_succ, sum_range_succ',
     sum_range_succ, sum_range_succ', add_assoc, ← add_assoc (_ ∑ n), ← finset.sum_add_distrib, h₁, h₂, h₃]
 
-theorem missing [comm_semiring α] (n : ℕ) (f : ℕ → α) (e : ℕ → ℕ) (r : ℕ → α)
-    (s : α) : (∀ i : ℕ, i ≤ n → (f i) ^ (e i) * s = 0) →
-    (sum (range (succ n)) (λ i, f i * r i)) ^ (sum (range (succ n)) e) * s = 0 :=
-nat.rec_on n (λ h, by simp [mul_pow, mul_right_comm, h 0 (le_refl _)])
-$ λ n hi h, begin 
-  rw [sum_range_succ, add_pow, sum_mul, ← @sum_const_zero _ _ (range (succ (e ∑ succ (succ n))))],
-  refine finset.sum_congr rfl (λ m hm, _),
-  cases le_total m (e (succ n)) with hm' hm',
-  { rw [sum_range_succ e, add_comm (e _), nat.add_sub_assoc hm', _root_.pow_add],
-    simp only [mul_assoc, mul_left_comm ((λ (i : ℕ), f i * r i) ∑ succ n ^ e ∑ succ n)],
-    rw hi (λ i hi, h i (le_succ_of_le hi)),
-    simp },
-  { rw [← nat.add_sub_cancel' hm', _root_.pow_add, mul_pow],
-    simp only [mul_assoc, mul_left_comm (f (succ n) ^ e (succ n)), h],
-    simp }
-end
 
-theorem missing1 [comm_semiring α] (n : ℕ) (f : ℕ → α) (e : ℕ → ℕ) (r : ℕ → α)
-    (s : α) : (∀ i : ℕ, i < n → (f i) ^ (e i) * s = 0) → 
-    sum (range n) (λ i, f i * r i) = 1 → s = 0 :=
-nat.cases_on n (λ h₁ (h₂ : 0 = 1), mul_zero s ▸ h₂.symm ▸ (mul_one s).symm) $ λ n h₁ h₂, begin
-  have := missing n f e r s (λ i hi, h₁ i (lt_succ_of_le hi)),
-  rwa [sum_range_succ e, _root_.pow_add, h₂, one_pow, one_pow, one_mul, one_mul] at this,
-end
