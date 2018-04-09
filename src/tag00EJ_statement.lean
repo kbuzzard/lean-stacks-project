@@ -251,21 +251,6 @@ by have := missing3 L e r s h @hf;
 
 local notation f ` ∑ ` : 90 n : 90  := finset.sum (finset.range n) f
 
-lemma pow_sum_eq_sum {R : Type*} [comm_ring R] (L : finset R) :
-    ∀ (n : R → ℕ) (r : R → R), L ≠ ∅ →
-    ∃ f : R → R, L.sum (λ x, r x * x) ^ L.sum n = L.sum (λ x, f x * x ^ n x) :=
-finset.induction_on L (λ _ _ h, false.elim (h rfl)) $ λ a L haL hi n r _, 
-or.cases_on (classical.em (L = ∅))
-(λ h, ⟨λ a, r a ^ n a, by simp [h, mul_pow]⟩) $ λ hL,
-begin
-  conv in (_ = _)
-  { rw [sum_insert haL, add_pow, sum_range_succ, nat.sub_self, pow_zero, mul_one],
-    
-    
-  }
-
-end
-
 #print lc
 #print finsupp
 
@@ -343,7 +328,7 @@ begin
         by simp [multiset.sum_cons]⟩ }
 end
 
-lemma pow_generate_one_of_generate_one {R : Type*} [comm_ring R] (L : finset R) 
+lemma pow_generate_one_of_generate_one {R : Type*} [comm_ring R] {L : finset R}
     (n : R → ℕ) (h : (1 : R) ∈ span (↑L : set R)) : 
     (1 : R) ∈ span (↑(image (λ x, x ^ n x) L) : set R) := 
 let ⟨r, (hr : sum L (λ (y : R), _ * y) = 1)⟩ := span_finset.1 h in 
@@ -399,7 +384,7 @@ begin
 end
 
 lemma lemma_standard_convering₂ {R : Type*} [comm_ring R] (L : list R) 
-    (H : (1:R) ∈ generate {x : R | x ∈ L}) (s : Π i : fin L.length, loc R (powers (f L i))) :
+    (H : (1:R) ∈ span {x | x ∈ L}) (s : Π i : fin L.length, loc R (powers (f L i))) :
     β L s = 0 ↔ ∃ r : R, α L r = s := 
 ⟨λ h,
 let t := λ i, out (s i) in
@@ -408,6 +393,8 @@ have hst : ∀ i, s i = ⟦⟨(t i).1, (f L i) ^ (r i), r i, rfl⟩⟧ :=
     λ i, by simp [r, some_spec (t i).2.2],
 have hi : ∀ i, s i = ⟦⟨(t i).1, (t i).2.1, (t i).2.2⟩⟧ := λ i, by simp,
 have hβ : _ := λ i j, sub_eq_zero_iff_eq.1 $ show β L s i j = 0, by rw h; refl,
+have hL' : (1 : R) ∈ span (↑(L.to_finset) : set R) := 
+    by rwa (set.ext (λ x, show x ∈ (↑(L.to_finset) : set R) ↔ x ∈ L, from list.mem_to_finset)),
 begin
   conv at hβ in (_ = _) {rw [hst, hst,
       localize_more_left_eq, localize_more_right_eq] },
@@ -435,13 +422,19 @@ begin
         pow_add _ (N - n i j), mul_pow, mul_pow],
       simp [mul_add, add_mul, mul_comm, mul_left_comm, mul_assoc],
     end,
-  existsi
+  let n' : R → ℕ := λ x, dite (∃ i, x = f L i) (λ hx, N + r (some hx)) (λ _, 0),
+  rcases pow_generate_one_of_generate_one n' hL' with ⟨a, ha⟩,
+  rcases a with ⟨supp, a, ha₂⟩,
+  existsi ((univ : finset (fin L.length)).sum (λ i, a (f L i) * (t i).1 ^ (n' (f L i)))),
+
+  
+
 end,
 λ ⟨r, hr⟩, hr ▸ show β L (α L r) = λ i j, 0, from funext $ λ i, funext $ λ j, 
   sub_eq_zero_iff_eq.2 $ loc_commutes _ _ _ ⟩
 
 
-#print extend_map_of_im_unit._match_1
+#print finsupp
 -- in chris_ring_lemma.lean there is
 -- theorem missing1 [comm_semiring R] (n : ℕ) (f : ℕ → R) (e : ℕ → ℕ) (r : ℕ → R)
 --     (s : R) : (∀ i : ℕ, i < n → (f i) ^ (e i) * s = 0) → 
