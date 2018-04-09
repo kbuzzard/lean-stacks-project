@@ -103,7 +103,8 @@ by letI := localization_away.setoid R f; refine
   try {cases c with r₃ s₃},
   apply quotient.sound,
   existsi 0,
-  simp [pow_add, mul_left_comm, mul_add, mul_comm] }
+  simp [pow_add, mul_left_comm, mul_add, mul_comm],
+  try { ring } }
 
 def of_comm_ring : R → loc R f :=
 λ r, mk R f r 0
