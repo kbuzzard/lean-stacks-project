@@ -269,13 +269,13 @@ begin
   refine congr_arg _ (finset.sum_congr rfl (λ x hx, _)),
   rw if_neg (mem_erase.1 hx).1,
 end⟩
-#print sum_mul
+
 lemma multiset.sum_map_mul {α : Type u} {β : Type v} [_inst_1 : decidable_eq α] 
     {s : multiset α} {f : α → β} {b : β}
     [semiring β] : (s.map f).sum * b = (s.map (λ (x : α), f x * b)).sum :=
 multiset.induction_on s (by simp) $ λ a s ih,
   by rw [multiset.map_cons, multiset.sum_cons, multiset.map_cons, multiset.sum_cons, ← ih, add_mul]
-#print multiset.map
+
 lemma multiset.map_id {α : Type u} (m : multiset α) : m.map id = m := 
 multiset.induction_on m rfl (by simp [multiset.map_cons] {contextual := tt})
 
@@ -341,6 +341,51 @@ by rw [← hr', ← hm.2];
   (λ x hx, let ⟨y, hy, z, hz⟩ := hm.1 x hx in 
     ⟨y ^ n y, mem_image.2 ⟨y, hy, rfl⟩, z, by rw hz⟩)
 
+lemma span_image {α β γ : Type*} [ring α] [module α β] {s : finset γ} {f : γ → β}
+    {x : β} (hs : x ∈ span (↑(s.image f) : set β)) : 
+    ∃ r : γ → α, s.sum (λ y, r y • (f y)) = x :=
+let ⟨r, hr⟩ := span_finset.1 hs in
+have hc : ∀ y ∈ s, ∃ z ∈ s, f z = f y := λ y hy, ⟨y, hy, rfl⟩,
+let g := λ y : γ, 
+  if ∃ hy : y ∈ s, y = some (hc y hy) then (r ∘ f) y else 0 in 
+let t := s.filter (λ y, ∃ hy : y ∈ s, y = some (hc y hy)) in
+have h : sum (s \ t) (λ (y : γ), g y • f y) = 0 := begin
+  conv {to_rhs, rw ← @sum_const_zero _ _ (s \ t)},
+  refine sum_congr rfl (λ y (hy : y ∈ s \ filter _ _), _),
+  show (ite _ _ _ • _ = _),
+  rw [if_neg, zero_smul],
+  { rw [mem_sdiff, mem_filter, not_and] at hy,
+    exact hy.2 hy.1 } 
+end,
+have hg : ∀ y, ∀ hy : y ∈ s, g y ≠ 0 → 
+    y = @classical.some γ (λ (z : γ), ∃ (H : z ∈ s), f z = f y) (hc y hy) := 
+  λ y hy (hy' : ite _ _ _ ≠ _),
+  classical.by_contradiction (λ h,
+  have h' : ¬ ∃ (h :y ∈ s), y = @classical.some γ (λ (z : γ), ∃ (H : z ∈ s), f z = f y) (hc y hy) :=
+    λ ⟨_, h'⟩, h h',
+  by rw if_neg h' at hy'; exact false.elim (hy' rfl)),
+have hy : ∀ y : γ, y ∈ s ∧ g y ≠ 0 → g y • f y = r (f y) • f y :=
+  λ y (hy : _ ∧ ite _ _ _ ≠ _),
+  show ite _ _ _ • _ = _, by  have := hg y hy.1 hy.2; rw if_pos at ⊢ hy; exact ⟨hy.1, this⟩,
+⟨g,
+by rw [← hr, ← sum_sdiff (filter_subset s : t ⊆ s), h, zero_add];
+  exact sum_bij (λ y _, f y) 
+    (λ y hy, mem_image.2 ⟨y, (mem_filter.1 hy).1, rfl⟩)
+    (λ y hy', show ite _ _ _ • _ = _, 
+      by rw mem_filter at hy'; rw if_pos hy'.2) 
+    (λ a₁ a₂ ha₁ ha₂ h, begin 
+      rw mem_filter at *,
+      rcases ha₁ with ⟨_, ha₁, ha₁'⟩,
+      rcases ha₂ with ⟨_, ha₂, ha₂'⟩,
+      rw [ha₂', ha₁'],
+      congr,
+      simp [h],
+      end) 
+    (λ b hby, 
+      let ⟨a, ha₁, ha₂⟩ := mem_image.1 hby in
+      let ⟨hs₁, hs₂⟩ := some_spec (hc a ha₁) in
+      ⟨some (hc a ha₁), mem_filter.2 ⟨hs₁, hs₁, by congr; simp only [hs₂]⟩,
+      by rw [hs₂, ha₂] ⟩ ) ⟩
 
 variables {R : Type*} [comm_ring R] (L : list R)
 open localization
@@ -423,12 +468,13 @@ begin
       simp [mul_add, add_mul, mul_comm, mul_left_comm, mul_assoc],
     end,
   let n' : R → ℕ := λ x, dite (∃ i, x = f L i) (λ hx, N + r (some hx)) (λ _, 0),
-  rcases pow_generate_one_of_generate_one n' hL' with ⟨a, ha⟩,
-  rcases a with ⟨supp, a, ha₂⟩,
+  rcases span_image (pow_generate_one_of_generate_one n' hL') with ⟨a, ha⟩,
   existsi ((univ : finset (fin L.length)).sum (λ i, a (f L i) * (t i).1 ^ (n' (f L i)))),
-
-  
-
+  refine funext (λ j, _),
+  rw hst,
+  refine quot.sound _,
+  existsi [(1 : R), (⟨0, rfl⟩ : 1 ∈ powers (f L j))],
+  simp,
 end,
 λ ⟨r, hr⟩, hr ▸ show β L (α L r) = λ i j, 0, from funext $ λ i, funext $ λ j, 
   sub_eq_zero_iff_eq.2 $ loc_commutes _ _ _ ⟩
