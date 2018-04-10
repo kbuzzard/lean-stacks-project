@@ -4,21 +4,22 @@ if R is a ring, I and ideal of R and S a multiplicative subset of R, then S−1I
 [proof omitted]
 -/
 
-import localization linear_algebra.quotient_module linear_algebra.linear_map_module
-
+import ring_theory.localization linear_algebra.quotient_module 
+import linear_algebra.linear_map_module
+import group_theory.submonoid
 universe u
 
-def localize {α : Type u} [comm_ring α] (S : set α) [is_submonoid α S]
+def localize {α : Type u} [comm_ring α] (S : set α) [is_submonoid S]
   (I : set α) [is_submodule I] :
   set (localization.loc α S) :=
 {y | ∃ (x s : α) (hx : x ∈ I) (hs : s ∈ S), ⟦(⟨x, s, hs⟩:α × S)⟧ = y}
 
 abbreviation localize' {α : Type u} [comm_ring α] (I : set α) [is_submodule I]
-  (S : set α) [is_submonoid α S] :
+  (S : set α) [is_submonoid S] :
   set (localization.loc α S) :=
 localize S I
 
-variables {α : Type u} [comm_ring α] (S : set α) [is_submonoid α S]
+variables {α : Type u} [comm_ring α] (S : set α) [is_submonoid S]
 
 variables (I : set α) [is_submodule I]
 
