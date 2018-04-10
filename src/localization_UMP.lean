@@ -5,7 +5,7 @@ universes u v
 namespace localization
 
 variables {α : Type u} {β : Type v} [comm_ring α] [comm_ring β]
-variables {S : set α} [is_submonoid α S] (f : α → β) [is_ring_hom f]
+variables {S : set α} [is_submonoid S] (f : α → β) [is_ring_hom f]
 
 noncomputable def extend_map_of_im_unit
   (H : ∀ s ∈ S, ∃ t, f s * t = 1) : loc α S → β :=
