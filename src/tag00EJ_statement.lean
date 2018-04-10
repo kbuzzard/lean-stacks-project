@@ -119,13 +119,12 @@ as required.  There the sequence is exact.
 import Kenny_comm_alg.Zariski localization_UMP
 import Kenny_comm_alg.ideal_operations
 import massot_indexed_products
-import chris_ring_lemma
 import data.fintype
 import tactic.ring
+import chris_ring_lemma
 local attribute [instance] classical.prop_decidable
 
 universe u
-local infix ` ^ ` := monoid.pow 
 
 /- we no longer need this
 
@@ -156,7 +155,20 @@ begin
 
 
 -- Should we be using a list?
-open finset nat classical quotient
+open finset classical quotient 
+universes v w
+
+theorem finset.sum_bind1 {α : Type u} {β : Type v} {γ : Type w} {f : α → β}
+    [add_comm_monoid β] [decidable_eq α] {s : finset γ} {t : γ → finset α} :
+    ((s.1.bind (val ∘ t)).map f).sum = s.sum (λ (x : γ), sum (t x) f) := 
+show ((s.1.bind (finset.val ∘ t)).map f).sum = (s.1.map (λ (x : γ), sum (t x) f)).sum, from
+multiset.induction_on s.1 (by simp)
+(assume x s ih, begin 
+  unfold multiset.bind at *,
+  rw [multiset.map_cons, multiset.join_cons, multiset.map_add, multiset.sum_add, 
+      ih, multiset.map_cons, multiset.sum_cons],
+  refl,
+end)
 
 -- TODO (Kenny?)
 lemma generate_eq_span {R : Type*} [comm_ring R] (S : set R) : generate S = span S := 
@@ -181,32 +193,51 @@ end
 
 open finset
 
-lemma span_finset {α β : Type*} {x : β} [ring α] [module α β] {s : finset β} 
-    (h : x ∈ span {x : β | x ∈ s}) : ∃ r : β → α, s.sum (λ y, r y • y) = x :=
-let ⟨r, hr⟩ := h in
+lemma thingy {α β : Type*} [ring α] [module α β] {s : finset β}
+    {r : lc α β}
+    (hr : (∀ x, x ∉ (↑s : set β) → r x = 0)) :
+    finsupp.sum r (λ (b : β) (a : α), a • b) = s.sum (λ y, r y • y) :=
 have h₁ : r.support ⊆ s := λ x hx, classical.by_contradiction 
-  (λ h₁, ((finsupp.mem_support_iff r _).1 hx) (hr.1 _ h₁)),
-have h₂ : sum (s \ r.support) (λ y, r y • y) = 0 := begin 
+  (λ h₁, ((finsupp.mem_support_iff r _).1 hx) (hr _ h₁)),
+have h₂ : sum (s \ r.support) (λ y, r y • y) = 0 := begin
   rw ← @finset.sum_const_zero _ _ (s \ r.support),
   refine finset.sum_congr rfl _,
   assume x hx,
   rw [mem_sdiff, finsupp.mem_support_iff, ne.def, not_not] at hx,
   simp [hx.2],
 end,
-⟨r, by rw [hr.2, ← finset.sum_sdiff h₁, h₂, zero_add]; refl⟩
+by rw [← finset.sum_sdiff h₁, h₂, zero_add]; refl
+
+lemma span_finset {α β : Type*} {x : β} [ring α] [module α β] {s : finset β} 
+    : x ∈ span (↑s : set β) ↔ ∃ r : β → α, s.sum (λ y, r y • y) = x :=
+⟨λ ⟨r, hr⟩, ⟨r, by rw [← thingy hr.1, hr.2]⟩,
+λ ⟨r, hr⟩, ⟨⟨s.filter (λ x, r x ≠ 0), 
+  λ x, if x ∈ s then r x else 0, 
+  λ a, ⟨λ h, by rw if_pos (mem_filter.1 h).1;exact (mem_filter.1 h).2,
+     λ h, or.cases_on (classical.em (a ∈ s))
+      (λ ha, mem_filter.2 (by rw if_pos ha at h; exact ⟨ha, h⟩))
+      (λ ha, by rw if_neg ha at h; exact false.elim (h rfl))⟩⟩, 
+  ⟨λ x hx, if_neg hx,
+  show x = finsupp.sum _ (λ _ _, _ • _), begin 
+  rw [@thingy _ _ _ _ s, ← hr],
+    { exact finset.sum_congr rfl (λ y hy, 
+        (show _ = ite _ _ _ • _, by rw if_pos hy)) },
+    { assume x (hx : x ∉ s), 
+      exact if_neg hx }
+   end⟩ ⟩ ⟩
 
 theorem missing3 {R : Type*} [comm_semiring R] (L : finset R) (e : R → ℕ) 
     (r : R → R) (s : R) : L ≠ ∅ → (∀ {f} (hfL : f ∈ L), f ^ (e f) * s = 0) →
     L.sum (λ x, r x * x) ^ L.sum e * s = 0 :=
-finset.induction_on L (by simp) $ λ a L has hi _ hf, or.by_cases (classical.em (L = ∅)) 
-(λ h, by simp [h, mul_pow, mul_assoc, hf (mem_insert_self a _)]) $ λ h, begin
+finset.induction_on L (by simp) $ λ a L has hi _ hf, or.cases_on (classical.em (L = ∅)) 
+(λ h, by simp [h, mul_pow, mul_assoc, hf (mem_insert_self a _)] ) $ λ h, begin
   rw [sum_insert has, sum_insert has, add_pow, sum_mul, ← @sum_const_zero _ _ (range (nat.succ (e a + sum L e)))],
   refine finset.sum_congr rfl (λ m hm, _),
   cases le_total m (e a) with hm' hm',
-  { rw [add_comm (e a), nat.add_sub_assoc hm', _root_.pow_add],
+  { rw [add_comm (e a), nat.add_sub_assoc hm', pow_add],
     simp only [mul_assoc, mul_left_comm (sum L (λ (x : R), r x * x) ^ sum L e)],
     simp [hi h (λ f h, hf (mem_insert_of_mem h))] },
-  { rw [← nat.add_sub_cancel' hm', _root_.pow_add, mul_pow],
+  { rw [← nat.add_sub_cancel' hm', pow_add, mul_pow],
     simp only [mul_assoc, mul_left_comm (a ^ e a)],
     simp [hf (mem_insert_self a _)] }
 end
@@ -214,9 +245,102 @@ end
 theorem missing4 {R : Type*} [comm_semiring R] (L : finset R) (e : R → ℕ)
     (r : R → R) (s : R) (hf : ∀ {f} (hfL : f ∈ L), f ^ (e f) * s = 0)
     (hL : L.sum (λ x, r x * x) = 1) : s = 0 :=
-or.by_cases (classical.em (L = ∅)) (λ h, by simp [h] at *; rw [← mul_one s, ← hL, mul_zero]) $ λ h,
+or.cases_on (classical.em (L = ∅)) (λ h, by simp [h] at *; rw [← mul_one s, ← hL, mul_zero]) $ λ h,
 by have := missing3 L e r s h @hf;
   rwa [hL, one_pow, one_mul] at this
+
+local notation f ` ∑ ` : 90 n : 90  := finset.sum (finset.range n) f
+
+#print lc
+#print finsupp
+
+
+
+lemma multiset_span {α β : Type*} [ring α] [module α β] (s : finset β) (m : multiset β) :
+    (∀ x ∈ m, ∃ y ∈ s, ∃ z, z • y = x) → m.sum ∈ span (↑s : set β) :=
+multiset.induction_on m (λ _ , ⟨⟨∅, λ x, 0, λ a, by simp⟩, ⟨λ _ _, rfl, rfl⟩⟩) 
+$ λ a m hi h, 
+let ⟨r, hr⟩ := span_finset.1 (hi (λ x hx, h x (multiset.mem_cons_of_mem hx))) in
+let ⟨y, hy, z, hz⟩ := h a (multiset.mem_cons_self _ _) in
+span_finset.2 ⟨λ x, if x = y then r x + z else r x,
+begin
+  rw [multiset.sum_cons, ← hr, ← insert_erase hy, sum_insert (not_mem_erase _ _),
+      sum_insert (not_mem_erase _ _), if_pos rfl, add_smul, hz, ← add_assoc, add_comm (r y • y)],
+  refine congr_arg _ (finset.sum_congr rfl (λ x hx, _)),
+  rw if_neg (mem_erase.1 hx).1,
+end⟩
+#print sum_mul
+lemma multiset.sum_map_mul {α : Type u} {β : Type v} [_inst_1 : decidable_eq α] 
+    {s : multiset α} {f : α → β} {b : β}
+    [semiring β] : (s.map f).sum * b = (s.map (λ (x : α), f x * b)).sum :=
+multiset.induction_on s (by simp) $ λ a s ih,
+  by rw [multiset.map_cons, multiset.sum_cons, multiset.map_cons, multiset.sum_cons, ← ih, add_mul]
+#print multiset.map
+lemma multiset.map_id {α : Type u} (m : multiset α) : m.map id = m := 
+multiset.induction_on m rfl (by simp [multiset.map_cons] {contextual := tt})
+
+lemma multiset_thing {R : Type*} [comm_ring R] (s : finset R) (n : R → ℕ)
+    (m : multiset R) :
+    (∀ a ∈ m, ∃ m' : multiset R, (∀ x ∈ m', ∃ y ∈ s, ∃ z, z • (y ^ n y) = x) ∧ a = m'.sum) →
+    ∃ l : multiset R, (∀ x ∈ l, ∃ y ∈ s, ∃ z, z • (y ^ n y) = x) ∧ 
+    l.sum = m.sum := 
+multiset.induction_on m (λ _, ⟨0, λ _ h, false.elim (multiset.not_mem_zero _ h), rfl⟩) 
+$ λ a m ih hm, 
+let ⟨ma, hma⟩ := hm a (multiset.mem_cons_self _ _) in
+let ⟨mi, hmi⟩ := ih (λ a ha, hm a (multiset.mem_cons_of_mem ha)) in
+⟨ma + mi, λ x hx, or.cases_on (multiset.mem_add.1 hx) (hma.1 _) (hmi.1 _),
+by rw [multiset.sum_add, multiset.sum_cons, hmi.2, hma.2]⟩
+
+lemma multiset_thing1 {R : Type*} [comm_ring R] (s : finset R) 
+    (n : R → ℕ) (r : R → R) :
+    s ≠ ∅ → ∃ m : multiset R, (∀ x ∈ m, ∃ y ∈ s, ∃ z, z • (y ^ n y) = x) ∧ 
+    m.sum = s.sum (λ y, r y * y) ^ s.sum n :=
+finset.induction_on s (λ h, false.elim (h rfl)) $ λ a s has hi _, 
+or.cases_on (classical.em (s = ∅)) (λ h, ⟨r a ^ n a * a ^ n a :: 0, ⟨λ x hx, ⟨a, mem_insert_self _ _, r a ^ n a, 
+by rw multiset.mem_singleton.1 hx; simp⟩, by simp [sum_insert has, h, mul_pow]⟩⟩) $ λ hs,
+begin
+  conv in (_ = _) { to_rhs, rw [sum_insert has, add_pow] },
+  apply multiset_thing,
+  assume b hbm,
+  cases multiset.mem_map.1 hbm with k hk,
+  cases le_total k (n a) with hk' hk',
+  { rw [sum_insert has, add_comm (n a), nat.add_sub_assoc hk', pow_add] at hk,
+    cases hi hs with w hw,
+    existsi w.map (* ((r a * a) ^ k * sum s (λ (y : R), r y * y) ^ (n a - k)) *
+        ↑(choose (sum s n + n a) k)),
+    split,
+    { assume x hx,
+      cases multiset.mem_map.1 hx with p hp,
+      rcases hw.1 p hp.1 with ⟨y, hy, z, hz⟩,
+      existsi [y, mem_insert_of_mem hy, z * ((r a * a) ^ k * 
+          sum s (λ (y : R), r y * y) ^ (n a - k) * ↑(choose (sum s n + n a) k))],
+      rw [smul_eq_mul, mul_right_comm z, (show z * _ = _, from hz), hp.2] },
+    { rw [← hk.2, ← hw.2, ← multiset.sum_map_mul, (show w.map (λ x, x) = w, from multiset.map_id w)],
+      simp [mul_comm, mul_assoc, mul_left_comm] } },
+  { rw [← nat.add_sub_cancel' hk', pow_add] at hk,
+    existsi (b :: 0),
+    exact ⟨λ x hx, ⟨a, mem_insert_self _ _, r a ^ n a *
+      (r a * a) ^ (k - n a) * sum s (λ (y : R), r y * y) ^ 
+      (sum (insert a s) n - (n a + (k - n a))) *
+      ↑(choose (sum (insert a s) n) (n a + (k - n a))), 
+        by rw [mem_singleton.1 hx, ← hk.2];
+            simp [mul_comm, mul_left_comm, mul_assoc, mul_pow]⟩, 
+        by simp [multiset.sum_cons]⟩ }
+end
+
+lemma pow_generate_one_of_generate_one {R : Type*} [comm_ring R] {L : finset R}
+    (n : R → ℕ) (h : (1 : R) ∈ span (↑L : set R)) : 
+    (1 : R) ∈ span (↑(image (λ x, x ^ n x) L) : set R) := 
+let ⟨r, (hr : sum L (λ (y : R), _ * y) = 1)⟩ := span_finset.1 h in 
+or.cases_on (classical.em (L = ∅)) (λ h, span_finset.2 ⟨r, by simpa [h] using hr⟩)
+$ λ hL,
+have hr' : (sum L (λ (y : R), r y * y)) ^ sum L n = 1 := by rw hr; simp,
+let ⟨m, hm⟩ := multiset_thing1 L n r hL in
+by rw [← hr', ← hm.2];
+  exact multiset_span (image (λ x, x ^ n x) L) m 
+  (λ x hx, let ⟨y, hy, z, hz⟩ := hm.1 x hx in 
+    ⟨y ^ n y, mem_image.2 ⟨y, hy, rfl⟩, z, by rw hz⟩)
+
 
 variables {R : Type*} [comm_ring R] (L : list R)
 open localization
@@ -229,11 +353,12 @@ private noncomputable def β (r : Π i : fin L.length, loc R (powers (f L i))) (
     loc R (powers (f L j * f L k)) :=
 localize_more_left (f L j) (f L k) (r j) - localize_more_right (f L j) (f L k) (r k)
 
-lemma lemma_00EJ_missing (r : R) (j k : fin L.length) : localize_more_left (f L j) (f L k) (of_comm_ring R (powers (f L j)) r) =
-    localize_more_right (f L j) (f L k) (of_comm_ring R (powers (f L k)) r) := sorry
+lemma localize_more_left_eq (f g x : R) (n : ℕ) : 
+    localize_more_left f g ⟦⟨x, ⟨f^n, n, rfl⟩⟩⟧ = ⟦⟨x * g^n, (f * g)^n, n, rfl⟩⟧ := sorry
 
-#check lemma_00EJ_missing
-#print quotient.out
+lemma localize_more_right_eq (f g x : R) (n : ℕ) : 
+    localize_more_right f g ⟦⟨x, ⟨g^n, n, rfl⟩⟩⟧ = ⟦⟨x * f^n, (f * g)^n, n, rfl⟩⟧ := sorry
+
 lemma lemma_standard_covering₁ {R : Type*} [comm_ring R] (L : list R) 
 (H : (1:R) ∈ generate {x : R | x ∈ L}) : function.injective (@α R _ L) :=
 @inj_of_bla _ _ _ _ (@α R _ L) (@indexed_product.is_ring_hom _ _ _ _ _ (@α R _ L) (λ i, by unfold α; apply_instance))
@@ -250,7 +375,7 @@ begin
   let e : R → ℕ := λ f', if h : f' ∈ L then classical.some (this f' h) else 0,
   have hL : {x : R | x ∈ L} = {x : R | x ∈ list.to_finset L} := set.ext (λ y, by simp),
   rw [generate_eq_span, hL] at H,
-  cases span_finset H with r hr,
+  cases span_finset.1 H with r hr,
   have he : ∀ f' : R, f' ∈ list.to_finset L → f' ^ e f' * x = 0 := λ f' hf,
     by rw list.mem_to_finset at hf;
     simp only [e, dif_pos hf];
@@ -259,28 +384,57 @@ begin
 end
 
 lemma lemma_standard_convering₂ {R : Type*} [comm_ring R] (L : list R) 
-    (H : (1:R) ∈ generate {x : R | x ∈ L}) (s : Π i : fin L.length, loc R (powers (f L i))) :
+    (H : (1:R) ∈ span {x | x ∈ L}) (s : Π i : fin L.length, loc R (powers (f L i))) :
     β L s = 0 ↔ ∃ r : R, α L r = s := 
 ⟨λ h,
-  let t := λ i, ⟦out (s i)⟧ in
-  have hst : s = t := by simp [t, out_eq],
+let t := λ i, out (s i) in
+let r := λ i, some (t i).2.2 in
+have hst : ∀ i, s i = ⟦⟨(t i).1, (f L i) ^ (r i), r i, rfl⟩⟧ := 
+    λ i, by simp [r, some_spec (t i).2.2],
+have hi : ∀ i, s i = ⟦⟨(t i).1, (t i).2.1, (t i).2.2⟩⟧ := λ i, by simp,
+have hβ : _ := λ i j, sub_eq_zero_iff_eq.1 $ show β L s i j = 0, by rw h; refl,
+have hL' : (1 : R) ∈ span (↑(L.to_finset) : set R) := 
+    by rwa (set.ext (λ x, show x ∈ (↑(L.to_finset) : set R) ↔ x ∈ L, from list.mem_to_finset)),
 begin
-  rw hst at *,
-  have hβ : ∀ i j, ⟦((out (s i)).fst, _)⟧ * _ = ⟦((out (s j)).fst, _)⟧ * _ := 
-    λ i j, sub_eq_zero_iff_eq.1 $ show β L t i j = 0, by rw h; refl,
-  conv at hβ in (_ = _) {rw ← out_eq (classical.some _),
-    to_rhs, rw ← out_eq (classical.some _) },
-  have := λ i j, quotient.exact (hβ i j),
-  simp at this,
-  unfold has_equiv.equiv setoid.r r at this,
-  simp [(mul_add _ _ _).symm ] at this,
+  conv at hβ in (_ = _) {rw [hst, hst,
+      localize_more_left_eq, localize_more_right_eq] },
+  have : ∀ i j, ∃ n, 
+        ((f L i * f L j) ^ r i * ((t j).1 * f L i ^ r j) - 
+        ((f L i * f L j) ^ r j * ((t i).1 * f L j ^ r i)))
+        * (f L i * f L j) ^ n = 0 :=
+    λ i j, let ⟨t, ⟨n, hn⟩, hnt⟩ := quotient.exact (hβ i j) 
+        in ⟨n, by rw hn; exact hnt⟩,
+  let n := λ i j, some (this i j) + r i + r j,
+  have hn : ∀ i j, (f L i ^ r i * (t j).1 - 
+      f L j ^ r j * (t i).1) * (f L i * f L j) ^ n i j = 0 := 
+    λ i j, by rw [← zero_mul (f L i ^ r i), 
+            ← zero_mul (f L j ^ r j), ← some_spec (this i j)];
+      simp [n, pow_add, mul_pow];
+      ring,
+  let N := finset.sum (univ : finset (_ × _)) (λ ij, n ij.1 ij.2),
+  have Nlt : ∀ i j, n i j ≤ N := λ i j, 
+      @single_le_sum _ _ _ _ (λ h : fin L.length × fin L.length, n h.1 h.2)
+      _ (λ _ _, nat.zero_le _) _ (mem_univ (i, j)),
+  have hN : ∀ i j, (f L i ^ r i * (t j).1 - 
+      f L j ^ r j * (t i).1) * (f L i * f L j) ^ N = 0 := λ i j, 
+    begin rw [← nat.sub_add_cancel (Nlt i j), 
+        ← zero_mul ((f L i * f L j) ^ (N - n i j)), ← hn i j, 
+        pow_add _ (N - n i j), mul_pow, mul_pow],
+      simp [mul_add, add_mul, mul_comm, mul_left_comm, mul_assoc],
+    end,
+  let n' : R → ℕ := λ x, dite (∃ i, x = f L i) (λ hx, N + r (some hx)) (λ _, 0),
+  rcases pow_generate_one_of_generate_one n' hL' with ⟨a, ha⟩,
+  rcases a with ⟨supp, a, ha₂⟩,
+  existsi ((univ : finset (fin L.length)).sum (λ i, a (f L i) * (t i).1 ^ (n' (f L i)))),
+
+  
 
 end,
 λ ⟨r, hr⟩, hr ▸ show β L (α L r) = λ i j, 0, from funext $ λ i, funext $ λ j, 
   sub_eq_zero_iff_eq.2 $ loc_commutes _ _ _ ⟩
 
 
-#print extend_map_of_im_unit._match_1
+#print finsupp
 -- in chris_ring_lemma.lean there is
 -- theorem missing1 [comm_semiring R] (n : ℕ) (f : ℕ → R) (e : ℕ → ℕ) (r : ℕ → R)
 --     (s : R) : (∀ i : ℕ, i < n → (f i) ^ (e i) * s = 0) → 

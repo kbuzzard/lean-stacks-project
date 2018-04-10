@@ -3,8 +3,6 @@ import Kenny_comm_alg.ideal_lattice
 noncomputable theory
 local attribute [instance] classical.prop_decidable
 
-local infix ^ := monoid.pow
-
 universe u
 
 namespace is_ideal
@@ -13,7 +11,7 @@ section avoid_powers
 
 parameters {α : Type u} [comm_ring α]
 parameters (f : α) (P : set α) [hp : is_ideal P]
-parameters (hf : ∀ n, f^n ∉ P)
+parameters (hf : ∀ n : ℕ, f^n ∉ P)
 include hp hf
 
 private def avoid_powers_aux :
@@ -38,7 +36,7 @@ def avoid_powers : set α :=
 theorem avoid_powers.contains : P ⊆ avoid_powers :=
 (classical.some avoid_powers_aux).2.2.1
 
-theorem avoid_powers.avoid_powers : ∀ n, f^n ∉ avoid_powers :=
+theorem avoid_powers.avoid_powers : ∀ n : ℕ, f^n ∉ avoid_powers :=
 (classical.some avoid_powers_aux).2.2.2
 
 def avoid_powers.is_prime_ideal : is_prime_ideal avoid_powers :=
@@ -72,8 +70,8 @@ def avoid_powers.is_prime_ideal : is_prime_ideal avoid_powers :=
     begin
       haveI ha : is_submodule (avoid_powers f P hf) :=
         (classical.some (avoid_powers_aux f P hf)).2.1.to_is_submodule,
-      by_cases hx : ∃ m, f^m ∈ span (insert x (avoid_powers f P hf)),
-      { by_cases hy : ∃ n, f^n ∈ span (insert y (avoid_powers f P hf)),
+      by_cases hx : ∃ m : ℕ, f^m ∈ span (insert x (avoid_powers f P hf)),
+      { by_cases hy : ∃ n : ℕ, f^n ∈ span (insert y (avoid_powers f P hf)),
         { exfalso,
           cases hx with m hx,
           cases hy with n hy,

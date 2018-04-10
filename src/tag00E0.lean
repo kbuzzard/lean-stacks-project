@@ -168,7 +168,7 @@ import Kenny_comm_alg.avoid_powers Kenny_comm_alg.Zariski Kenny_comm_alg.ideal_o
 noncomputable theory
 local attribute [instance] classical.prop_decidable
 
-local infix ^ := monoid.pow
+--local infix ^ := monoid.pow
 
 universe u
 
@@ -230,7 +230,7 @@ lemma lemma07 (I : set R) [is_ideal I] : is_ideal.radical I = ⋂₀ {x | is_pri
 set.ext $ λ f,
 ⟨λ ⟨n, hf⟩ x ⟨hx, hix⟩, @@is_prime_ideal.mem_of_pow_mem _ hx $ hix hf,
  λ hf, classical.by_contradiction $ λ hnf,
-   have h1 : ∀ n, f^n ∉ I,
+   have h1 : ∀ n : ℕ, f^n ∉ I,
      from λ n, nat.rec_on n
        (λ hfz, hnf ⟨0, is_ideal.mul_left hfz⟩)
        (λ n _ hfni, hnf ⟨n, hfni⟩),
@@ -282,10 +282,10 @@ by finish [set.set_eq_def]
 lemma lemma11b (f : R) : Spec.D' f ∩ Spec.V' f = ∅ :=
 by finish [set.set_eq_def]
 
-lemma lemma12 (f : R) : Spec.D' f = ∅ ↔ ∃ n, f^n = 0 :=
+lemma lemma12 (f : R) : Spec.D' f = ∅ ↔ ∃ n : ℕ, f^n = 0 :=
 ⟨λ h, classical.by_contradiction $ λ hf,
-   have h1 : ∀ (n : ℕ), f ^ n ∉ {(0:R)},
-     from λ n hfn, not_exists.1 hf n $ (set.mem_singleton_iff _ _).1 hfn,
+   have h1 : ∀ (n : ℕ), f ^ n ∉ ({0} : set R),
+     from λ n hfn, not_exists.1 hf n $ set.mem_singleton_iff.1 hfn,
    let x := is_ideal.avoid_powers f {0} h1 in
    have h2 : is_prime_ideal x,
      from is_ideal.avoid_powers.is_prime_ideal f {0} h1,

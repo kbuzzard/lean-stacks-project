@@ -2,14 +2,14 @@ import localization
 
 universe u
 
-local infix ^ := monoid.pow
+--local infix ^ := monoid.pow
 
 namespace localization_away
 
 variables (R : Type u) [comm_ring R] (f : R)
 
 def r : R × ℕ → R × ℕ → Prop :=
-λ x y, ∃ t, (f ^ x.2 * y.1 - f ^ y.2 * x.1) * f ^ t = 0
+λ x y, ∃ t : ℕ, (f ^ x.2 * y.1 - f ^ y.2 * x.1) * f ^ t = 0
 
 local infix ≈ := r R f
 
@@ -76,7 +76,7 @@ instance : has_mul (loc R f) :=
  ⟨t₆ + t₅, by dsimp; from calc
          (f ^ (s₁ + s₂) * (r₃ * r₄) - f ^ (s₃ + s₄) * (r₁ * r₂)) * f ^ (t₆ + t₅)
        = f ^ t₆ * ((f ^ s₁ * r₃ - f ^ s₃ * r₁) * f ^ t₅) * r₂ * f ^ s₄ + f ^ t₅ * ((f ^ s₂ * r₄ - f ^ s₄ * r₂) * f ^ t₆) * r₃ * f ^ s₁ :
-           by rw [pow_add, pow_add, pow_add]; simp [mul_left_comm, mul_add, mul_comm]
+           by rw [pow_add, pow_add, pow_add]; simp [mul_left_comm, mul_add, mul_comm,mul_assoc]
    ... = 0 : by rw [ht₅, ht₆]; simp⟩⟩
 
 instance : comm_ring (loc R f) :=
@@ -103,7 +103,8 @@ by letI := localization_away.setoid R f; refine
   try {cases c with r₃ s₃},
   apply quotient.sound,
   existsi 0,
-  simp [pow_add, mul_left_comm, mul_add, mul_comm] }
+  simp [pow_add, mul_left_comm, mul_add, mul_comm],
+  try { ring } }
 
 def of_comm_ring : R → loc R f :=
 λ r, mk R f r 0

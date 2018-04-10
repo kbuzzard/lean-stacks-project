@@ -61,7 +61,7 @@ extend_map_of_im_unit f $ begin
     cases H with y hy,
     cases ih with t ht,
     existsi t * y,
-    rw [← hxns, monoid.pow, is_ring_hom.map_mul f],
+    rw [← hxns, pow_succ, is_ring_hom.map_mul f],
     rw [mul_assoc, ← mul_assoc _ t, ht, one_mul, hy] }
 end
 
