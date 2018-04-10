@@ -1,4 +1,4 @@
-import algebra.ring algebra.module linear_algebra data.set.basic tactic.ring data.equiv data.quot Kenny_comm_alg.temp
+import group_theory.submonoid algebra.ring algebra.module linear_algebra data.set.basic tactic.ring data.equiv data.quot Kenny_comm_alg.temp
 
 -- remove "data.equiv" in PR version
 -- ring.localization
@@ -48,7 +48,7 @@ instance powers.is_submonoid {α : Type u} [monoid α] (x : α)  : is_submonoid 
 
 namespace localization
 
-variables (α : Type u) [comm_ring α] (S : set α) [is_submonoid α S]
+variables (α : Type u) [comm_ring α] (S : set α) [is_submonoid S]
 
 def r : α × S → α × S → Prop :=
 λ x y, ∃ t ∈ S, (x.2.1 * y.1 - y.2.1 * x.1) * t = 0
@@ -200,7 +200,7 @@ section at_prime
 variables (P : set α) [is_prime_ideal P]
 
 instance prime.is_submonoid :
-  is_submonoid α (set.compl P) :=
+  is_submonoid (set.compl P) :=
 { one_mem := λ h, is_proper_ideal.ne_univ P $
     is_submodule.univ_of_one_mem P h,
   mul_mem := λ x y hnx hny hxy, or.cases_on
@@ -249,7 +249,7 @@ end at_prime
 
 def closure (S : set α) : set α := {y | ∃ (L:list α) (H:∀ x ∈ L, x ∈ S), L.prod = y }
 
-instance closure.is_submonoid (S : set α) : is_submonoid α (closure S) :=
+instance closure.is_submonoid (S : set α) : is_submonoid (closure S) :=
 { one_mem := ⟨[], by simp⟩,
   mul_mem := λ x₁ x₂ ⟨L₁, hLS₁, hL₁⟩ ⟨L₂, hLS₂, hL₂⟩,
     ⟨L₁ ++ L₂,
@@ -260,7 +260,7 @@ variable α
 
 def non_zero_divisors : set α := {x | ∀ z, z * x = 0 → z = 0}
 
-instance non_zero_divisors.is_submonoid : is_submonoid α (non_zero_divisors α) :=
+instance non_zero_divisors.is_submonoid : is_submonoid (non_zero_divisors α) :=
 { one_mem := λ z hz, by simpa using hz,
   mul_mem := λ x₁ x₂ hx₁ hx₂ z hz,
     have z * x₁ * x₂ = 0,
