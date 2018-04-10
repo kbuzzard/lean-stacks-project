@@ -1,1 +1,0 @@
-instance foo (α : Type) : group α := { mul_assoc := λ x y z, rfl }
