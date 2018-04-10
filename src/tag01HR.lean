@@ -7,8 +7,11 @@ of O_X-modules attached to an R-module.
 /- Let's just do this for rings at this point.
 
 -/
-import Kenny_comm_alg.Zariski ring_theory.localization tag00E0 
-import tag01HS_statement group_theory.submonoid
+import group_theory.submonoid  
+import ring_theory.localization 
+import Kenny_comm_alg.Zariski 
+import tag00E0 
+import tag01HS_statement 
 universe u
 
 #check tag00E0.lemma15
