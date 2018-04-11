@@ -168,15 +168,15 @@ let ⟨r, hr⟩ := span_image.1 h in
 by rw [← one_pow (s.sum n + 1), hr];
   apply pow_thing
 
-variables {R : Type*} [comm_ring R] (L : list R)
+variables {R : Type*} {γ : Type*} [comm_ring R] [fintype γ]
 open localization
 
-private def α {n : ℕ} (f : fin n → R) (x : R) : 
-    Π i : fin n, loc R (powers (f i)) :=
+private def α (f : γ → R) (x : R) : 
+    Π i, loc R (powers (f i)) :=
   λ i, of_comm_ring R _ x
 
-private noncomputable def β {n : ℕ} {f : fin n → R}
-    (r : Π i : fin n, loc R (powers (f i))) (j k : fin n) :
+private noncomputable def β {f : γ → R}
+    (r : Π i, loc R (powers (f i))) (j k : γ) :
     loc R (powers (f j * f k)) :=
 localize_more_left (f j) (f k) (r j) - localize_more_right (f j) (f k) (r k)
 
@@ -216,7 +216,7 @@ lemma localize_more_right_eq (f g x : R) (n : ℕ) :
   ring,
 end
 
-lemma lemma_standard_covering₁ {R : Type*} [comm_ring R] {n : ℕ} {f : fin n → R}
+lemma lemma_standard_covering₁ {f : γ → R}
     (h : (1 : R) ∈ span (↑(univ.image f) : set R)) : function.injective (α f) :=
 @inj_of_bla _ _ _ _ (α f) (@indexed_product.is_ring_hom _ _ _ _ _ (α f) (λ i, by unfold α; apply_instance))
 begin 
@@ -228,15 +228,16 @@ begin
     have : x * r = 0 := by simpa using hr₂,
     exact ⟨e, by rwa [mul_comm, he]⟩
   end,
-  let e : fin n → ℕ := λ i, classical.some (this i),
+  let e : γ → ℕ := λ i, classical.some (this i),
   have he : ∀ i, f i ^ e i * x = 0 := λ i, some_spec (this i),
   cases span_image.1 (pow_generate_one_of_generate_one e h) with r hr,
-  rw [← one_mul x, hr, sum_mul, ← @sum_const_zero _ _ (univ : finset (fin n))],
+  rw [← one_mul x, hr, sum_mul, ← @sum_const_zero _ _ (univ : finset γ)],
   refine finset.sum_congr rfl (λ i _, _),
   rw [smul_eq_mul, mul_assoc, he, mul_zero],
 end
-lemma lemma_standard_convering₂ {R : Type*} [comm_ring R] {m : ℕ} (f : fin m → R) 
-    (H : (1:R) ∈ span (↑(univ.image f) : set R)) (s : Π i : fin m, loc R (powers (f i))) :
+ 
+lemma lemma_standard_covering₂ (f : γ → R) 
+    (H : (1:R) ∈ span (↑(univ.image f) : set R)) (s : Π i, loc R (powers (f i))) :
     β s = 0 ↔ ∃ r : R, α f r = s := 
 ⟨λ h : β s = 0,
 let t := λ i, out (s i) in
@@ -264,7 +265,7 @@ have hn : ∀ i j, (f i ^ r i * (t j).1 -
     ring,
 let N := finset.sum (univ : finset (_ × _)) (λ ij, n ij.1 ij.2) in
 have Nlt : ∀ i j, n i j ≤ N := λ i j, 
-  @single_le_sum _ _ _ _ (λ h : fin m × fin m, n h.1 h.2)
+  @single_le_sum _ _ _ _ (λ h : γ × γ, n h.1 h.2)
   _ (λ _ _, nat.zero_le _) _ (mem_univ (i, j)),
 have hN : ∀ i j, (f i ^ r i * (t j).1 - 
     f j ^ r j * (t i).1) * (f i * f j) ^ N = 0 := λ i j, 
