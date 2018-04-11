@@ -181,10 +181,40 @@ private noncomputable def β {n : ℕ} {f : fin n → R}
 localize_more_left (f j) (f k) (r j) - localize_more_right (f j) (f k) (r k)
 
 lemma localize_more_left_eq (f g x : R) (n : ℕ) : 
-    localize_more_left f g ⟦⟨x, ⟨f^n, n, rfl⟩⟩⟧ = ⟦⟨x * g^n, (f * g)^n, n, rfl⟩⟧ := sorry
+    localize_more_left f g ⟦⟨x, ⟨f^n, n, rfl⟩⟩⟧ = ⟦⟨x * g^n, (f * g)^n, n, rfl⟩⟧ := begin
+  let h,
+  show ⟦_⟧ * classical.some h = ⟦_⟧,
+  have := some_spec h,
+  rw ← quotient.out_eq (some h) at *,
+  rcases quotient.exact this with ⟨r, hr₁, hr₂⟩,
+  refine quot.sound ⟨r, hr₁, _⟩,
+  rw [sub_mul, sub_eq_zero_iff_eq] at hr₂,
+  have hr₂' : ((out (some h)).snd).val * r = f ^ n * (out (some h)).fst * r :=
+      by simpa using hr₂,
+  suffices : (((out (some h)).snd).val * (x * g ^ n) 
+      - ((f * g) ^ n * (x * (out (some h)).fst))) * r = 0,
+    rw ← this, simp,
+  simp only [sub_mul, mul_pow, mul_assoc, mul_left_comm (((out (some h)).snd).val), hr₂'],
+  ring,
+end
 
 lemma localize_more_right_eq (f g x : R) (n : ℕ) : 
-    localize_more_right f g ⟦⟨x, ⟨g^n, n, rfl⟩⟩⟧ = ⟦⟨x * f^n, (f * g)^n, n, rfl⟩⟧ := sorry
+    localize_more_right f g ⟦⟨x, ⟨g^n, n, rfl⟩⟩⟧ = ⟦⟨x * f^n, (f * g)^n, n, rfl⟩⟧ := begin
+  let h,
+  show ⟦_⟧ * classical.some h = ⟦_⟧,
+  have := some_spec h,
+  rw ← quotient.out_eq (some h) at *,
+  rcases quotient.exact this with ⟨r, hr₁, hr₂⟩,
+  refine quot.sound ⟨r, hr₁, _⟩,
+  rw [sub_mul, sub_eq_zero_iff_eq] at hr₂,
+  have hr₂' : ((out (some h)).snd).val * r = g ^ n * (out (some h)).fst * r :=
+      by simpa using hr₂,
+  suffices : (((out (some h)).snd).val * (x * f ^ n) 
+      - ((f * g) ^ n * (x * (out (some h)).fst))) * r = 0,
+    rw ← this, simp,
+  simp only [sub_mul, mul_pow, mul_assoc, mul_left_comm (((out (some h)).snd).val), hr₂'],
+  ring,
+end
 
 lemma lemma_standard_covering₁ {R : Type*} [comm_ring R] {n : ℕ} {f : fin n → R}
     (h : (1 : R) ∈ span (↑(univ.image f) : set R)) : function.injective (α f) :=
@@ -205,7 +235,6 @@ begin
   refine finset.sum_congr rfl (λ i _, _),
   rw [smul_eq_mul, mul_assoc, he, mul_zero],
 end
-
 lemma lemma_standard_convering₂ {R : Type*} [comm_ring R] {m : ℕ} (f : fin m → R) 
     (H : (1:R) ∈ span (↑(univ.image f) : set R)) (s : Π i : fin m, loc R (powers (f i))) :
     β s = 0 ↔ ∃ r : R, α f r = s := 
@@ -266,19 +295,3 @@ begin
 end⟩)⟩,
 λ ⟨r, hr⟩, hr ▸ show β (α f r) = λ i j, 0, from funext $ λ i, funext $ λ j, 
   sub_eq_zero_iff_eq.2 $ loc_commutes _ _ _ ⟩
-
--- in chris_ring_lemma.lean there is
--- theorem missing1 [comm_semiring R] (n : ℕ) (f : ℕ → R) (e : ℕ → ℕ) (r : ℕ → R)
---     (s : R) : (∀ i : ℕ, i < n → (f i) ^ (e i) * s = 0) → 
---     sum (range n) (λ i, f i * r i) = 1 → s = 0 
-
-/-
-#check @or.rec -- dammit, or only eliminates to prop
-open finset
-example (R : Type) [comm_ring R] (n : ℕ) (a : fin n → R) (e : fin n → ℕ)
-(r : R) (H : ∀ i : fin n, (a i) ^ (e i) * r = 0) :
-(sum (univ) a) ^ (sum (univ) e) * r = 0 := missing1 n (λ i, or.elim (decidable.em (i < n)) (λ h, a ⟨i,h⟩) (λ h, 0))
-(λ i, _) (λ i, _) _ r _
-
-KB was working on this but now I have to do admin
--/
