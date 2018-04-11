@@ -21,12 +21,11 @@ Recall that D(f) is quasi-compact, see tag 00F6. Hence the second statement foll
 The third statement follows directly from tag 00E0. 
 -/
 
-import Kenny_comm_alg.Zariski ring_theory.localization_UMP tensor_product tag00E4
+import Kenny_comm_alg.Zariski localization_UMP tensor_product tag00E4
 import Kenny_comm_alg.avoid_powers algebra.module
 
 universes u v
 
-local infix ^ := monoid.pow 
 local attribute [instance] classical.prop_decidable
 
 -- the next line should not be here. It's in broken Atiyah.lean
@@ -80,9 +79,26 @@ localization.away.extend_map_of_im_unit
   -- define O_X(U) to be R[1/f] if U=D(f), however this is not well-defined, so I propose
   -- defining it as the subring of the product (over all f such that )
 
-def lemma_standard_open_1d (R : Type u) [comm_ring R] (f : R) (g : R) (H : Spec.D'(g) ⊆ Spec.D'(f)) (M : Type)
-  [ module R M] :
-  tensor_product M (localization.loc R (powers f)) → tensor_product M (localization.loc R (powers g)) := sorry
+instance lemma_standard_open_1c.is_ring_hom (R : Type u) [comm_ring R] (f : R) (g : R) (H : Spec.D'(g) ⊆ Spec.D'(f)) :
+  is_ring_hom (lemma_standard_open_1c R f g H) :=
+localization.away.extend_map_of_im_unit.is_ring_hom _ _
+
+local attribute [instance] is_ring_hom.to_module
+
+def lemma_standard_open_1c.is_linear_map (R : Type u) [comm_ring R] (f : R) (g : R) (H : Spec.D'(g) ⊆ Spec.D'(f)) :
+  is_linear_map (lemma_standard_open_1c R f g H) :=
+{ add := λ x y, is_ring_hom.map_add _,
+  smul := λ c x, calc
+          lemma_standard_open_1c R f g H (localization.of_comm_ring R _ c * x)
+        = lemma_standard_open_1c R f g H (localization.of_comm_ring R _ c) * lemma_standard_open_1c R f g H x : is_ring_hom.map_mul _
+    ... = localization.of_comm_ring R _ c * lemma_standard_open_1c R f g H x : congr_arg (λ z, z * lemma_standard_open_1c R f g H x) (localization.away.extend_map_extends _ _ _) }
+
+noncomputable def lemma_standard_open_1d (R : Type u) [comm_ring R] (f : R) (g : R) (H : Spec.D'(g) ⊆ Spec.D'(f))
+  (M : Type) [module R M] :
+  tensor_product M (localization.loc R (powers f)) → tensor_product M (localization.loc R (powers g)) :=
+tensor_product.tprod_map
+  is_linear_map.id
+  (lemma_standard_open_1c.is_linear_map R f g H)
 
 def lemma_standard_open_2 (R : Type u) [comm_ring R] (f : R) (α : Type v) 
   (cover : α → {U : set (X R) // topological_space.is_open (Zariski R) U ∧ U ⊆ Spec.D'(f)}) : 

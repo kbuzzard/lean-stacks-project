@@ -1,4 +1,4 @@
-import localization
+import Kenny_comm_alg.temp
 
 universes u v
 
@@ -137,7 +137,5 @@ begin
   rw away.extend_map_extends,
   rw away.extend_map_extends
 end
-
-
 
 end localization

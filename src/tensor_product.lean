@@ -1336,7 +1336,7 @@ universal_property.factor_commutes
 
 end tensor_product
 
-def is_ring_hom.to_module {α : Type u} {β : Type v} 
+def is_ring_hom.to_module {α : Type u} {β : Type v}
   [comm_ring α] [comm_ring β]
   (f : α → β) [is_ring_hom f] : module α β :=
 { smul     := λ r x, f r * x,

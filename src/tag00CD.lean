@@ -4,7 +4,7 @@ if R is a ring, I and ideal of R and S a multiplicative subset of R, then S−1I
 [proof omitted]
 -/
 
-import ring_theory.localization linear_algebra.quotient_module 
+import Kenny_comm_alg.temp linear_algebra.quotient_module 
 import linear_algebra.linear_map_module
 import group_theory.submonoid
 universe u
@@ -39,7 +39,7 @@ instance localization.is_submodule.of_comm_ring : is_submodule (S⁻¹ I) :=
   smul  := λ c m ⟨x, s, hx, hs, h⟩, quotient.induction_on c $ λ ⟨cr, cs, ch⟩,
     ⟨cr * x, cs * s, is_submodule.smul _ hx, is_submonoid.mul_mem ch hs, by rw [← h]; refl⟩ }
 
-instance localization.is_submonoid.of_comm_ring : is_submonoid _ (quotient.mk '' S : set (α /ᵣ I)) :=
+instance localization.is_submonoid.of_comm_ring : is_submonoid (quotient.mk '' S : set (α /ᵣ I)) :=
 { one_mem := ⟨1, is_submonoid.one_mem S, rfl⟩,
   mul_mem := λ x y, quotient.induction_on₂ x y $ λ m n ⟨mw, hms, hm⟩ ⟨nw, hns, hn⟩,
     ⟨mw * nw, is_submonoid.mul_mem hms hns, by rw [← hm, ← hn]; refl⟩ }
