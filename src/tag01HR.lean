@@ -7,7 +7,11 @@ of O_X-modules attached to an R-module.
 /- Let's just do this for rings at this point.
 
 -/
-import Kenny_comm_alg.Zariski localization tag00E0 tag01HS_statement
+import group_theory.submonoid  
+import ring_theory.localization 
+import Kenny_comm_alg.Zariski 
+import tag00E0 
+import tag01HS_statement 
 universe u
 
 #check tag00E0.lemma15
@@ -15,7 +19,7 @@ universe u
 
 def is_zariski.standard_open {R : Type u} [comm_ring R] (U : set (X R)) := ∃ f : R, U = Spec.D'(f)
 
-instance nonzero_on_U_is_mult_set {R : Type u} [comm_ring R] (U : set (X R)) : is_submonoid R {g : R | U ⊆ Spec.D'(g)} := 
+instance nonzero_on_U_is_mult_set {R : Type u} [comm_ring R] (U : set (X R)) : is_submonoid {g : R | U ⊆ Spec.D'(g)} := 
 { one_mem := λ P HP, @is_proper_ideal.one_not_mem _ _ P.1 P.2.1,
   mul_mem := begin
     intros f g Hf Hg,

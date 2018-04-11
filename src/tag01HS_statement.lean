@@ -21,7 +21,7 @@ Recall that D(f) is quasi-compact, see tag 00F6. Hence the second statement foll
 The third statement follows directly from tag 00E0. 
 -/
 
-import Kenny_comm_alg.Zariski localization_UMP tensor_product tag00E4
+import Kenny_comm_alg.Zariski ring_theory.localization_UMP tensor_product tag00E4
 import Kenny_comm_alg.avoid_powers algebra.module
 
 universes u v
