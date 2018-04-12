@@ -186,16 +186,16 @@ lemma localize_more_left_eq (f g x : R) (n : ℕ) :
   show ⟦_⟧ * classical.some h = ⟦_⟧,
   have := some_spec h,
   rw ← quotient.out_eq (some h) at *,
+  rcases out (some h) with ⟨s₁, s₂, hs⟩, intro this,
   rcases quotient.exact this with ⟨r, hr₁, hr₂⟩,
   refine quot.sound ⟨r, hr₁, _⟩,
   rw [sub_mul, sub_eq_zero_iff_eq] at hr₂,
-  have hr₂' : ((out (some h)).snd).val * r = f ^ n * (out (some h)).fst * r :=
-      by simpa using hr₂,
-  suffices : (((out (some h)).snd).val * (x * g ^ n) 
-      - ((f * g) ^ n * (x * (out (some h)).fst))) * r = 0,
-    rw ← this, simp,
-  simp only [sub_mul, mul_pow, mul_assoc, mul_left_comm (((out (some h)).snd).val), hr₂'],
-  ring,
+  have hr₂' : s₂ * r = f ^ n * s₁ * r,
+  { simpa using hr₂ },
+  suffices : (s₂ * (x * g ^ n) - ((f * g) ^ n * (x * s₁))) * r = 0,
+  { rw ← this, simp },
+  simp only [sub_mul, mul_pow, mul_assoc, mul_left_comm s₂, hr₂'],
+  ring
 end
 
 lemma localize_more_right_eq (f g x : R) (n : ℕ) : 
@@ -204,16 +204,16 @@ lemma localize_more_right_eq (f g x : R) (n : ℕ) :
   show ⟦_⟧ * classical.some h = ⟦_⟧,
   have := some_spec h,
   rw ← quotient.out_eq (some h) at *,
+  rcases out (some h) with ⟨s₁, s₂, hs⟩, intro this,
   rcases quotient.exact this with ⟨r, hr₁, hr₂⟩,
   refine quot.sound ⟨r, hr₁, _⟩,
   rw [sub_mul, sub_eq_zero_iff_eq] at hr₂,
-  have hr₂' : ((out (some h)).snd).val * r = g ^ n * (out (some h)).fst * r :=
-      by simpa using hr₂,
-  suffices : (((out (some h)).snd).val * (x * f ^ n) 
-      - ((f * g) ^ n * (x * (out (some h)).fst))) * r = 0,
-    rw ← this, simp,
-  simp only [sub_mul, mul_pow, mul_assoc, mul_left_comm (((out (some h)).snd).val), hr₂'],
-  ring,
+  have hr₂' : s₂ * r = g ^ n * s₁ * r,
+  { simpa using hr₂ },
+  suffices : (s₂ * (x * f ^ n) - ((f * g) ^ n * (x * s₁))) * r = 0,
+  { rw ← this, simp },
+  simp only [sub_mul, mul_pow, mul_assoc, mul_left_comm s₂, hr₂'],
+  ring
 end
 
 lemma lemma_standard_covering₁ {f : γ → R}
