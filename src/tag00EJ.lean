@@ -1,5 +1,4 @@
-import Kenny_comm_alg.Zariski localization_UMP
-import Kenny_comm_alg.ideal_operations
+import localization_UMP
 import massot_indexed_products
 import data.fintype
 import data.set.finite
@@ -8,123 +7,70 @@ import tactic.ring
 import chris_ring_lemma
 local attribute [instance] classical.prop_decidable
 
-universe u
+universes u v w
 
 open finset classical quotient 
-universes v w
-
--- TODO (Kenny?)
-lemma generate_eq_span {R : Type*} [comm_ring R] (S : set R) : generate S = span S := 
-set.eq_of_subset_of_subset (λ a H, H (span S) subset_span) (span_minimal (generate.is_ideal _) 
-(subset_generate _))
 
 section
-variables {α : Type*} [rα : comm_ring α]
-include rα
+variables {α : Type u} {β : Type v} {γ : Type w}
 
-lemma is_ring_hom.inj_of_kernel_eq_zero {β : Type*} [comm_ring β] {f : α → β} [hf : is_ring_hom f] 
+lemma is_ring_hom.inj_of_kernel_eq_zero [comm_ring α] [comm_ring β] {f : α → β} [hf : is_ring_hom f] 
     (h : ∀ {x}, f x = 0 → x = 0) : function.injective f := 
 λ x y hxy, by rw [← sub_eq_zero_iff_eq, ← is_ring_hom.map_sub f] at hxy;
   exact sub_eq_zero_iff_eq.1 (h hxy)
 
-instance indexed_product.is_ring_hom {I : Type*} {f : I → Type*} [∀ i : I, comm_ring (f i)]
+instance indexed_product.is_ring_hom [comm_ring α] {I : Type v} {f : I → Type w} [∀ i : I, comm_ring (f i)]
 (g : α → Π i : I, f i) [rh : ∀ i : I, is_ring_hom (λ a : α, g a i)] : is_ring_hom g :=
 { map_add := λ x y, funext $ λ i, @is_ring_hom.map_add _ _ _ _ _ (rh i) x y,
   map_mul := λ x y, funext $ λ i, @is_ring_hom.map_mul _ _ _ _ _ (rh i) x y,
   map_one := funext $ λ i, @is_ring_hom.map_one _ _ _ _ _ (rh i) }
-end
 
 open finset
 
-lemma finsupp_sum_lc_eq_sum {α β : Type*} [ring α] [module α β] {s : finset β}
-    {r : lc α β}  (hr : (∀ x, x ∉ (↑s : set β) → r x = 0)) :
-    finsupp.sum r (λ (b : β) (a : α), a • b) = s.sum (λ y, r y • y) :=
-have h₁ : r.support ⊆ s := λ x hx, classical.by_contradiction 
-  (λ h₁, ((finsupp.mem_support_iff r _).1 hx) (hr _ h₁)),
-have h₂ : sum (s \ r.support) (λ y, r y • y) = 0 := begin
-  rw ← @finset.sum_const_zero _ _ (s \ r.support),
-  refine finset.sum_congr rfl _,
-  assume x hx,
-  rw [mem_sdiff, finsupp.mem_support_iff, ne.def, not_not] at hx,
-  simp [hx.2],
-end,
-by rw [← finset.sum_sdiff h₁, h₂, zero_add]; refl
-
-lemma exists_sum_iff_mem_span_finset {α β : Type*} {x : β} [ring α] [module α β] {s : finset β} 
+lemma exists_sum_iff_mem_span_finset {x : β} [ring α] [module α β] {s : finset β} 
     : x ∈ span (↑s : set β) ↔ ∃ r : β → α, s.sum (λ y, r y • y) = x :=
-⟨λ ⟨r, hr⟩, ⟨r, by rw [← finsupp_sum_lc_eq_sum hr.1, hr.2]⟩,
+⟨λ ⟨r, hr⟩, ⟨r, hr.2.symm ▸ sum_bij_ne_zero (λ a _ _, a)
+  (λ a has ha, (finsupp.mem_support_iff _ _).2 (λ h, by simpa [h] using ha))
+  (λ _ _ _ _ _ _, id)
+  (λ b hbr hb, ⟨b, classical.by_contradiction (λ h, by simpa [hr.1 _ h] using hb), hb, rfl⟩)
+  (λ _ _ _, rfl)⟩,
 λ ⟨r, hr⟩, ⟨⟨s.filter (λ x, r x ≠ 0), 
   λ x, if x ∈ s then r x else 0, 
-  λ a, ⟨λ h, by rw if_pos (mem_filter.1 h).1;exact (mem_filter.1 h).2,
+  λ a, ⟨λ h, by rw if_pos (mem_filter.1 h).1; exact (mem_filter.1 h).2,
      λ h, or.cases_on (classical.em (a ∈ s))
       (λ ha, mem_filter.2 (by rw if_pos ha at h; exact ⟨ha, h⟩))
       (λ ha, by rw if_neg ha at h; exact false.elim (h rfl))⟩⟩, 
   ⟨λ x hx, if_neg hx,
-  show x = finsupp.sum _ (λ _ _, _ • _), begin 
-  rw [@finsupp_sum_lc_eq_sum _ _ _ _ s, ← hr],
-    { exact finset.sum_congr rfl (λ y hy, 
-        (show _ = ite _ _ _ • _, by rw if_pos hy)) },
-    { assume x (hx : x ∉ s), 
-      exact if_neg hx }
-   end⟩ ⟩ ⟩
+    hr ▸ sum_bij_ne_zero (λ a _ _, a)
+      (λ a has ha, (finsupp.mem_support_iff _ _).2 
+        (λ h : ite _ _ _ = _,  by simp [if_pos has, *] at *))
+      (λ _ _ _ _ _ _, id)
+      (λ b hbr (hb : ite _ _ _ • _ ≠ _),
+        have hbs : b ∈ s := classical.by_contradiction (λ h, by simpa [if_neg h] using hb),
+        ⟨b, hbs, by rwa if_pos hbs at hb, rfl⟩)
+      (λ a ha ha0, show _ = ite _ _ _ • _, by rw if_pos ha) ⟩ ⟩ ⟩
 
-lemma exists_sum_iff_mem_span_image_finset {α β γ : Type*} {x : β} [ring α] [module α β] {s : finset γ}
+lemma exists_sum_iff_mem_span_image_finset 
+    {x : β} [ring α] [module α β] {s : finset γ}
     {f : γ → β} : x ∈ span (↑(s.image f) : set β) ↔ 
     ∃ r : γ → α, x = s.sum (λ b, r b • f b) :=
-⟨λ ⟨⟨supp, r, hs⟩, hr₁, hr₂⟩,
+⟨λ h, let ⟨r, hr⟩ := exists_sum_iff_mem_span_finset.1 h in
 have hc : ∀ y ∈ s, ∃ z ∈ s, f z = f y := λ y hy, ⟨y, hy, rfl⟩,
-let g := λ y, if ∃ hy : y ∈ s, y = some (hc y hy) then (r ∘ f) y else 0 in
-let t := s.filter (λ y, ∃ hy : y ∈ s, y = some (hc y hy) ∧ r (f y) ≠ 0) in 
-have h : sum (s \ t) (λ (y : γ), g y • f y) = 0 := begin
-  conv {to_rhs, rw ← @sum_const_zero _ _ (s \ t)},
-  refine sum_congr rfl (λ y (hy : y ∈ s \ filter _ _), _),
-  show (ite _ _ _ • _ = _),
-  rw [mem_sdiff, mem_filter, not_and] at hy,
-  have := not_exists.1 (hy.2 hy.1) hy.1,
-  cases classical.em (y = some (hc y hy.1)) with h h,
-  { rw [not_and] at this, 
-    have := this h,
-    rw [ne.def, not_not] at this,
-    rw [if_pos, function.comp_app, this, zero_smul],
-    exact ⟨hy.1, h⟩ },
-  { have : ¬∃ H : y ∈ s, y = some (hc y H) := λ ⟨_, hn⟩, h hn,
-    rw [if_neg this, zero_smul] }
-end,
-have hg : ∀ y, ∀ hy : y ∈ s, g y ≠ 0 → 
-    y = @classical.some γ (λ z, ∃ H : z ∈ s, f z = f y) (hc y hy) := 
-  λ y hy (hy' : ite _ _ _ ≠ _),
-  classical.by_contradiction (λ h,
-  have h' : ¬ ∃ (h :y ∈ s), y = @classical.some γ (λ z, ∃ H : z ∈ s, f z = f y) (hc y hy) :=
-    λ ⟨_, h'⟩, h h',
-  by rw if_neg h' at hy'; exact false.elim (hy' rfl)),
-have hy : ∀ y : γ, y ∈ s ∧ g y ≠ 0 → g y • f y = r (f y) • f y :=
-  λ y (hy : _ ∧ ite _ _ _ ≠ _),
-  show ite _ _ _ • _ = _, by 
-  have := hg y hy.1 hy.2; rw if_pos at ⊢ hy; exact ⟨hy.1, this⟩,
-⟨g, by rw [hr₂, ← sum_sdiff (filter_subset s : t ⊆ s), h, zero_add];
-  exact eq.symm (sum_bij 
-    (λ a _, f a) 
-    (λ a ha, let ⟨_, _, _, ha⟩ := mem_filter.1 ha in
-      (finsupp.mem_support_iff _ _).2 ha) 
-    (λ a ha, 
-      let ⟨_, has, hs, ha⟩ := mem_filter.1 ha in
-      show ite _ _ _ • _ = _,
-      by rw if_pos (⟨has, hs⟩ : (∃ (hy : a ∈ s), a = some _));
-      refl)
-    (λ a₁ a₂ ha₁ ha₂ haa,
-    begin 
-      rcases mem_filter.1 ha₁ with ⟨_, _, ha₁, _⟩,
-      rcases mem_filter.1 ha₂ with ⟨_, _, ha₂, _⟩,
-      rw [ha₁, ha₂],
-      simp only [haa],
-    end)
-    (λ a ha, 
-      have _ := mem_image.1 (not_imp_comm.1 (hr₁ a) 
-        ((finsupp.mem_support_iff _ _).1 ha)),
-      let ⟨hs₁, hs₂⟩ := some_spec this in
-      ⟨some this, ⟨mem_filter.2 ⟨hs₁, hs₁, by simp only [hs₂], 
-          hs₂.symm ▸ (hs a).1 ha⟩, hs₂.symm⟩⟩) ) ⟩,
-
+⟨λ y, if ∃ hy : y ∈ s, y = some (hc y hy) then r (f y) else 0, 
+  hr ▸ sum_bij_ne_zero (λ a ha _, some (mem_image.1 ha)) 
+    (λ a ha _, let ⟨h, _⟩ := some_spec (mem_image.1 ha) in h) 
+    (λ a₁ a₂ ha₁ _ ha₂ _ h, 
+      let ⟨_, h₁⟩ := some_spec (mem_image.1 ha₁) in
+      let ⟨_, h₂⟩ := some_spec (mem_image.1 ha₂) in
+      h₁ ▸ h₂ ▸ h ▸ rfl) 
+    (λ b hbs hb0,
+      have hfb : f b ∈ image f s := mem_image.2 ⟨b, hbs, rfl⟩,
+      have hb : b = some (mem_image.1 hfb) := classical.by_contradiction
+        (λ h, have h' : ¬∃ (x : b ∈ s), b = some _ := not_exists.2 (λ hy : b ∈ s, h), 
+        by rw [if_neg h', zero_smul] at hb0; exact hb0 rfl),
+      ⟨f b, hfb, by rwa if_pos at hb0; exact ⟨hbs, hb⟩, hb⟩)
+    (λ a ha ha0, let ⟨h₁, h₂⟩ := some_spec (mem_image.1 ha) in
+      by rw [if_pos, h₂]; exact ⟨h₁, by simp only [h₂]⟩)⟩,
 λ ⟨r, hr⟩, hr.symm ▸ is_submodule.sum (λ c hc, is_submodule.smul _ 
     (subset_span (mem_image.2 ⟨c, hc, rfl⟩))) ⟩
  
@@ -145,7 +91,7 @@ begin
         span ↑(image (λ (a : α), f a ^ n a) (insert a s)) := 
       span_minimal is_submodule_span (set.subset.trans 
         (by rw [image_insert, coe_subseteq_coe]; exact subset_insert _ _) subset_span),
-    refine is_submodule.smul' _ (this hi), }
+    exact is_submodule.smul' _ (this hi), }
 end
 
 lemma one_mem_span_pow_of_mem_span {α R : Type*} [comm_ring R] {s : finset α}
@@ -155,11 +101,12 @@ let ⟨r, hr⟩ := exists_sum_iff_mem_span_image_finset.1 h in
 by rw [← one_pow (s.sum n + 1), hr];
   apply sum_pow_mem_span
 
-variables {R : Type*} {γ : Type*} [comm_ring R] [fintype γ]
+end
+
+variables {R : Type u} {γ : Type v} [comm_ring R] [fintype γ]
 open localization
 
-private def α (f : γ → R) (x : R) : 
-    Π i, loc R (powers (f i)) :=
+private def α (f : γ → R) (x : R) : Π i, loc R (powers (f i)) :=
   λ i, of_comm_ring R _ x
 
 private noncomputable def β {f : γ → R}
