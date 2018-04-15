@@ -8,14 +8,16 @@ The sets D(f) are open and form a basis for this topology (on Spec(R))
 
 -/
 
-import Kenny_comm_alg.temp Kenny_comm_alg.Zariski
+--import Kenny_comm_alg.temp 
+import Kenny_comm_alg.Zariski
+universe u 
 
 local attribute [instance] classical.prop_decidable
 
-lemma D_f_form_basis (R : Type) [comm_ring R] : 
-  topological_space.is_topological_basis' {U : set (X R) | ∃ f : R, U = Spec.D'(f)} := 
+lemma D_f_form_basis (R : Type u) [comm_ring R] : 
+  topological_space.is_topological_basis {U : set (X R) | ∃ f : R, U = Spec.D'(f)} := 
 begin
-  split,
+  refine topological_space.is_topological_basis_of_open_of_nhds _ _,
   { intros U H,
     cases H with f Hf,
     existsi ({f} : set R),
@@ -26,7 +28,7 @@ begin
     rw set.compl_compl,
     simp
   },
-  { intros U H x H1,
+  { intros x U H1 H,
     cases H with U1 H,
     have H2 : U = -Spec.V U1,
     { rw [H, set.compl_compl] },
