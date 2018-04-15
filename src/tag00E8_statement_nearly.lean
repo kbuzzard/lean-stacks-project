@@ -8,12 +8,15 @@ Proof. It suffices to prove that any covering of Spec(R) by standard opens can b
    And then it follows that Spec(R)=∪i∈JD(fi). 
 -/
 
+
+-- status of this lemma: I've reduced it to the case of 
 import Kenny_comm_alg.Zariski algebra.module Kenny_comm_alg.maximal_ideal tag00DY
 universe u
 
 local attribute [instance] classical.prop_decidable
-set_option pp.proofs true
-lemma lemma_quasi_compact {R : Type u} [comm_ring R] : compact (@set.univ (X R)) :=
+
+-- Kenny wrote this and it is unfinished and he got stuck I think
+lemma lemma_quasi_compact_Kenny {R : Type u} [comm_ring R] : compact (@set.univ (X R)) :=
 begin
   rw compact_iff_finite_subcover,
   intros c h1 h2,
@@ -87,18 +90,14 @@ end
 -- the above was Kenny's effort. It seems easier to just try this myself than to understand
 -- what he wrote.
 
-#check topological_space.is_topological_basis'
-#print notation ⋃₀ 
-#check set.Union 
-
-#check topological_space.is_topological_basis
-
 -- this will go to mathlib one day
 lemma mem_subset_basis_of_mem_open {X : Type u} [T : topological_space X] {b : set (set X)}
   (hb : topological_space.is_topological_basis b) {a:X} (u : set X) (au : a ∈ u)
   (ou : _root_.is_open u) : ∃v ∈ b, a ∈ v ∧ v ⊆ u :=
 (topological_space.mem_nhds_of_is_topological_basis hb).1 $ mem_nhds_sets ou au
 
+
+-- this was warm-up : I never use it
 lemma cover_open_by_basis {X : Type u} [T : topological_space X] {U : set X} (HU : T.is_open U)
 (B : set (set X)) (HB : topological_space.is_topological_basis B) 
   : ∃ (g : {x : X // U x} → set X), (∀ j, B (g j)) ∧ set.Union g = U :=
@@ -128,6 +127,7 @@ begin
   refl
 end 
 
+-- a cover can be refined to a cover by a basis
 lemma refine_cover_with_basis {X : Type u} [T : topological_space X] 
   (B : set (set X)) (HB : topological_space.is_topological_basis B) 
   (c : set (set X)) (Oc : ∀ U ∈ c, T.is_open U) (Hcov : set.sUnion c = set.univ) :
@@ -151,15 +151,17 @@ begin
   exact HV2.2
 end 
 
+-- this needs doing
 lemma basis_quasi_compact {R : Type u} [comm_ring R] :
-∀ F : set R, @set.univ (X R) = set.Union (λ fHf : {r // F r}, Spec.D' fHf.val) →
+∀ F : set R, @set.univ (X R) = set.Union (λ fF : {f // F f}, Spec.D' fF.val) →
 ∃ G : set R, G ⊆ F ∧ set.finite G ∧ 
-  @set.univ (X R) = set.Union (λ fHf : {r // G r}, Spec.D' fHf.val) :=
+  @set.univ (X R) = set.Union (λ gG : {g // G g}, Spec.D' gG.val) :=
 begin
 admit
 end
 
-lemma lemma_quasi_compact' {R : Type u} [comm_ring R] : compact (@set.univ (X R)) :=
+-- deduces main result from compact basis result
+lemma lemma_quasi_compact {R : Type u} [comm_ring R] : compact (@set.univ (X R)) :=
 begin
   rw compact_iff_finite_subcover,
   intros c HOc Hccov,
@@ -168,16 +170,40 @@ begin
   cases (refine_cover_with_basis B HB c HOc (set.subset.antisymm (by simp) Hccov)) with d Hd,
   have HdB : ∀ V ∈ d, ∃ f : R, V = Spec.D' f := λ _ HV,Hd.1 HV,
   have H := basis_quasi_compact (λ f, (Spec.D' f) ∈ d),
-  have Hdcov : ⋃ (fHf : {r // (λ (f : R), Spec.D' f ∈ d) r}), Spec.D' (fHf.val) = set.univ,
-  
-  let F : set R := λ f, ∃ U, c U ∧ Spec.D' f ⊆ U,
-
-  have H2 := H.2,
-  let α := Σ (Us : { V : set (X R) // c V}), {xs : X R // Us.1 xs},
-  
---  let C : α → set (X R) :=topological_space.is_topological_basis'
---    λ Us xs,H.2 Us.1 (h1 Us.1 Us.2) xs.1 xs.2,
-  admit,-- meh
+  have Hdcov : (⋃ (fHf : {f // Spec.D' f ∈ d}), Spec.D' (fHf.val)) = set.univ,
+  { apply set.subset.antisymm,simp,
+    rw ←Hd.2.2,
+    intros x Hx,cases Hx with V HV,cases HV with HVd HxV,
+    existsi V,
+    existsi _,
+    exact HxV,
+    cases Hd.1 HVd with f Hf,
+    rw Hf at HVd,
+    existsi (⟨f,HVd⟩ : {f // Spec.D' f ∈ d}),
+    exact Hf
+  },
+  cases H (eq.symm Hdcov) with G HG,
+  let m : {g // g ∈ G} → set (X R) := λ gG,classical.some (Hd.2.1 (Spec.D' gG.val) (HG.1 gG.property)),
+  have mH : ∀ (gG : {g // g ∈ G}), ∃ (H : (m gG) ∈ c), Spec.D' (gG.val) ⊆ (m gG)
+      := λ (gG : {g // g ∈ G}), classical.some_spec (Hd.2.1 (Spec.D' gG.val) (HG.1 gG.property)),
+  existsi set.range m,
+  existsi _,split,
+  { have HGfin : set.finite G := HG.2.1,
+    exact let ⟨HF⟩ := HGfin in ⟨@set.fintype_range _ _ _ m HF⟩,
+  },
+  { rw HG.2.2,
+    intros x Hx,
+    cases Hx with U HU,cases HU with HU HxU,cases HU with gG HU,
+    change U = Spec.D' (gG.val)  at HU,
+    cases mH gG with H1 H2,
+    existsi m gG,
+    existsi _,
+    { apply H2,
+      rw ←HU,
+      exact HxU },
+    existsi gG,refl
+  },
+  intros U HU,cases HU with gG HU,
+  cases (mH gG) with Hc,
+  rw HU at Hc,exact Hc,
 end
-
-#check topological_space.is_topological_basis
