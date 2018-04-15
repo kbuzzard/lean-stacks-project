@@ -8,8 +8,7 @@ Proof. It suffices to prove that any covering of Spec(R) by standard opens can b
    And then it follows that Spec(R)=∪i∈JD(fi). 
 -/
 
-
--- status of this lemma: I've reduced it to the case of 
+-- status of this lemma: I've reduced it to the case of a cover by basis elts
 import Kenny_comm_alg.Zariski algebra.module Kenny_comm_alg.maximal_ideal tag00DY
 universe u
 
@@ -90,7 +89,7 @@ end
 -- the above was Kenny's effort. It seems easier to just try this myself than to understand
 -- what he wrote.
 
--- this will go to mathlib one day
+-- this next lemma will go to mathlib one day
 lemma mem_subset_basis_of_mem_open {X : Type u} [T : topological_space X] {b : set (set X)}
   (hb : topological_space.is_topological_basis b) {a:X} (u : set X) (au : a ∈ u)
   (ou : _root_.is_open u) : ∃v ∈ b, a ∈ v ∧ v ⊆ u :=
@@ -151,7 +150,7 @@ begin
   exact HV2.2
 end 
 
--- this needs doing
+-- this needs doing (it's the only thing left)
 lemma basis_quasi_compact {R : Type u} [comm_ring R] :
 ∀ F : set R, @set.univ (X R) = set.Union (λ fF : {f // F f}, Spec.D' fF.val) →
 ∃ G : set R, G ⊆ F ∧ set.finite G ∧ 
