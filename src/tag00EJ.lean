@@ -19,7 +19,7 @@ lemma is_ring_hom.inj_of_kernel_eq_zero [comm_ring α] [comm_ring β] {f : α �
 λ x y hxy, by rw [← sub_eq_zero_iff_eq, ← is_ring_hom.map_sub f] at hxy;
   exact sub_eq_zero_iff_eq.1 (h hxy)
 
-instance indexed_product.is_ring_hom [comm_ring α] {I : Type v} {f : I → Type w} [∀ i : I, comm_ring (f i)]
+instance indexed_product.is_ring_hom [comm_ring α] {I : Type v} {f : I → Type w} [∀ i, comm_ring (f i)]
 (g : α → Π i : I, f i) [rh : ∀ i : I, is_ring_hom (λ a : α, g a i)] : is_ring_hom g :=
 { map_add := λ x y, funext $ λ i, @is_ring_hom.map_add _ _ _ _ _ (rh i) x y,
   map_mul := λ x y, funext $ λ i, @is_ring_hom.map_mul _ _ _ _ _ (rh i) x y,
@@ -28,41 +28,26 @@ instance indexed_product.is_ring_hom [comm_ring α] {I : Type v} {f : I → Type
 open finset
 
 lemma exists_sum_iff_mem_span_finset {x : β} [ring α] [module α β] {s : finset β} 
-    : x ∈ span (↑s : set β) ↔ ∃ r : β → α, s.sum (λ y, r y • y) = x :=
+    : x ∈ span (↑s : set β) ↔ ∃ r : β → α, x = s.sum (λ y, r y • y) :=
 ⟨λ ⟨r, hr⟩, ⟨r, hr.2.symm ▸ sum_bij_ne_zero (λ a _ _, a)
-  (λ a has ha, (finsupp.mem_support_iff _ _).2 (λ h, by simpa [h] using ha))
+  (λ a has ha, classical.by_contradiction (λ h, ha (by simp [hr.1 _ h])))
   (λ _ _ _ _ _ _, id)
-  (λ b hbr hb, ⟨b, classical.by_contradiction (λ h, by simpa [hr.1 _ h] using hb), hb, rfl⟩)
+  (λ b hbr hb, ⟨b, (finsupp.mem_support_iff _ _).2 (λ h, hb (by simp [h])), hb, rfl⟩)
   (λ _ _ _, rfl)⟩,
-λ ⟨r, hr⟩, ⟨⟨s.filter (λ x, r x ≠ 0), 
-  λ x, if x ∈ s then r x else 0, 
-  λ a, ⟨λ h, by rw if_pos (mem_filter.1 h).1; exact (mem_filter.1 h).2,
-     λ h, or.cases_on (classical.em (a ∈ s))
-      (λ ha, mem_filter.2 (by rw if_pos ha at h; exact ⟨ha, h⟩))
-      (λ ha, by rw if_neg ha at h; exact false.elim (h rfl))⟩⟩, 
-  ⟨λ x hx, if_neg hx,
-    hr ▸ sum_bij_ne_zero (λ a _ _, a)
-      (λ a has ha, (finsupp.mem_support_iff _ _).2 
-        (λ h : ite _ _ _ = _,  by simp [if_pos has, *] at *))
-      (λ _ _ _ _ _ _, id)
-      (λ b hbr (hb : ite _ _ _ • _ ≠ _),
-        have hbs : b ∈ s := classical.by_contradiction (λ h, by simpa [if_neg h] using hb),
-        ⟨b, hbs, by rwa if_pos hbs at hb, rfl⟩)
-      (λ a ha ha0, show _ = ite _ _ _ • _, by rw if_pos ha) ⟩ ⟩ ⟩
+λ ⟨r, hr⟩, hr.symm ▸ is_submodule.sum (λ c hc, is_submodule.smul _ (subset_span hc))⟩
 
-lemma exists_sum_iff_mem_span_image_finset 
-    {x : β} [ring α] [module α β] {s : finset γ}
+lemma exists_sum_iff_mem_span_image_finset {x : β} [ring α] [module α β] {s : finset γ}
     {f : γ → β} : x ∈ span (↑(s.image f) : set β) ↔ 
     ∃ r : γ → α, x = s.sum (λ b, r b • f b) :=
 ⟨λ h, let ⟨r, hr⟩ := exists_sum_iff_mem_span_finset.1 h in
 have hc : ∀ y ∈ s, ∃ z ∈ s, f z = f y := λ y hy, ⟨y, hy, rfl⟩,
 ⟨λ y, if ∃ hy : y ∈ s, y = some (hc y hy) then r (f y) else 0, 
-  hr ▸ sum_bij_ne_zero (λ a ha _, some (mem_image.1 ha)) 
+  hr.symm ▸ sum_bij_ne_zero (λ a ha _, some (mem_image.1 ha)) 
     (λ a ha _, let ⟨h, _⟩ := some_spec (mem_image.1 ha) in h) 
     (λ a₁ a₂ ha₁ _ ha₂ _ h, 
       let ⟨_, h₁⟩ := some_spec (mem_image.1 ha₁) in
       let ⟨_, h₂⟩ := some_spec (mem_image.1 ha₂) in
-      h₁ ▸ h₂ ▸ h ▸ rfl) 
+      h₁ ▸ h₂ ▸ h ▸ rfl)
     (λ b hbs hb0,
       have hfb : f b ∈ image f s := mem_image.2 ⟨b, hbs, rfl⟩,
       have hb : b = some (mem_image.1 hfb) := classical.by_contradiction
@@ -72,7 +57,7 @@ have hc : ∀ y ∈ s, ∃ z ∈ s, f z = f y := λ y hy, ⟨y, hy, rfl⟩,
     (λ a ha ha0, let ⟨h₁, h₂⟩ := some_spec (mem_image.1 ha) in
       by rw [if_pos, h₂]; exact ⟨h₁, by simp only [h₂]⟩)⟩,
 λ ⟨r, hr⟩, hr.symm ▸ is_submodule.sum (λ c hc, is_submodule.smul _ 
-    (subset_span (mem_image.2 ⟨c, hc, rfl⟩))) ⟩
+    (subset_span (mem_image.2 ⟨c, hc, rfl⟩)))⟩
  
 lemma sum_pow_mem_span {α R : Type*} [comm_ring R] (s : finset α)
     (f : α → R) (n : α → ℕ) (r : α → R) : s.sum (λ a, r a • f a) ^ (s.sum n + 1) ∈ span 
@@ -87,8 +72,7 @@ begin
     exact is_submodule.smul' _ (subset_span (mem_image.2 ⟨a, mem_insert_self _ _, rfl⟩)) },
   { rw [sum_insert has, add_assoc, add_comm (n a), nat.add_sub_assoc hak, pow_add],
     simp only [mul_assoc, smul_eq_mul, mul_pow, mul_left_comm _ (sum s _ ^ (sum s n + 1))],
-    have : span ↑(image (λ (a : α), f a ^ n a) s) ⊆ 
-        span ↑(image (λ (a : α), f a ^ n a) (insert a s)) := 
+    have : span ↑(image (λ a, f a ^ n a) s) ⊆ span ↑(image (λ a, f a ^ n a) (insert a s)) := 
       span_minimal is_submodule_span (set.subset.trans 
         (by rw [image_insert, coe_subseteq_coe]; exact subset_insert _ _) subset_span),
     exact is_submodule.smul' _ (this hi), }
@@ -98,8 +82,7 @@ lemma one_mem_span_pow_of_mem_span {α R : Type*} [comm_ring R] {s : finset α}
     {f : α → R} (n : α → ℕ) (h : (1 : R) ∈ span (↑(s.image f) : set R)) : 
     (1 : R) ∈ span (↑(s.image (λ x, f x ^ n x)) : set R) :=
 let ⟨r, hr⟩ := exists_sum_iff_mem_span_image_finset.1 h in
-by rw [← one_pow (s.sum n + 1), hr];
-  apply sum_pow_mem_span
+@one_pow R _ (s.sum n + 1) ▸ hr.symm ▸ sum_pow_mem_span _ _ _ _
 
 end
 
@@ -129,7 +112,8 @@ begin
   { simpa using hr₂ },
   suffices : (s₂ * (x * g ^ n) - ((f * g) ^ n * (x * s₁))) * r = 0,
   { rw ← this, simp },
-  simp only [sub_mul, mul_pow, mul_assoc, mul_left_comm s₂, hr₂'],
+  simp only [sub_mul, mul_pow, mul_assoc, mul_left_comm s₂,
+      mul_comm r, mul_left_comm r, hr₂'],
   ring
 end
 
@@ -148,7 +132,8 @@ begin
   { simpa using hr₂ },
   suffices : (s₂ * (x * f ^ n) - ((f * g) ^ n * (x * s₁))) * r = 0,
   { rw ← this, simp },
-  simp only [sub_mul, mul_pow, mul_assoc, mul_left_comm s₂, hr₂'],
+  simp only [sub_mul, mul_pow, mul_assoc, mul_left_comm s₂, 
+      mul_comm r, mul_left_comm r, hr₂'],
   ring
 end
 
@@ -198,7 +183,7 @@ let n := λ i j, some (this i j) + r i + r j in
 have hn : ∀ i j, (f i ^ r i * (t j).1 - 
     f j ^ r j * (t i).1) * (f i * f j) ^ n i j = 0 := 
   λ i j, by rw [← zero_mul (f i ^ r i), 
-          ← zero_mul (f j ^ r j), ← some_spec (this i j)];
+      ← zero_mul (f j ^ r j), ← some_spec (this i j)];
     simp [n, pow_add, mul_pow];
     ring,
 let N := finset.sum (univ : finset (_ × _)) (λ ij, n ij.1 ij.2) in
@@ -234,4 +219,4 @@ begin
   rw [mul_sum, sub_mul, sum_mul, this, ← sum_mul, ← sum_mul, ← ha, one_mul, sub_self]
 end⟩)⟩,
 λ ⟨r, hr⟩, hr ▸ show β (α f r) = λ i j, 0, from funext $ λ i, funext $ λ j, 
-  sub_eq_zero_iff_eq.2 $ loc_commutes _ _ _ ⟩
+  sub_eq_zero_iff_eq.2 $ loc_commutes _ _ _⟩
