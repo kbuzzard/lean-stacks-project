@@ -325,7 +325,6 @@ structure scheme :=
       (structure_presheaf_of_rings_on_affine_scheme R)
 )
 
-#print axioms scheme.mk
 /-
 definition presheaf_of_rings_pullback_under_open_immersion
   {α : Type*} [Tα : topological_space α]
