@@ -15,6 +15,7 @@ universe u
 local attribute [instance] classical.prop_decidable
 
 -- Kenny wrote this and it is unfinished and he got stuck I think
+/-
 lemma lemma_quasi_compact_Kenny {R : Type u} [comm_ring R] : compact (@set.univ (X R)) :=
 begin
   rw compact_iff_finite_subcover,
@@ -88,6 +89,7 @@ end
 
 -- the above was Kenny's effort. It seems easier to just try this myself than to understand
 -- what he wrote.
+-/
 
 -- this next lemma will go to mathlib one day
 lemma mem_subset_basis_of_mem_open {X : Type u} [T : topological_space X] {b : set (set X)}
