@@ -154,23 +154,20 @@ end
 
 -- this needs doing (it's the only thing left)
 lemma basis_quasi_compact {R : Type u} [comm_ring R] :
-∀ F : set R, @set.univ (X R) = set.Union (λ fF : {f // F f}, Spec.D' fF.val) →
+∀ F : set R, @set.univ (X R) = set.Union (λ fF : {f // f ∈ F}, Spec.D' fF.val) →
 ∃ G : set R, G ⊆ F ∧ set.finite G ∧ 
-  @set.univ (X R) = set.Union (λ gG : {g // G g}, Spec.D' gG.val) :=
+  @set.univ (X R) = set.Union (λ gG : {g // g ∈ G}, Spec.D' gG.val) :=
 begin
   intros F Hcover,
   have H : @set.univ (X R) = ⋃₀(Spec.D' '' F),
     rw Hcover,
-    rw set.sUnion_eq_Union,
-    apply set.subset.antisymm,
-    { intros x Hx,
-      cases Hx with U HU,
-      cases HU with HU HxU,
-      existsi U,
-      existsi _,
-      exact HxU,
-    },
-  
+    apply set.ext,
+    intro x,simp,
+  rw tag00E0.lemma16 at H,
+  have H2 : ∅ = Spec.V F := 
+
+
+
   let S := generate (⋃₀{E : set R | ∃ (A : set (X R)) (H : A ∈ set.compl ⁻¹' c), Spec.V E = A}),
   have h3 := set.ext (Zariski._match_3 R (set.compl ⁻¹' c) (λ x hx, begin cases h1 (-x) hx with w h, existsi w, simpa using h, end)),
   replace h2 := set.eq_univ_of_univ_subset h2,
