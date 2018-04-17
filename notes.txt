@@ -1,3 +1,10 @@
+Current goal: 01HR; this is the last tag in some
+sense. 
+
+****************
+
+OLDER STUFF
+
 Things I need:
 
 Lemma: D(f) intersect D(g) = D(fg) is also standard open.
