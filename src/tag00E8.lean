@@ -97,6 +97,7 @@ lemma mem_subset_basis_of_mem_open {X : Type u} [T : topological_space X] {b : s
 
 
 -- this was warm-up : I never use it
+/-
 lemma cover_open_by_basis {X : Type u} [T : topological_space X] {U : set X} (HU : T.is_open U)
 (B : set (set X)) (HB : topological_space.is_topological_basis B) 
   : ∃ (g : {x : X // U x} → set X), (∀ j, B (g j)) ∧ set.Union g = U :=
@@ -125,6 +126,7 @@ begin
   existsi xUx,
   refl
 end 
+-/
 
 -- a cover can be refined to a cover by a basis
 lemma refine_cover_with_basis {X : Type u} [T : topological_space X] 
@@ -150,92 +152,71 @@ begin
   exact HV2.2
 end 
 
-#check tag00E0.lemma16
-
--- this needs doing (it's the only thing left)
+-- a cover by basis elements has a finite subcover
 lemma basis_quasi_compact {R : Type u} [comm_ring R] :
 ∀ F : set R, @set.univ (X R) = set.Union (λ fF : {f // f ∈ F}, Spec.D' fF.val) →
 ∃ G : set R, G ⊆ F ∧ set.finite G ∧ 
   @set.univ (X R) = set.Union (λ gG : {g // g ∈ G}, Spec.D' gG.val) :=
 begin
   intros F Hcover,
+  -- first let's show that the union of D(f), f in F, is all Spec(R)
   have H : @set.univ (X R) = ⋃₀(Spec.D' '' F),
     rw Hcover,
     apply set.ext,
     intro x,simp,
+  -- now let's deduce that V(F) is empty.
   rw tag00E0.lemma16 at H,
-  have H2 : ∅ = Spec.V F := 
-
-
-
-  let S := generate (⋃₀{E : set R | ∃ (A : set (X R)) (H : A ∈ set.compl ⁻¹' c), Spec.V E = A}),
-  have h3 := set.ext (Zariski._match_3 R (set.compl ⁻¹' c) (λ x hx, begin cases h1 (-x) hx with w h, existsi w, simpa using h, end)),
-  replace h2 := set.eq_univ_of_univ_subset h2,
-  have h4 : ⋂₀(set.compl ⁻¹' c) = -⋃₀ c,
-  { rw set.compl_sUnion,
-    apply congr_arg,
-    apply set.ext,
-    intro z,
-    split,
-    { intro hz,
-      existsi -z,
-      existsi hz,
-      exact set.compl_compl z },
-    { intro hz,
-      cases hz with z1 hz1,
-      cases hz1 with hz1 hz2,
-      rw ← hz2,
-      apply set.mem_of_eq_of_mem _ hz1,
-      exact set.compl_compl z1 } },
-  rw h4 at h3,
-  rw h2 at h3,
-  rw set.compl_univ at h3,
-  rw V_set_eq_V_generate at h3,
-  have h5 : S = set.univ,
-  { apply classical.by_contradiction,
-    intro h6,
-    have h7 : is_proper_ideal S,
-    from { ne_univ := h6 },
-    have h8 := @@is_ideal.find_maximal_ideal.is_maximal_ideal _ S h7,
-    have h9 := @is_ideal.find_maximal_ideal.contains _ _ S h7,
-    rw set.eq_empty_iff_forall_not_mem at h3,
-    specialize h3 ⟨@@is_ideal.find_maximal_ideal _ S h7, h8.to_is_prime_ideal⟩,
-    exact h3 h9 },
-  rw set.eq_univ_iff_forall at h5,
-  specialize h5 1 (span (⋃₀{E : set R | ∃ (A : set (X R)) (H : A ∈ set.compl ⁻¹' c), Spec.V E = A})) subset_span,
-  rcases h5 with ⟨v, hv1, hv2⟩,
-  dsimp [lc] at v,
-  have hv3 : ∀ x : {x // x ∈ finsupp.support v}, ∃ T, T ∈ c ∧ ∃ E, Spec.D E = T ∧ x.1 ∈ E,
-  { intros x,
-    cases x with x hx,
-    simp [finsupp.support] at hx,
-    have hv4 := classical.by_contradiction (mt (hv1 x) hx),
-    rcases hv4 with ⟨T1, H, ht1⟩,
-    rcases H with ⟨A, H, ht2⟩,
-    existsi -A,
-    split,
-    { exact H },
-    { existsi T1,
-      split,
-      { rw ← ht2, refl },
-      { exact ht1 } } },
-  existsi {x | x ∈ finset.image (λ x, classical.some $ hv3 x) v.support.attach},
+  have H2 : Spec.V F = ∅,
+    rw [←set.compl_compl (Spec.V F),←H,set.compl_univ],
+  -- now let's deduce that the ideal gen by F is all of R.
+  rw ←tag00E0.lemma05 at H2,
+  letI : is_ideal (span F) := is_ideal_span,
+  have H3 : span F = set.univ := (tag00E0.lemma08 _ _).1 H2,
+  -- now let's write 1 as a finite linear combination of elements of F
+  have H4 : (1 : R) ∈ span F := by simp [H3],
+  cases H4 with f Hf, -- f is a function R -> R supported on a finite subset of F
+  -- now let's build G, finite, with 1 in span G, and then let's run the entire argument backwards.
+  let G : set R := {r | r ∈ f.support},
+  existsi G, -- need to prove G in F, G finite, and D(g) covers for g in G
   split,
-  { intros z hz,
-    dsimp at hz,
-    rw finset.mem_image at hz,
-    rcases hz with ⟨x, hx, hz⟩,
-    rw ← hz,
-    exact (classical.some_spec (hv3 x)).1 },
+  { show G ⊆ F,
+    intros g Hg,
+    cases classical.em (g ∈ F) with H5 H5,assumption,
+    exfalso,
+    have H6 : f g = 0 := Hf.1 g H5,
+    exact (f.mem_support_to_fun g).1 Hg H6
+  },
   split,
-  { constructor,
-    apply set.fintype_of_finset (finset.image (λ (x : {x // x ∈ finsupp.support v}), classical.some (hv3 x))
-      (finset.attach (finsupp.support v))),
-    intro z, simp },
-  { admit }
+  { show set.finite G, -- G = f.support which is a finset
+    exact set.finite_mem_finset _,
+  },
+  -- goal now to show that union of D(g) is Spec(R)
+  -- first reformulate so we can apply lemma16
+  suffices H' : @set.univ (X R) = ⋃₀(Spec.D' '' G),
+    apply set.ext,simp [H'],
+  -- now reduce goal to complement of V(G) is everything
+  rw tag00E0.lemma16,
+  -- now reduce to V(G) empty
+  rw ←set.compl_empty,
+  congr,
+  -- now reduce to span(G) = R
+  rw ←tag00E0.lemma05,
+  apply eq.symm,
+  letI : is_ideal (span G) := is_ideal_span,
+  rw tag00E0.lemma08,
+  -- now reduce to 1 in span(G)
+  apply is_submodule.univ_of_one_mem (span G),
+  -- now prove this
+  rw Hf.2,
+  existsi f,
+  split,swap,refl,
+  intros x Hx,
+  cases classical.em (f x = 0) with H4 H4,assumption,
+  exfalso,
+  exact Hx ((f.mem_support_to_fun x).2 H4),
 end
 
--- deduces main result from compact basis result
+-- now deduce main result from compact basis result
 lemma lemma_quasi_compact {R : Type u} [comm_ring R] : compact (@set.univ (X R)) :=
 begin
   rw compact_iff_finite_subcover,
