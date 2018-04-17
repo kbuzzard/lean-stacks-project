@@ -2,7 +2,7 @@ import analysis.topology.topological_space data.set
 import analysis.topology.continuity 
 import Kenny_comm_alg.Zariski
 import Kenny_comm_alg.temp
-import tag00EJ_statement
+import tag00EJ
 import localization
 import localization_UMP
 import tag00E0
