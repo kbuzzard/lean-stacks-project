@@ -143,7 +143,7 @@ noncomputable definition localize_superset {R : Type u} [comm_ring R] {S T : set
 loc R S → loc R T := extend_map_of_im_unit (of_comm_ring R T) (λ s Hs, unit_of_in_S (⟨s,H Hs⟩ : T))
 
 -- localization to a bigger multiplicative set is a ring hom
-theorem localize_superset.is_ring_hom {R : Type u} [comm_ring R] {S T : set R} [is_submonoid S] [is_submonoid T] (H : S ⊆ T) :
+instance localize_superset.is_ring_hom {R : Type u} [comm_ring R] {S T : set R} [is_submonoid S] [is_submonoid T] (H : S ⊆ T) :
   is_ring_hom (localize_superset H) := extend_map_of_im_unit.is_ring_hom _ _ 
 
 -- localization to a bigger multiplicative set is an R-algebra hom
