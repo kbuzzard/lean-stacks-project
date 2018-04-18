@@ -12,8 +12,12 @@ import ring_theory.localization
 import Kenny_comm_alg.Zariski 
 import tag00E0 
 import tag01HS_statement 
-import tag009I -- presheaf on a basis
+import tag009I -- presheaf of types on a basis
 import tag00DY -- claim that D(f) form a basis
+import tag006N -- presheaves / sheaves of rings on a basis
+import tag009P -- presheaf of rings on a basis
+import tag009L -- sheaf for finite covers on basis -> sheaf for basis
+
 universe u
 
 def is_zariski.standard_open {R : Type u} [comm_ring R] (U : set (X R)) := ∃ f : R, U = Spec.D'(f)
@@ -64,10 +68,11 @@ noncomputable lemma zariski.structure_presheaf_on_standard_is_loc {R : Type u} [
     (ring_equiv.refl _).is_ring_hom
     (by intro x; dsimp [ring_equiv.refl, equiv.refl]; rw [localization.extend_map_extends, localization.extend_map_extends]) }
 
-
+-- -> mathlib?
 instance is_comm_ring_hom.id {α : Type u} [comm_ring α] : is_ring_hom (@id α) :=
 {map_add := λ _ _,rfl,map_mul := λ _ _,rfl,map_one := rfl}
 
+-- -> mathlib?
 universes v w
 instance is_comm_ring_hom.comp {α : Type u} {β : Type v} {γ : Type w} [comm_ring α] [comm_ring β] [comm_ring γ]
 {f : α → β} {g : β → γ} [Hf : is_ring_hom f] [Hg : is_ring_hom g] : is_ring_hom (g ∘ f) :=
@@ -75,6 +80,8 @@ instance is_comm_ring_hom.comp {α : Type u} {β : Type v} {γ : Type w} [comm_r
   map_mul := λ x y, by simp [Hf.map_mul,Hg.map_mul],
   map_one := show g (f 1) = 1, by rw [Hf.map_one, Hg.map_one]
 }
+
+-- just under Definition 25.5.2
 
 -- Definition of presheaf-of-sets on basis
 noncomputable definition zariski.structure_presheaf_of_types_on_basis_of_standard (R : Type u) [comm_ring R]
@@ -86,3 +93,38 @@ noncomputable definition zariski.structure_presheaf_of_types_on_basis_of_standar
     λ r, by simp [localization.localize_superset.is_algebra_hom]
   ))
 }
+
+-- now let's make it a presheaf of rings on the basis
+noncomputable definition zariski.structure_presheaf_of_rings_on_basis_of_standard (R : Type u) [comm_ring R]
+: presheaf_of_rings_on_basis (D_f_form_basis R) :=
+{ Fring := zariski.structure_presheaf_on_standard.comm_ring,
+  res_is_ring_morphism := λ _ _ _ _ _,localization.localize_superset.is_ring_hom _,
+  ..zariski.structure_presheaf_of_types_on_basis_of_standard R,
+}
+
+-- computation of stalk: I already did this for R I think.
+
+-- now let's prove it's a sheaf of rings on the basis
+
+-- first let's check the sheaf axiom for finite covers.
+
+theorem zariski.sheaf_of_types_on_standard_basis_for_finite_covers (R : Type u) [comm_ring R] :
+  ∀ (U : set (X R)) (BU : U ∈ (standard_basis R)) (γ : Type u) (Fγ : fintype γ)
+  (Ui : γ → set (X R)) (BUi :  ∀ i : γ, (Ui i) ∈ (standard_basis R))
+  (Hcover: (⋃ (i : γ), (Ui i)) = U),
+  sheaf_property (D_f_form_basis R) (zariski.structure_presheaf_of_types_on_basis_of_standard R)
+   (λ U V BU BV,sorry) U BU γ Ui BUi Hcover := sorry
+-- this is Chris' lemma.
+
+theorem zariski.structure_sheaf_of_rings_on_basis_of_standard (R : Type u) [comm_ring R] : 
+is_sheaf_of_rings_on_basis (zariski.structure_presheaf_of_rings_on_basis_of_standard R) :=
+begin
+  intros U BU,  
+  -- follows from lemma_cofinal_systems_coverings_standard_case
+  -- applied to zariski.sheaf_of_types_on_standard_basis_for_finite_covers
+  admit,
+end
+
+
+-- now prove it's a sheaf of rings on the full topology.
+-- it's tag009N which should basically be done
