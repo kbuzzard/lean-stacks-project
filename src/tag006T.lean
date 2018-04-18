@@ -5,13 +5,13 @@ import analysis.topology.topological_space tag006E
 def res_to_inter_left {α : Type*} [T : topological_space α] 
   (FT : presheaf_of_types α)
   (U V : set α) [OU : T.is_open U] [OV : T.is_open V] :
-  (FT.F U OU) → (FT.F (U ∩ V) (T.is_open_inter U V OU OV)) :=
+  (FT.F OU) → (FT.F (T.is_open_inter U V OU OV)) :=
 FT.res U (U ∩ V) OU (T.is_open_inter U V OU OV) (set.inter_subset_left U V)
 
 def res_to_inter_right {α : Type*} [T : topological_space α]
   (FT : presheaf_of_types α)
   (U V : set α) [OU : T.is_open U] [OV : T.is_open V] :
-  (FT.F V OV) → (FT.F (U ∩ V) (T.is_open_inter U V OU OV)) :=
+  (FT.F OV) → (FT.F (T.is_open_inter U V OU OV)) :=
 FT.res V (U ∩ V) OV (T.is_open_inter U V OU OV) (set.inter_subset_right U V)
 
 def gluing {α : Type*} [T : topological_space α] (FP : presheaf_of_types α) 
@@ -20,8 +20,8 @@ def gluing {α : Type*} [T : topological_space α] (FP : presheaf_of_types α)
   {γ : Type*} (Ui : γ → set α)
   [UiO : ∀ i : γ, T.is_open (Ui i)]
   (Hcov : (⋃ (x : γ), (Ui x)) = U)
-  (r : FP.F U UO) :
-  {a : (Π (x : γ), (FP.F (Ui x) (UiO x))) | ∀ (x y : γ), 
+  (r : FP.F UO) :
+  {a : (Π (x : γ), (FP.F (UiO x))) | ∀ (x y : γ), 
     (@res_to_inter_left _ _ FP (Ui x) (Ui y) (UiO x) (UiO y)) (a x) = 
     (@res_to_inter_right _ _ FP (Ui x) (Ui y) (UiO x) (UiO y)) (a y)} :=
 ⟨λ x,(FP.res U (Ui x) UO (UiO x) (Hcov ▸ set.subset_Union Ui x) r),
