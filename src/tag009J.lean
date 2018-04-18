@@ -24,11 +24,11 @@ def helper3 {X : Type*} {γ : Type*} {Ui : γ → set X}
 from λ z hz, H ▸ ⟨_, ⟨_, rfl⟩, hz⟩,
 set.subset.trans H1 (set.inter_subset_right _ _)
 
-theorem is_sheaf_of_types_on_basis {X : Type*} [T : topological_space X] 
+definition is_sheaf_of_types_on_basis {X : Type*} [T : topological_space X] 
   {B : set (set X)}
   {HB : topological_space.is_topological_basis B}
   (FPTB : presheaf_of_types_on_basis HB) : Prop :=
-  ∀ {U : set X} (BU : B U) {γ : Type*} (Ui : γ → set X) (BUi : ∀ i : γ, B (Ui i))
+  ∀ {{U : set X}} (BU : B U) {γ : Type*} (Ui : γ → set X) (BUi : ∀ i : γ, B (Ui i))
   (Hcov : (⋃ (x : γ), (Ui x)) = U)
   { β : γ → γ → Type*} (Uijk : Π (i j : γ), β i j → set X)
   (BUijk : ∀ i j : γ, ∀ k : β i j, B (Uijk i j k) )

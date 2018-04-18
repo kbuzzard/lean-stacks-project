@@ -43,7 +43,7 @@ end
  definition restriction_of_presheaf_to_basis {X : Type*} [T : topological_space X]
  {B : set (set X)} {HB : topological_space.is_topological_basis B}
  (FP : presheaf_of_types X) : presheaf_of_types_on_basis HB :=
- { F := λ U BU, FP.F U (basis_element_is_open HB BU),
+ { F := λ U BU, FP.F (basis_element_is_open HB BU),
    res := λ {U V} BU BV H, FP.res U V (basis_element_is_open HB BU) (basis_element_is_open HB BV) H,
    Hid := λ U BU, FP.Hid U (basis_element_is_open HB BU),
    Hcomp := λ U V W BU BV BW,FP.Hcomp U V W (basis_element_is_open HB BU)
@@ -76,9 +76,9 @@ definition extend_off_basis {X : Type*} [T : topological_space X] {B : set (set 
 --  #print subtype.mk_eq_mk -- this is a simp lemma so why can't
 -- I use simp?
 
-variables {X : Type*} [T : topological_space X] {B : set (set X)} 
-  {HB : topological_space.is_topological_basis B} (FB : presheaf_of_types_on_basis HB)
-  (HF : is_sheaf_of_types_on_basis FB)
+--variables {X : Type*} [T : topological_space X] {B : set (set X)} 
+--  {HB : topological_space.is_topological_basis B} (FB : presheaf_of_types_on_basis HB)
+--  (HF : is_sheaf_of_types_on_basis FB)
 
 --set_option pp.notation false 
 -- set_option pp.proofs true 
@@ -337,6 +337,6 @@ theorem extension_unique {X : Type*} [T : topological_space X] {B : set (set X)}
   : ∃ rho : morphism_of_presheaves_of_types (extend_off_basis FB HF) G, -- I would happily change the direction of the iso rho
     is_isomorphism_of_presheaves_of_types rho ∧ 
     ∀ (U : set X) (BU : B U), 
-      (rho.morphism U (basis_element_is_open HB BU)) ∘ ((extend_off_basis_map FB HF).morphism U BU) = (psi.morphism U BU) := sorry
+      (rho.morphism U (basis_element_is_open HB BU)) ∘ ((extend_off_basis_map FB HF).morphism BU) = (psi.morphism BU) := sorry
 
 
