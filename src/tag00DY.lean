@@ -14,8 +14,10 @@ universe u
 
 local attribute [instance] classical.prop_decidable
 
+definition standard_basis (R : Type u) [comm_ring R] := {U : set (X R) | ∃ f : R, U = Spec.D'(f)}
+
 lemma D_f_form_basis (R : Type u) [comm_ring R] : 
-  topological_space.is_topological_basis {U : set (X R) | ∃ f : R, U = Spec.D'(f)} := 
+  topological_space.is_topological_basis (standard_basis R) := 
 begin
   refine topological_space.is_topological_basis_of_open_of_nhds _ _,
   { intros U H,
