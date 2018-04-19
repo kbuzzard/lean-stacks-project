@@ -17,7 +17,7 @@ import tag00DY -- claim that D(f) form a basis
 import tag006N -- presheaves / sheaves of rings on a basis
 import tag009P -- presheaf of rings on a basis
 import tag009L -- sheaf for finite covers on basis -> sheaf for basis
-
+import tag00EJ -- finite cover by basic opens sheaf axiom
 universe u
 
 def is_zariski.standard_open {R : Type u} [comm_ring R] (U : set (X R)) := ∃ f : R, U = Spec.D'(f)
@@ -106,15 +106,32 @@ noncomputable definition zariski.structure_presheaf_of_rings_on_basis_of_standar
 
 -- now let's prove it's a sheaf of rings on the basis
 
--- first let's check the sheaf axiom for finite covers.
+-- first let's check the sheaf axiom for finite covers, using the fact that 
+-- the intersection of two basis opens is a basic open (meaning we can use
+-- tag 009L instead of 009K).
 
+-- this should follow from 
+-- a) Chris' lemma [lemma_standard_covering₁ and ₂].
+-- b) the fact (proved by Kenny) that localization of R at mult set of functions non-vanishing
+--    on D(f) is isomorphic (as ring, but we will only need as ab group) to R[1/f]
+-- c) the fact (which is probably done somewhere but I'm not sure where) that
+--    D(f) is homeomorphic to Spec(R[1/f]) and this homeo identifies D(g) in D(f) with D(g)
+--    in Spec(R[1/f]) 
+--
+-- In other words, all the maths is done, it's just a case of glueing it together.
 theorem zariski.sheaf_of_types_on_standard_basis_for_finite_covers (R : Type u) [comm_ring R] :
   ∀ (U : set (X R)) (BU : U ∈ (standard_basis R)) (γ : Type u) (Fγ : fintype γ)
   (Ui : γ → set (X R)) (BUi :  ∀ i : γ, (Ui i) ∈ (standard_basis R))
   (Hcover: (⋃ (i : γ), (Ui i)) = U),
   sheaf_property (D_f_form_basis R) (zariski.structure_presheaf_of_types_on_basis_of_standard R)
-   (λ U V BU BV,sorry) U BU γ Ui BUi Hcover := sorry
--- this is Chris' lemma.
+   (λ U V ⟨f,Hf⟩ ⟨g,Hg⟩,⟨f*g,Hf.symm ▸ Hg.symm ▸ (tag00E0.lemma15 _ f g).symm⟩) U BU γ Ui BUi Hcover :=
+begin
+admit
+end 
+
+#check @lemma_standard_covering₂
+#check @lemma_standard_covering₁
+
 
 theorem zariski.structure_sheaf_of_rings_on_basis_of_standard (R : Type u) [comm_ring R] : 
 is_sheaf_of_rings_on_basis (zariski.structure_presheaf_of_rings_on_basis_of_standard R) :=
