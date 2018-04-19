@@ -68,19 +68,6 @@ noncomputable lemma zariski.structure_presheaf_on_standard_is_loc {R : Type u} [
     (ring_equiv.refl _).is_ring_hom
     (by intro x; dsimp [ring_equiv.refl, equiv.refl]; rw [localization.extend_map_extends, localization.extend_map_extends]) }
 
--- -> mathlib?
-instance is_comm_ring_hom.id {α : Type u} [comm_ring α] : is_ring_hom (@id α) :=
-{map_add := λ _ _,rfl,map_mul := λ _ _,rfl,map_one := rfl}
-
--- -> mathlib?
-universes v w
-instance is_comm_ring_hom.comp {α : Type u} {β : Type v} {γ : Type w} [comm_ring α] [comm_ring β] [comm_ring γ]
-{f : α → β} {g : β → γ} [Hf : is_ring_hom f] [Hg : is_ring_hom g] : is_ring_hom (g ∘ f) :=
-{ map_add := λ x y,by simp [Hf.map_add,Hg.map_add],
-  map_mul := λ x y, by simp [Hf.map_mul,Hg.map_mul],
-  map_one := show g (f 1) = 1, by rw [Hf.map_one, Hg.map_one]
-}
-
 -- just under Definition 25.5.2
 
 -- Definition of presheaf-of-sets on basis
@@ -116,7 +103,7 @@ noncomputable definition zariski.structure_presheaf_of_rings_on_basis_of_standar
 --    on D(f) is isomorphic (as ring, but we will only need as ab group) to R[1/f]
 -- c) the fact (which is probably done somewhere but I'm not sure where) that
 --    D(f) is homeomorphic to Spec(R[1/f]) and this homeo identifies D(g) in D(f) with D(g)
---    in Spec(R[1/f]) 
+--    in Spec(R[1/f]) [TODO -- check this is done!]
 --
 -- In other words, all the maths is done, it's just a case of glueing it together.
 theorem zariski.sheaf_of_types_on_standard_basis_for_finite_covers (R : Type u) [comm_ring R] :
