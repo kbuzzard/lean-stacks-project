@@ -8,7 +8,6 @@ Proof. It suffices to prove that any covering of Spec(R) by standard opens can b
    And then it follows that Spec(R)=∪i∈JD(fi). 
 -/
 
--- status of this lemma: I've reduced it to the case of a cover by basis elts
 import Kenny_comm_alg.Zariski algebra.module Kenny_comm_alg.maximal_ideal tag00DY tag00E0
 universe u
 

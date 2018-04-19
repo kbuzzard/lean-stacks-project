@@ -71,7 +71,7 @@ extend_map_of_im_unit.is_ring_hom f _
 
 theorem unit_of_in_S (s : S) : ∃ y : loc α S, (of_comm_ring α S s) * y = 1 :=
 ⟨⟦(1, s)⟧, by cases s; apply quotient.sound; existsi (1:α); existsi is_submonoid.one_mem S; simp⟩
-set_option pp.proofs true
+
 -- extensions are R-algebra homomorphisms
 theorem extend_map_extends (H : ∀ s ∈ S, ∃ t, f s * t = 1) : 
   ∀ r : α, extend_map_of_im_unit f H (of_comm_ring _ _ r) = f r :=
@@ -137,5 +137,22 @@ begin
   rw away.extend_map_extends,
   rw away.extend_map_extends
 end
+
+-- localization to a bigger multiplicative set
+noncomputable definition localize_superset {R : Type u} [comm_ring R] {S T : set R} [is_submonoid S] [is_submonoid T] (H : S ⊆ T) :
+loc R S → loc R T := extend_map_of_im_unit (of_comm_ring R T) (λ s Hs, unit_of_in_S (⟨s,H Hs⟩ : T))
+
+-- localization to a bigger multiplicative set is a ring hom
+instance localize_superset.is_ring_hom {R : Type u} [comm_ring R] {S T : set R} [is_submonoid S] [is_submonoid T] (H : S ⊆ T) :
+  is_ring_hom (localize_superset H) := extend_map_of_im_unit.is_ring_hom _ _ 
+
+-- localization to a bigger multiplicative set is an R-algebra hom
+theorem localize_superset.is_algebra_hom {R : Type u} [comm_ring R] {S T : set R} [is_submonoid S] [is_submonoid T] (H : S ⊆ T) :
+∀ (r : R), localize_superset H (of_comm_ring _ _ r) = of_comm_ring _ _ r := extend_map_extends _ _
+
+-- localization to a bigger multiplicative set is the unique R-algebra map from R[1/S] to R[1/T]
+theorem localize_superset.unique_algebra_hom {R : Type u} [comm_ring R] {S T : set R} [is_submonoid S] [is_submonoid T] (H : S ⊆ T)
+(g : loc R S → loc R T) [is_ring_hom g] (R_alg_hom : ∀ (r : R), g (of_comm_ring _ _ r) = of_comm_ring _ _ r) : 
+g = localize_superset H := extend_map_unique _ _ _ R_alg_hom
 
 end localization

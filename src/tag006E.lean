@@ -1,9 +1,9 @@
 import analysis.topology.topological_space
 
 structure presheaf_of_types (α : Type*) [T : topological_space α] := 
-(F : Π U : set α, T.is_open U → Type*)
+(F : Π {U : set α}, T.is_open U → Type*)
 (res : ∀ (U V : set α) (OU : T.is_open U) (OV : T.is_open V) (H : V ⊆ U), 
-  (F U OU) → (F V OV))
+  (F OU) → (F OV))
 (Hid : ∀ (U : set α) (OU : T.is_open U), (res U U OU _ (set.subset.refl U)) = id)  
 (Hcomp : ∀ (U V W : set α) (OU : T.is_open U) (OV : T.is_open V) (OW : T.is_open W)
   (HUV : V ⊆ U) (HVW : W ⊆ V),
@@ -11,7 +11,7 @@ structure presheaf_of_types (α : Type*) [T : topological_space α] :=
 
 structure morphism_of_presheaves_of_types {α : Type*} [Tα : topological_space α] 
   (FPT : presheaf_of_types α) (GPT : presheaf_of_types α) :=
-(morphism : ∀ U : set α, ∀ HU : Tα.is_open U, (FPT.F U HU) → GPT.F U HU)
+(morphism : ∀ U : set α, ∀ HU : Tα.is_open U, (FPT.F HU) → GPT.F HU)
 (commutes : ∀ U V : set α, ∀ HU : Tα.is_open U, ∀ HV : Tα.is_open V, ∀ Hsub : V ⊆ U,
   (GPT.res U V HU HV Hsub) ∘ (morphism U HU) = (morphism V HV) ∘ (FPT.res U V HU HV Hsub))
 

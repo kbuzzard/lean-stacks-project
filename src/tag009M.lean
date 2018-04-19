@@ -17,4 +17,3 @@ theorem lemma_condition_star_sections {X : Type*} [T : topological_space X] {B :
        ∀ x : X, x ∈ U → (∃ (V : set X) (BV : V ∈ B) (Hx : x ∈ V) (sigma : FB.F BV), 
          ∀ (y : X) (Hy : y ∈ U) (Hy' : y ∈ V), s y Hy = ⟦{U := V, BU := BV, Hx := Hy', s := sigma}⟧)} :=
 sorry
-

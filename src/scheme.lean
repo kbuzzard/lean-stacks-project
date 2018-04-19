@@ -10,6 +10,7 @@ import tag00DY
 import tag006E -- presheaf of types
 import tag006N -- presheaf of rings
 import tag006T -- sheaves of types
+import tag0072 -- sheaves of rings
 import Kenny_comm_alg.temp
 
 universes u v 
@@ -25,7 +26,7 @@ definition presheaf_of_types_pushforward
   (fcont: continuous f)
   (FPT : presheaf_of_types α) :
   presheaf_of_types β :=
-{ F := λ V OV, FPT.F (f ⁻¹' V) (fcont V OV),
+{ F := λ V OV, FPT.F (fcont V OV),
   res := λ V₁ V₂ OV₁ OV₂ H, 
     FPT.res (f ⁻¹' V₁) (f⁻¹' V₂) (fcont V₁ OV₁) (fcont V₂ OV₂) (λ x Hx,H Hx),
   Hid := λ V OV, FPT.Hid (f ⁻¹' V) (fcont V OV),
@@ -40,7 +41,7 @@ definition presheaf_of_rings_pushforward
   (fcont: continuous f)
   (FPR : presheaf_of_rings α) :
   presheaf_of_rings β :=
-{ Fring := λ U OU,FPR.Fring (f ⁻¹' U) (fcont U OU),
+{ Fring := λ U OU,FPR.Fring (fcont U OU),
   res_is_ring_morphism := λ U V OU OV H,
     FPR.res_is_ring_morphism (f ⁻¹' U) (f ⁻¹' V) (fcont U OU) (fcont V OV) (λ x Hx, H Hx),
   .. presheaf_of_types_pushforward f fcont FPR.to_presheaf_of_types }
@@ -68,7 +69,7 @@ definition presheaf_of_types_pullback_under_open_immersion
   (f : α → β)
   (H : open_immersion f) :
   presheaf_of_types α :=
-{ F := λ U HU,PT.F (f '' U) ((H.fopens U).1 HU),
+{ F := λ U HU,PT.F ((H.fopens U).1 HU),
   res := λ U V OU OV H2,PT.res (f '' U) (f '' V) ((H.fopens U).1 OU) ((H.fopens V).1 OV)
     (set.image_subset f H2),
   Hid := λ _ _,PT.Hid _ _,
@@ -82,7 +83,7 @@ definition presheaf_of_rings_pullback_under_open_immersion
   (f : α → β)
   (H : open_immersion f) :
   presheaf_of_rings α := 
-{ Fring := λ U OU,PR.Fring (f '' U) (immersion_sends_opens_to_opens f H U OU),
+{ Fring := λ U OU,PR.Fring (immersion_sends_opens_to_opens f H U OU),
   res_is_ring_morphism := λ U V OU OV H2,PR.res_is_ring_morphism (f '' U) (f '' V)
     (immersion_sends_opens_to_opens f H U OU)
     (immersion_sends_opens_to_opens f H V OV) 
@@ -90,9 +91,7 @@ definition presheaf_of_rings_pullback_under_open_immersion
   .. presheaf_of_types_pullback_under_open_immersion PR.to_presheaf_of_types f H }
 
 /-- This is OK because exactness is same for sheaves of rings and sets-/
-def is_sheaf_of_rings {α : Type*} [T : topological_space α] 
-  (PR : presheaf_of_rings α) : Prop :=
-is_sheaf_of_types PR.to_presheaf_of_types
+
 
 --theorem D_f_are_a_basis {R : Type u} [comm_ring R] : ∀ U : set (X R), topological_space.is_open (Zariski R) U → ∃ α : Type v, ∃ f : α → R, U = set.Union (Spec.D' ∘ f) := sorry
 
@@ -200,7 +199,7 @@ definition structure_presheaf_of_types_on_affine_scheme (R : Type*) [comm_ring R
 }
 
 definition structure_presheaf_value {R : Type*} [comm_ring R] (U : set (X R)) (HU : is_open U) :=
-(structure_presheaf_of_types_on_affine_scheme R).F U HU
+(structure_presheaf_of_types_on_affine_scheme R).F HU
 
 lemma structure_presheaf_value.ext {R : Type*} [comm_ring R] (U : set (X R)) (HU : is_open U)
   (f g : structure_presheaf_value U HU) (h : ∀ u hu, f.1 u hu = g.1 u hu) : f = g :=
