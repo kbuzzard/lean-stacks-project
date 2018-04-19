@@ -139,13 +139,14 @@ instance is_maximal_ideal.to_is_prime_ideal {α : Type u} [comm_ring α] {S : se
         repeat { apply_instance } } }
   end }
 
+/-
 theorem is_ring_hom.comp {α : Type u} {β : Type v} {γ : Type w}
   [comm_ring α] [comm_ring β] [comm_ring γ] (f : α → β) (g : β → γ)
   [is_ring_hom f] [is_ring_hom g] : is_ring_hom (g ∘ f) :=
 by refine {..}; intros; simp [is_ring_hom.map_add f, is_ring_hom.map_add g,
   is_ring_hom.map_mul f, is_ring_hom.map_mul g,
   is_ring_hom.map_one f, is_ring_hom.map_one g]
-
+-/
 structure ring_equiv (α : Type u) (β : Type v) [comm_ring α] [comm_ring β] extends equiv α β :=
 (is_ring_hom : is_ring_hom to_fun)
 
@@ -183,7 +184,7 @@ protected def symm (f : α ≃ᵣ β) : β ≃ᵣ α :=
   .. equiv.symm f.to_equiv }
 
 protected def trans (f : α ≃ᵣ β) (g : β ≃ᵣ γ) : α ≃ᵣ γ :=
-{ is_ring_hom := @@is_ring_hom.comp _ _ _ f.to_fun g.to_fun f.is_ring_hom g.is_ring_hom,
+{ is_ring_hom := @is_ring_hom.comp _ _ _ _ f.to_fun f.is_ring_hom _ _ g.to_fun g.is_ring_hom,
   .. equiv.trans f.to_equiv g.to_equiv }
 
 end ring_equiv
