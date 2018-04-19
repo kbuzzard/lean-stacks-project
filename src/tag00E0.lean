@@ -18,7 +18,7 @@ Lemma 10.16.2. Let R be a ring.
     If f∈R then D(f)=∅ if and only if f is nilpotent.
     If f=uf′ for some unit u∈R, then D(f)=D(f′).
     If I⊂R is an ideal, and 𝔭 is a prime of R with 𝔭∉V(I), then there exists an f∈R such that 𝔭∈D(f), and D(f)∩V(I)=∅.
-    If f,g∈R, then D(fg)=D(f)∩D(g).
+  (15)  If f,g∈R, then D(fg)=D(f)∩D(g).
     If fi∈R for i∈I, then ⋃i∈ID(fi) is the complement of V({fi}i∈I) in Spec(R).
     If f∈R and D(f)=Spec(R), then f is a unit. 
 
