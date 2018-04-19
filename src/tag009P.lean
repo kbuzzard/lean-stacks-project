@@ -3,7 +3,7 @@ universe u
 
 structure presheaf_of_rings_on_basis {X : Type u} [TX : topological_space X] 
   {B : set (set X)} (HB : topological_space.is_topological_basis B) extends presheaf_of_types_on_basis HB :=
-[Fring : ∀ {U} (BU : U ∈ B), comm_ring (F BU)]
+(Fring : ∀ {U} (BU : U ∈ B), comm_ring (F BU))
 (res_is_ring_morphism : ∀ {U V} (BU : U ∈ B) (BV : V ∈ B) (H : V ⊆ U),
   is_ring_hom (res BU BV H))
 
@@ -13,7 +13,7 @@ structure morphism_of_presheaves_of_rings_on_basis {X : Type u} [TX : topologica
 {B : set (set X)} {HB : topological_space.is_topological_basis B}
   (FPR GPR : presheaf_of_rings_on_basis HB) :=
 (morphism : morphism_of_presheaves_of_types_on_basis FPR.to_presheaf_of_types_on_basis GPR.to_presheaf_of_types_on_basis)
-(ring_homs : ∀ {U} (BU : U ∈ B), @is_ring_hom _ _ (@comm_ring.to_ring _ (FPR.Fring BU)) (@comm_ring.to_ring _ (GPR.Fring BU)) (morphism.morphism BU))
+(ring_homs : ∀ {U} (BU : U ∈ B), is_ring_hom (morphism.morphism BU))
 
 definition is_sheaf_of_rings_on_basis {X : Type u} [TX : topological_space X]
 {B : set (set X)} {HB : topological_space.is_topological_basis B} (PRB : presheaf_of_rings_on_basis HB) :=
