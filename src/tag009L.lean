@@ -1,3 +1,13 @@
+/- The lemma in this tag says that if we have a top space
+and a basis with the property that the intersection of two
+basis elements is in the basis, then to give a sheaf on B
+is to give a "sheaf on a cofinal system of covers of B".
+In the application to schemes, this means a presheaf with
+the property that it satisfies the sheaf axiom for
+finite covers of basic opens by basic opens, noting that
+the intersection of two basis opens is a basic open.
+-/
+
 import tag009J 
 universe u
 definition sheaf_property 
