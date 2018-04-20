@@ -166,10 +166,7 @@ noncomputable definition localization.loc_loc_is_loc {R : Type u} [comm_ring R] 
 (away g) ≃ᵣ away (of_comm_ring R (powers f) g) := 
 { to_fun := away.extend_map_of_im_unit 
               (of_comm_ring (away f) _ ∘ (of_comm_ring R (powers f)) : R → loc (away f) (powers (of_comm_ring R (powers f) g)))
-              ⟨inv_of_powers (of_comm_ring R (powers f) g),begin
-                show (of_comm_ring (away f) (powers (of_comm_ring R (powers f) g))) ( (of_comm_ring R (powers f))  g) * _ = _,
-                admit,
-              end⟩,
+              sorry,
   inv_fun := sorry,
   left_inv := sorry,
   right_inv := sorry,
