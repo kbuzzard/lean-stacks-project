@@ -69,13 +69,30 @@ theorem away.extend_map_of_im_unit.is_ring_hom {x : α} (H : ∃ y, f x * y = 1)
   is_ring_hom (away.extend_map_of_im_unit f H) :=
 extend_map_of_im_unit.is_ring_hom f _
 
+
+theorem unit_of_in_S (s : S) : ∃ y : loc α S, (of_comm_ring α S s) * y = 1 :=
+⟨⟦(1, s)⟧, by cases s; apply quotient.sound; existsi (1:α); existsi is_submonoid.one_mem S; simp⟩
+
+-- some ideas:
+/-
 definition inv_of_in_S (s : S) : loc α S := ⟦(1,s)⟧
 
 theorem inv_of_in_S_is_inv (s : S) : (of_comm_ring α S s) * inv_of_in_S s = 1 :=
 by cases s; apply quotient.sound; existsi (1:α); existsi is_submonoid.one_mem S; simp
 
-theorem unit_of_in_S (s : S) : ∃ y : loc α S, (of_comm_ring α S s) * y = 1 :=
-⟨⟦(1, s)⟧, by cases s; apply quotient.sound; existsi (1:α); existsi is_submonoid.one_mem S; simp⟩
+definition inv_of_powers (g : α) : loc α (powers g) := ⟦(1,⟨g,1,by simp⟩)⟧ 
+
+
+make localization R[1/f] computable?
+-/
+
+-- some lemmas
+/-
+1) f invertible in R implies R[1/f] uniquely R-iso to R
+2) R[1/f][1/g] uniquely R-iso to R[1/fg]
+3) cor : g invertible in R[1/f] implies R[1/f] = R[1/fg] uniquely R-iso
+4) cor : f invertible in R[1/g] implies R[1/g] = R[1/f][1/g] uniquely R-iso
+-/
 
 -- extensions are R-algebra homomorphisms
 theorem extend_map_extends (H : ∀ s ∈ S, ∃ t, f s * t = 1) : 
