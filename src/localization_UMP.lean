@@ -73,18 +73,17 @@ extend_map_of_im_unit.is_ring_hom f _
 theorem unit_of_in_S (s : S) : ∃ y : loc α S, (of_comm_ring α S s) * y = 1 :=
 ⟨⟦(1, s)⟧, by cases s; apply quotient.sound; existsi (1:α); existsi is_submonoid.one_mem S; simp⟩
 
--- some ideas:
-/-
-definition inv_of_in_S (s : S) : loc α S := ⟦(1,s)⟧
+-- note that one could make the above definition constructive:
 
-theorem inv_of_in_S_is_inv (s : S) : (of_comm_ring α S s) * inv_of_in_S s = 1 :=
-by cases s; apply quotient.sound; existsi (1:α); existsi is_submonoid.one_mem S; simp
+--definition inv_of_in_S (s : S) : loc α S := ⟦(1,s)⟧
 
-definition inv_of_powers (g : α) : loc α (powers g) := ⟦(1,⟨g,1,by simp⟩)⟧ 
+--theorem inv_of_in_S_is_inv (s : S) : (of_comm_ring α S s) * inv_of_in_S s = 1 :=
+--by cases s; apply quotient.sound; existsi (1:α); existsi is_submonoid.one_mem S; simp
 
+-- note one could also make localization R[1/f] computable to an extent.
 
-make localization R[1/f] computable?
--/
+-- definition inv_of_powers (g : α) : loc α (powers g) := ⟦(1,⟨g,1,by simp⟩)⟧ 
+
 
 -- some lemmas
 /-
