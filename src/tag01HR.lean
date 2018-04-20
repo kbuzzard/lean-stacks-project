@@ -40,9 +40,11 @@ lemma nonzero_on_U_mono {R : Type u} [comm_ring R] {U V : set (X R)} : V ⊆ U �
 def zariski.structure_presheaf_on_standard {R : Type u} [comm_ring R] (U : set (X R)) (H : is_zariski.standard_open U) : Type u := 
   @localization.loc R _ (non_zero_on_U U) (nonzero_on_U_is_mult_set U)
 
-instance zariski.structure_presheaf_on_standard.comm_ring {R : Type u} [comm_ring R] (U : set (X R)) (H : is_zariski.standard_open U) : comm_ring (zariski.structure_presheaf_on_standard U H) :=
+instance zariski.structure_presheaf_on_standard.comm_ring {R : Type u} [comm_ring R] (U : set (X R)) (H : is_zariski.standard_open U) :
+comm_ring (zariski.structure_presheaf_on_standard U H) :=
 @localization.comm_ring _ _ _ (nonzero_on_U_is_mult_set U)
 
+#check @@is_ring_hom.comp
 -- I (KB) think we might need more here. I think we might need that the isomorphism is the unique R-algebra map between these things.
 -- This might follow easily from the UMP stuff KB just added.
 noncomputable lemma zariski.structure_presheaf_on_standard_is_loc {R : Type u} [comm_ring R] (f : R) :
@@ -55,31 +57,18 @@ noncomputable lemma zariski.structure_presheaf_on_standard_is_loc {R : Type u} [
     (localization.of_comm_ring R _)
     ⟨localization.mk _ _ ⟨1, f, set.subset.refl _⟩,
      quotient.sound ⟨1, is_submonoid.one_mem _, by simp⟩⟩,
-  left_inv    := @localization.unique _ _ _ _ _ _ _ _
-    (@@is_ring_hom.comp _ _ _ _ _
-       (localization.extend_map_of_im_unit.is_ring_hom _ _)
+  left_inv    := @localization.unique _ _ _ _ _ _ _ _ 
+    (@@is_ring_hom.comp _ _ _
+       (localization.extend_map_of_im_unit.is_ring_hom _ _) _ _
        (localization.extend_map_of_im_unit.is_ring_hom _ _))
     (ring_equiv.refl _).is_ring_hom
     (by intro x; dsimp [ring_equiv.refl, equiv.refl]; rw [localization.extend_map_extends, localization.extend_map_extends]),
   right_inv   := @localization.unique _ _ _ _ _ _ _ _
-    (@@is_ring_hom.comp _ _ _ _ _
-       (localization.extend_map_of_im_unit.is_ring_hom _ _)
+    (@@is_ring_hom.comp _ _ _
+       (localization.extend_map_of_im_unit.is_ring_hom _ _) _ _
        (localization.extend_map_of_im_unit.is_ring_hom _ _))
     (ring_equiv.refl _).is_ring_hom
     (by intro x; dsimp [ring_equiv.refl, equiv.refl]; rw [localization.extend_map_extends, localization.extend_map_extends]) }
-
--- -> mathlib?
-instance is_comm_ring_hom.id {α : Type u} [comm_ring α] : is_ring_hom (@id α) :=
-{map_add := λ _ _,rfl,map_mul := λ _ _,rfl,map_one := rfl}
-
--- -> mathlib?
-universes v w
-instance is_comm_ring_hom.comp {α : Type u} {β : Type v} {γ : Type w} [comm_ring α] [comm_ring β] [comm_ring γ]
-{f : α → β} {g : β → γ} [Hf : is_ring_hom f] [Hg : is_ring_hom g] : is_ring_hom (g ∘ f) :=
-{ map_add := λ x y,by simp [Hf.map_add,Hg.map_add],
-  map_mul := λ x y, by simp [Hf.map_mul,Hg.map_mul],
-  map_one := show g (f 1) = 1, by rw [Hf.map_one, Hg.map_one]
-}
 
 -- just under Definition 25.5.2
 
@@ -116,9 +105,54 @@ noncomputable definition zariski.structure_presheaf_of_rings_on_basis_of_standar
 --    on D(f) is isomorphic (as ring, but we will only need as ab group) to R[1/f]
 -- c) the fact (which is probably done somewhere but I'm not sure where) that
 --    D(f) is homeomorphic to Spec(R[1/f]) and this homeo identifies D(g) in D(f) with D(g)
---    in Spec(R[1/f]) 
+--    in Spec(R[1/f]) [TODO -- check this is done!]
 --
 -- In other words, all the maths is done, it's just a case of glueing it together.
+
+
+-- what we need for (a)
+#check @lemma_standard_covering₁
+/-
+∀ {R : Type u_1} {γ : Type u_2} [_inst_1 : comm_ring R] [_inst_2 : fintype γ] {f : γ → R},
+    1 ∈ span ↑(finset.image f finset.univ) → function.injective (α f)
+▹
+-/
+#check @lemma_standard_covering₂
+/-
+  ∀ {R : Type u_1} {γ : Type u_2} [_inst_1 : comm_ring R] [_inst_2 : fintype γ] (f : γ → R),
+    1 ∈ span ↑(finset.image f finset.univ) →
+    ∀ (s : Π (i : γ), localization.loc R (powers (f i))), β s = 0 ↔ ∃ (r : R), α f r = s
+-/
+-- what we need for (b)
+#check zariski.structure_presheaf_on_standard_is_loc
+/-
+  Π (f : ?M_1), zariski.structure_presheaf_on_standard (Spec.D' f) _ ≃ᵣ localization.away f
+-/
+-- what we need for (c)
+#check lemma_standard_open 
+/-
+lemma_standard_open :
+  ∀ (R : Type) [_inst_1 : comm_ring R] (f : R),
+    let φ : X (localization.loc R (powers f)) → X R := Zariski.induced (localization.of_comm_ring R (powers f))
+    in topological_space.open_immersion φ ∧ φ '' set.univ = Spec.D' f
+-/
+/-
+What remains for (c): Say D(g) is an open in D(f) (both opens in Spec(R)). We want to apply Chris' Lemma
+to D(g) considered as an open in Spec(R[1/f]). What can we deduce from lemma_standard_open? We know
+Spec(R[1/f]) is identified with D(f) and Spec(R[1/g]) is identified with D(g). We know there's a map
+R[1/f] -> R[1/g] (because of some lemma about f being invertible in R[1/g] as it doesn't vanish on D(g) -- what is this lemma?
+TODO chase this up) and that this is an R-algebra map. I guess we need to prove D(g) is a basic open in Spec(R[1/f])
+and this is the assertion that the pullback of D(g) to Spec(R[1/f]) equals Spec((R[1/f])[1/g-bar]) with g-bar the image of
+g in R[1/f]. So that's something that needs doing. And I guess actually that should be it. I'm not sure this is helpful
+but the pullback should be Spec R[1/f] tensor_R Spec R[1/g]. Hopefully we can get away without introducing tensor
+products at this point. Aah! If I can construct an R[1/f]-algebra isomorphism between R[1/g] and R[1/f][1/g-bar] I'll be done.
+This should all follow from the universal property.
+-/
+
+
+--lemma localization.loc_of_loc_is_loc (R : Type u) [comm_ring R] R[1/f][1/g] = R[1/g] if D(g) in D(f)
+
+
 theorem zariski.sheaf_of_types_on_standard_basis_for_finite_covers (R : Type u) [comm_ring R] :
   ∀ (U : set (X R)) (BU : U ∈ (standard_basis R)) (γ : Type u) (Fγ : fintype γ)
   (Ui : γ → set (X R)) (BUi :  ∀ i : γ, (Ui i) ∈ (standard_basis R))
@@ -128,9 +162,6 @@ theorem zariski.sheaf_of_types_on_standard_basis_for_finite_covers (R : Type u) 
 begin
 admit
 end 
-
-#check @lemma_standard_covering₂
-#check @lemma_standard_covering₁
 
 
 theorem zariski.structure_sheaf_of_rings_on_basis_of_standard (R : Type u) [comm_ring R] : 
