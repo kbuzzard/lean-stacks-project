@@ -92,6 +92,9 @@ make localization R[1/f] computable?
 2) R[1/f][1/g] uniquely R-iso to R[1/fg]
 3) cor : g invertible in R[1/f] implies R[1/f] = R[1/fg] uniquely R-iso
 4) cor : f invertible in R[1/g] implies R[1/g] = R[1/f][1/g] uniquely R-iso
+
+Should have some structures: "The unique R-algebra hom between these two R-algebras"
+  and note that if there's a unique R-alg hom A -> B and one B-> A then they're isos.
 -/
 
 -- extensions are R-algebra homomorphisms
