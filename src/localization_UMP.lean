@@ -69,6 +69,11 @@ theorem away.extend_map_of_im_unit.is_ring_hom {x : α} (H : ∃ y, f x * y = 1)
   is_ring_hom (away.extend_map_of_im_unit f H) :=
 extend_map_of_im_unit.is_ring_hom f _
 
+definition inv_of_in_S (s : S) : loc α S := ⟦(1,s)⟧
+
+theorem inv_of_in_S_is_inv (s : S) : (of_comm_ring α S s) * inv_of_in_S s = 1 :=
+by cases s; apply quotient.sound; existsi (1:α); existsi is_submonoid.one_mem S; simp
+
 theorem unit_of_in_S (s : S) : ∃ y : loc α S, (of_comm_ring α S s) * y = 1 :=
 ⟨⟦(1, s)⟧, by cases s; apply quotient.sound; existsi (1:α); existsi is_submonoid.one_mem S; simp⟩
 
