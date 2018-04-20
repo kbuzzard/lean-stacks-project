@@ -148,9 +148,33 @@ but the pullback should be Spec R[1/f] tensor_R Spec R[1/g]. Hopefully we can ge
 products at this point. Aah! If I can construct an R[1/f]-algebra isomorphism between R[1/g] and R[1/f][1/g-bar] I'll be done.
 This should all follow from the universal property.
 -/
+#check lemma_standard_open_1c
 
+/-
+#check lemma_standard_open_1c
 
---lemma localization.loc_of_loc_is_loc (R : Type u) [comm_ring R] R[1/f][1/g] = R[1/g] if D(g) in D(f)
+lemma_standard_open_1c :
+  Π (R : Type u_1) [_inst_1 : comm_ring R] (f g : R),
+    Spec.D' g ⊆ Spec.D' f → localization.away f → localization.away g
+-/
+
+#print notation ≃ᵣ
+
+open localization 
+
+noncomputable definition localization.loc_loc_is_loc {R : Type u} [comm_ring R] {f g : R} (H : Spec.D' g ⊆ Spec.D' f) :
+(away g) ≃ᵣ away (of_comm_ring R (powers f) g) := 
+{ to_fun := away.extend_map_of_im_unit 
+              (of_comm_ring (away f) _ ∘ (of_comm_ring R (powers f)) : R → loc (away f) (powers (of_comm_ring R (powers f) g)))
+              ⟨inv_of_powers (of_comm_ring R (powers f) g),begin
+                show (of_comm_ring (away f) (powers (of_comm_ring R (powers f) g))) ( (of_comm_ring R (powers f))  g) * _ = _,
+                admit,
+              end⟩,
+  inv_fun := sorry,
+  left_inv := sorry,
+  right_inv := sorry,
+  is_ring_hom := sorry
+}
 
 
 theorem zariski.sheaf_of_types_on_standard_basis_for_finite_covers (R : Type u) [comm_ring R] :
