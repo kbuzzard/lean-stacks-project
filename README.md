@@ -12,7 +12,7 @@ Then clone the project onto your computer e.g. with `git clone git@github.com:kb
 
 Then change into the project directory, e.g. with `cd lean-stacks-project/`
 
-Then type `leanpkg configure` (with the 2018-04-06 `leanpkg` of course)
+Then type `leanpkg configure` (with the 2018-04-06 `leanpkg` of course). This will (amongst other things) create a `leanpkg.path` file.
 
 Then you probably don't need to type `leanpkg upgrade` but it won't do any harm.
 
