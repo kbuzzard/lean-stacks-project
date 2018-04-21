@@ -111,26 +111,30 @@ noncomputable definition zariski.structure_presheaf_of_rings_on_basis_of_standar
 
 
 -- what we need for (a)
-#check @lemma_standard_covering₁
 /-
+#check @lemma_standard_covering₁
+
 ∀ {R : Type u_1} {γ : Type u_2} [_inst_1 : comm_ring R] [_inst_2 : fintype γ] {f : γ → R},
     1 ∈ span ↑(finset.image f finset.univ) → function.injective (α f)
 ▹
 -/
-#check @lemma_standard_covering₂
 /-
+#check @lemma_standard_covering₂
+
   ∀ {R : Type u_1} {γ : Type u_2} [_inst_1 : comm_ring R] [_inst_2 : fintype γ] (f : γ → R),
     1 ∈ span ↑(finset.image f finset.univ) →
     ∀ (s : Π (i : γ), localization.loc R (powers (f i))), β s = 0 ↔ ∃ (r : R), α f r = s
 -/
 -- what we need for (b)
-#check zariski.structure_presheaf_on_standard_is_loc
 /-
+#check zariski.structure_presheaf_on_standard_is_loc
+
   Π (f : ?M_1), zariski.structure_presheaf_on_standard (Spec.D' f) _ ≃ᵣ localization.away f
 -/
 -- what we need for (c)
-#check lemma_standard_open 
 /-
+#check lemma_standard_open 
+
 lemma_standard_open :
   ∀ (R : Type) [_inst_1 : comm_ring R] (f : R),
     let φ : X (localization.loc R (powers f)) → X R := Zariski.induced (localization.of_comm_ring R (powers f))
@@ -148,7 +152,6 @@ but the pullback should be Spec R[1/f] tensor_R Spec R[1/g]. Hopefully we can ge
 products at this point. Aah! If I can construct an R[1/f]-algebra isomorphism between R[1/g] and R[1/f][1/g-bar] I'll be done.
 This should all follow from the universal property.
 -/
-#check lemma_standard_open_1c
 
 /-
 #check lemma_standard_open_1c
@@ -158,7 +161,11 @@ lemma_standard_open_1c :
     Spec.D' g ⊆ Spec.D' f → localization.away f → localization.away g
 -/
 
-#print notation ≃ᵣ
+--#print notation ≃ᵣ
+--#print ring_equiv -- this is in temp
+
+-- I just put a bunch of notes on how to do this stuff in localization_UMP.lean, which
+-- should be moved here.
 
 open localization 
 
