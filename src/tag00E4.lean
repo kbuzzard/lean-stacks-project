@@ -12,6 +12,7 @@ import Kenny_comm_alg.Zariski
 #check Zariski.induced 
 
 /-- tag 00E4 -/
+-- note: this should be in mathlib as a structure
 
 def topological_space.open_immersion {X Y : Type} [tX : topological_space X] [tY : topological_space Y] (φ : X → Y) := 
   continuous φ ∧ 
