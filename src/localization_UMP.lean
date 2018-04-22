@@ -241,15 +241,7 @@ away_universal_property g (of_comm_ring R (powers (f * g))) (unit_of_loc_more_ri
 
 -- localize_more_left is now (away.extend_map_of_im_unit (of_comm_ring R (powers (f * g))) $ unit_of_loc_more f g)
 -- 
-
-/-
-instance more_left_is_ring_hom {R : Type u} [comm_ring R] (f g : R) : is_ring_hom (localize_more_left f g) := sorry
-
-noncomputable def powers_to_powers_universal_property {R : Type u} [comm_ring R] (f g : R) :
-is_unique_R_alg_hom (of_comm_ring R (powers f)) (of_comm_ring R (powers (f*g))) (localize_more_left f g) := sorry
--/
 -- recall that Kenny proved that the maps R -> R[1/f] -> R[1/fg] and R -> R[1/g] -> R[1/fg] coincided. 
 -- But this is an immediate consequence of the definition above and comp_unique.
--- One could either make the definition above directly, or prove that R[1/fg] = R[1/{f^i * g^j}] from the universal properties.
 
 end localization
