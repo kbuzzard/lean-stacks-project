@@ -18,7 +18,7 @@ import tag006N -- presheaves / sheaves of rings on a basis
 import tag009P -- presheaf of rings on a basis
 import tag009L -- sheaf for finite covers on basis -> sheaf for basis
 import tag00EJ -- finite cover by basic opens sheaf axiom
-universe u
+universes u v w
 
 def is_zariski.standard_open {R : Type u} [comm_ring R] (U : set (X R)) := ∃ f : R, U = Spec.D'(f)
 
@@ -44,11 +44,15 @@ instance zariski.structure_presheaf_on_standard.comm_ring {R : Type u} [comm_rin
 comm_ring (zariski.structure_presheaf_on_standard U H) :=
 @localization.comm_ring _ _ _ (nonzero_on_U_is_mult_set U)
 
-#check @@is_ring_hom.comp
--- I (KB) think we might need more here. I think we might need that the isomorphism is the unique R-algebra map between these things.
--- This might follow easily from the UMP stuff KB just added.
-noncomputable lemma zariski.structure_presheaf_on_standard_is_loc {R : Type u} [comm_ring R] (f : R) :
-  zariski.structure_presheaf_on_standard (Spec.D'(f)) (⟨f,rfl⟩) ≃ᵣ localization.away f :=
+structure R_alg_equiv {R : Type u} {α : Type v} {β : Type w} [comm_ring R] [comm_ring α] [comm_ring β]
+  (sα : R → α) (sβ : R → β) extends ring_equiv α β :=
+(R_alg_hom : sβ = to_fun ∘ sα)
+
+-- This proof could be simpler: a lot of the definitions would follow from
+-- universal properties, but Kenny just proved them directly anyway.
+noncomputable definition zariski.structure_presheaf_on_standard_is_loc {R : Type u} [comm_ring R] (f : R) :
+  R_alg_equiv (localization.of_comm_ring R _ : R → zariski.structure_presheaf_on_standard (Spec.D'(f)) (⟨f,rfl⟩))
+    (localization.of_comm_ring R (powers f) : R → localization.away f) :=  
 { to_fun      := localization.extend_map_of_im_unit
     (localization.of_comm_ring R (powers f))
     (λ s hs, lemma_standard_open_1a R _ _ hs),
@@ -68,7 +72,17 @@ noncomputable lemma zariski.structure_presheaf_on_standard_is_loc {R : Type u} [
        (localization.extend_map_of_im_unit.is_ring_hom _ _) _ _
        (localization.extend_map_of_im_unit.is_ring_hom _ _))
     (ring_equiv.refl _).is_ring_hom
-    (by intro x; dsimp [ring_equiv.refl, equiv.refl]; rw [localization.extend_map_extends, localization.extend_map_extends]) }
+    (by intro x; dsimp [ring_equiv.refl, equiv.refl]; rw [localization.extend_map_extends, localization.extend_map_extends]),
+  R_alg_hom := (funext (λ r, (localization.extend_map_extends
+     (_ : R → localization.loc R (powers f))
+     _ r 
+       ).symm)
+  : localization.of_comm_ring R (powers f) =
+    localization.extend_map_of_im_unit (localization.of_comm_ring R (powers f)) _ ∘
+      localization.of_comm_ring R (non_zero_on_U (Spec.D' f)))
+}
+
+#check zariski.structure_presheaf_on_standard_is_loc
 
 -- just under Definition 25.5.2
 
@@ -93,7 +107,6 @@ noncomputable definition zariski.structure_presheaf_of_rings_on_basis_of_standar
 
 -- computation of stalk: I already did this for R I think.
 
--- now let's prove it's a sheaf of rings on the basis
 
 -- first let's check the sheaf axiom for finite covers, using the fact that 
 -- the intersection of two basis opens is a basic open (meaning we can use
@@ -210,6 +223,7 @@ R[1/fg] -> R[1/f][1/g]. f is invertible in R[1/fg] (it's a lemma that every elem
 
 open localization 
 
+-- everything under here needs to be re-evaluated
 noncomputable definition localization.loc_loc_is_loc {R : Type u} [comm_ring R] {f g : R} (H : Spec.D' g ⊆ Spec.D' f) :
 (away g) ≃ᵣ away (of_comm_ring R (powers f) g) := 
 { to_fun := away.extend_map_of_im_unit 
@@ -233,6 +247,7 @@ admit
 end 
 
 
+
 theorem zariski.structure_sheaf_of_rings_on_basis_of_standard (R : Type u) [comm_ring R] : 
 is_sheaf_of_rings_on_basis (zariski.structure_presheaf_of_rings_on_basis_of_standard R) :=
 begin
@@ -241,6 +256,8 @@ begin
   -- applied to zariski.sheaf_of_types_on_standard_basis_for_finite_covers
   admit,
 end
+
+
 
 
 -- now prove it's a sheaf of rings on the full topology.
