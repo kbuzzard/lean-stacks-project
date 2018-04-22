@@ -167,6 +167,47 @@ lemma_standard_open_1c :
 -- I just put a bunch of notes on how to do this stuff in localization_UMP.lean, which
 -- should be moved here.
 
+-- some lemmas : what I need is (4). I need this to deduce the sheaf axiom
+-- for finite covers of a basic open by basic opens. I need to apply the
+-- standard ring theory exact sequence lemma to a localisation, and
+-- (4) is, I believe, the issue that I'll have to resolve. 
+/-
+1) f invertible in R implies R[1/f] uniquely R-iso to R
+2) R[1/f][1/g] uniquely R-iso to R[1/fg]
+3) cor : g invertible in R[1/f] implies R[1/f] = R[1/fg] uniquely R-iso
+4) cor : f invertible in R[1/g] implies R[1/g] = R[1/f][1/g] uniquely R-iso
+-/
+
+/-
+Here's the strat:
+
+  1)  f invertible in R implies R[1/f] uniquely R-iso to R:
+
+There's a unique R-algebra map R[1/f] -> R from the universal property. There's a unique
+ R-algebra map R -> R[1/f] -- this is trivial. Now the standard argument: composition
+  gives R-algebra maps R[1/f] -> R[1/f] and R->R but again by the universal property 
+  there's a unique R-algebra map R[1/f] -> R[1/f] etc etc, so it's the identity. etc etc.
+   So this gives (1) without any extra lemmas or structures.
+
+  2) R[1/f][1/g] uniquely R-iso to R[1/fg]:
+
+Both f and g have inverses in R[1/f][1/g] so there's a unique R-alg map 
+R[1/fg] -> R[1/f][1/g]. f is invertible in R[1/fg] (it's a lemma that every element
+ of S has an inverse in R[1/S]) so there's a unique R-alg map R[1/f] -> R[1/fg] and 
+ also a unique R[1/f]-alg map R[1/f][1/g] -> R[1/fg]. I claim that there's a unique
+  R-alg map R[1/f][1/g] -> R[1/fg]. Indeed any R-alg map gives, by composition with 
+  the R[1/f]-alg map R[1/f] -> R[1/f][1/g], an R-alg map R[1/f] -> R[1/fg] which must 
+  be the unique one, hence our original R-alg map was an R[1/f]-alg map and hence the
+   one we know.
+
+
+(3) and (4) now follow (4 from 3 by switching f and g temporarily)
+
+    cor : g invertible in R[1/f] implies R[1/f] = R[1/fg] uniquely R-iso
+    cor : f invertible in R[1/g] implies R[1/g] = R[1/f][1/g] uniquely R-iso
+
+-/
+
 open localization 
 
 noncomputable definition localization.loc_loc_is_loc {R : Type u} [comm_ring R] {f g : R} (H : Spec.D' g ⊆ Spec.D' f) :
