@@ -29,7 +29,7 @@ quotient.lift
             by simp [is_ring_hom.map_mul f, mul_assoc, mul_comm, mul_left_comm]
     ... = f r2 * classical.some (H s2 hs2) : by simp [classical.some_spec (H s1 hs1), classical.some_spec (H t hts)])
 
-theorem extend_map_of_im_unit.is_ring_hom (H : ∀ s ∈ S, ∃ t, f s * t = 1)
+instance extend_map_of_im_unit.is_ring_hom (H : ∀ s ∈ S, ∃ t, f s * t = 1)
   : is_ring_hom (extend_map_of_im_unit f H) :=
 { map_add := λ x y, quotient.induction_on₂ x y $ λ ⟨r1, s1, hs1⟩ ⟨r2, s2, hs2⟩, calc
           f (s1 * r2 + s2 * r1) * classical.some (H (s1 * s2) (is_submonoid.mul_mem hs1 hs2))
@@ -90,7 +90,7 @@ extend_map_of_im_unit f $ begin
     rw [mul_assoc, ← mul_assoc _ t, ht, one_mul, hy] }
 end
 
-theorem away.extend_map_of_im_unit.is_ring_hom {x : α} (H : ∃ y, f x * y = 1) :
+instance away.extend_map_of_im_unit.is_ring_hom {x : α} (H : ∃ y, f x * y = 1) :
   is_ring_hom (away.extend_map_of_im_unit f H) :=
 extend_map_of_im_unit.is_ring_hom f _
 
@@ -167,17 +167,8 @@ theorem localize_superset.unique_algebra_hom {R : Type u} [comm_ring R] {S T : s
 (g : loc R S → loc R T) [is_ring_hom g] (R_alg_hom : ∀ (r : R), g (of_comm_ring _ _ r) = of_comm_ring _ _ r) : 
 g = localize_superset H := extend_map_unique _ _ _ R_alg_hom
 
--- some lemmas : what I need is (4). I need this to deduce the sheaf axiom
--- for finite covers of a basic open by basic opens. I need to apply the
--- standard ring theory exact sequence lemma to a localisation, and
--- (4) is, I believe, the issue that I'll have to resolve. 
-/-
-1) f invertible in R implies R[1/f] uniquely R-iso to R
-2) R[1/f][1/g] uniquely R-iso to R[1/fg]
-3) cor : g invertible in R[1/f] implies R[1/f] = R[1/fg] uniquely R-iso
-4) cor : f invertible in R[1/g] implies R[1/g] = R[1/f][1/g] uniquely R-iso
--/
 
+-- Here is the way KMB wants to package all these things together.
 structure is_unique_R_alg_hom {R : Type u} {α : Type v} {β : Type w} [comm_ring R] [comm_ring α] [comm_ring β] 
 (sα : R → α) (sβ : R → β) (f : α → β) [is_ring_hom sα] [is_ring_hom sβ] [is_ring_hom f] :=
 (R_alg_hom : sβ = f ∘ sα)
@@ -190,34 +181,45 @@ lemma comp_unique {R : Type u} {α : Type v} {β : Type w} {γ : Type uu}
   is_unique_R_alg_hom sα sβ f → is_unique_R_alg_hom sβ sγ g → is_unique_R_alg_hom sα sγ h → g ∘ f = h :=
 λ Uf Ug Uh, Uh.is_unique (g ∘ f : α → γ) (by simp [Uf.R_alg_hom,Ug.R_alg_hom])
 
+lemma unique_R_alg_from_R {R : Type u} {α : Type v} [comm_ring R] [comm_ring α] 
+(sα : R → α) [is_ring_hom sα] : is_unique_R_alg_hom id sα sα := {
+  R_alg_hom := rfl,
+  is_unique := λ g Hg H, by simp [H]
+}
+
+-- here is the universal property of localization for a general mult set.
+noncomputable def loc_universal_property {R : Type u} [comm_ring R] {S : set R} [is_submonoid S]
+{β : Type v} [comm_ring β] (sβ : R → β)[is_ring_hom sβ] (H : ∀ s ∈ S, ∃ t, sβ s * t = 1) :
+is_unique_R_alg_hom (of_comm_ring R S) sβ (extend_map_of_im_unit sβ H) := 
+{ R_alg_hom := funext (λ r, (extend_map_extends sβ H r).symm),
+  is_unique := λ g Hg HR, @extend_map_unique _ _ _ _ _ _ sβ _ H g Hg (λ r, by rw ←HR.symm)
+}
+
+-- here is the universal property of localization at powers of f
+noncomputable def away_universal_property {R : Type u} [comm_ring R] (f : R)
+{β : Type v} [comm_ring β] (sβ : R → β) [is_ring_hom sβ] (H : ∃ t, sβ f * t = 1) :
+is_unique_R_alg_hom (of_comm_ring R (powers f)) sβ (away.extend_map_of_im_unit sβ H) := 
+{ R_alg_hom := funext (λ r, (away.extend_map_extends sβ H r).symm),
+  is_unique := λ g Hg HR, by letI := Hg;from away.extension_unique sβ H g (λ r, by rw ←HR.symm)
+}
+
+-- here is the universal property of localization at a bigger multiplicative set
+noncomputable def superset_universal_property {R : Type u} [comm_ring R] (S : set R) [is_submonoid S] 
+  (T : set R) [is_submonoid T] (H : S ⊆ T) :
+is_unique_R_alg_hom (of_comm_ring R S) (of_comm_ring R T) (localize_superset H) :=
+{ R_alg_hom := funext (λ r, (localize_superset.is_algebra_hom H r).symm),
+  is_unique := λ g Hg HR, by letI := Hg;from localize_superset.unique_algebra_hom H g (λ r,by rw HR)}
+
+  -- other uses can be added later if necessary. For example one day we can do this one
+
 /-
-Here's the strat:
+instance more_left_is_ring_hom {R : Type u} [comm_ring R] (f g : R) : is_ring_hom (localize_more_left f g) := sorry
 
-  1)  f invertible in R implies R[1/f] uniquely R-iso to R:
-
-There's a unique R-algebra map R[1/f] -> R from the universal property. There's a unique
- R-algebra map R -> R[1/f] -- this is trivial. Now the standard argument: composition
-  gives R-algebra maps R[1/f] -> R[1/f] and R->R but again by the universal property 
-  there's a unique R-algebra map R[1/f] -> R[1/f] etc etc, so it's the identity. etc etc.
-   So this gives (1) without any extra lemmas or structures.
-
-  2) R[1/f][1/g] uniquely R-iso to R[1/fg]:
-
-Both f and g have inverses in R[1/f][1/g] so there's a unique R-alg map 
-R[1/fg] -> R[1/f][1/g]. f is invertible in R[1/fg] (it's a lemma that every element
- of S has an inverse in R[1/S]) so there's a unique R-alg map R[1/f] -> R[1/fg] and 
- also a unique R[1/f]-alg map R[1/f][1/g] -> R[1/fg]. I claim that there's a unique
-  R-alg map R[1/f][1/g] -> R[1/fg]. Indeed any R-alg map gives, by composition with 
-  the R[1/f]-alg map R[1/f] -> R[1/f][1/g], an R-alg map R[1/f] -> R[1/fg] which must 
-  be the unique one, hence our original R-alg map was an R[1/f]-alg map and hence the
-   one we know.
-
-
-(3) and (4) now follow (4 from 3 by switching f and g temporarily)
-
-    cor : g invertible in R[1/f] implies R[1/f] = R[1/fg] uniquely R-iso
-    cor : f invertible in R[1/g] implies R[1/g] = R[1/f][1/g] uniquely R-iso
-
+noncomputable def powers_to_powers_universal_property {R : Type u} [comm_ring R] (f g : R) :
+is_unique_R_alg_hom (of_comm_ring R (powers f)) (of_comm_ring R (powers (f*g))) (localize_more_left f g) := sorry
 -/
+-- recall that Kenny proved that the maps R -> R[1/f] -> R[1/fg] and R -> R[1/g] -> R[1/fg] coincided. 
+-- But this is an immediate consequence of the definition above and comp_unique.
+-- One could either make the definition above directly, or prove that R[1/fg] = R[1/{f^i * g^j}] from the universal properties.
 
 end localization
