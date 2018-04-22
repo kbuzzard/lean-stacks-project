@@ -200,7 +200,7 @@ noncomputable def away_universal_property {R : Type u} [comm_ring R] (f : R)
 {β : Type v} [comm_ring β] (sβ : R → β) [is_ring_hom sβ] (H : ∃ t, sβ f * t = 1) :
 is_unique_R_alg_hom (of_comm_ring R (powers f)) sβ (away.extend_map_of_im_unit sβ H) := 
 { R_alg_hom := funext (λ r, (away.extend_map_extends sβ H r).symm),
-  is_unique := λ g Hg HR, by letI := Hg;from away.extension_unique sβ H g (λ r, by rw ←HR.symm)
+  is_unique := λ g Hg HR, by exactI away.extension_unique sβ H g (λ r, by rw ←HR.symm)
 }
 
 -- here is the universal property of localization at a bigger multiplicative set
@@ -208,7 +208,7 @@ noncomputable def superset_universal_property {R : Type u} [comm_ring R] (S : se
   (T : set R) [is_submonoid T] (H : S ⊆ T) :
 is_unique_R_alg_hom (of_comm_ring R S) (of_comm_ring R T) (localize_superset H) :=
 { R_alg_hom := funext (λ r, (localize_superset.is_algebra_hom H r).symm),
-  is_unique := λ g Hg HR, by letI := Hg;from localize_superset.unique_algebra_hom H g (λ r,by rw HR)}
+  is_unique := λ g Hg HR, by exactI localize_superset.unique_algebra_hom H g (λ r,by rw HR)}
 
   -- other uses can be added later if necessary. For example one day we can do this one
 
