@@ -74,6 +74,9 @@ end
 
 -- very common use case corollaries (proofs should be trivial consequences of the above)
 
+-- start with a lemma used again and again
+lemma away.in_powers (x : α) : x ∈ (powers x) := ⟨1,by simp⟩
+
 noncomputable def away.extend_map_of_im_unit {x : α} (H : ∃ y, f x * y = 1) : away x → β :=
 extend_map_of_im_unit f $ begin
   intros s hs,
@@ -103,8 +106,8 @@ theorem away.extension_unique {x : α} (H : ∃ y, f x * y = 1) (phi : away x �
 extend_map_unique f _ phi R_alg_hom
 
 
-theorem unit_of_in_S (s : S) : ∃ y : loc α S, (of_comm_ring α S s) * y = 1 :=
-⟨⟦(1, s)⟧, by cases s; apply quotient.sound; existsi (1:α); existsi is_submonoid.one_mem S; simp⟩
+theorem unit_of_in_S {s : α} (Hs : s ∈ S) : ∃ y : loc α S, (of_comm_ring α S s) * y = 1 :=
+⟨⟦(1, ⟨s,Hs⟩)⟧, by apply quotient.sound; existsi (1:α); existsi is_submonoid.one_mem S; simp⟩
 
 -- note that one could make the above definition constructive:
 
@@ -152,7 +155,7 @@ end
 
 -- localization to a bigger multiplicative set
 noncomputable definition localize_superset {R : Type u} [comm_ring R] {S T : set R} [is_submonoid S] [is_submonoid T] (H : S ⊆ T) :
-loc R S → loc R T := extend_map_of_im_unit (of_comm_ring R T) (λ s Hs, unit_of_in_S (⟨s,H Hs⟩ : T))
+loc R S → loc R T := extend_map_of_im_unit (of_comm_ring R T) (λ s Hs, unit_of_in_S (H Hs))
 
 -- localization to a bigger multiplicative set is a ring hom
 instance localize_superset.is_ring_hom {R : Type u} [comm_ring R] {S T : set R} [is_submonoid S] [is_submonoid T] (H : S ⊆ T) :
@@ -211,6 +214,33 @@ is_unique_R_alg_hom (of_comm_ring R S) (of_comm_ring R T) (localize_superset H) 
   is_unique := λ g Hg HR, by exactI localize_superset.unique_algebra_hom H g (λ r,by rw HR)}
 
   -- other uses can be added later if necessary. For example one day we can do this one
+
+definition is_unit {R : Type u} [comm_ring R] (f : R) := ∃ g : R, f * g = 1
+
+lemma unit_of_loc_more_left {R : Type u} [comm_ring R] (f g : R) : is_unit (of_comm_ring R (powers (f * g)) f) :=
+begin
+  cases (unit_of_in_S (away.in_powers (f * g))) with ifg Hifg,
+  existsi ((of_comm_ring R (powers (f * g)) g))* ifg,
+  have H : is_ring_hom (of_comm_ring R (powers (f * g))) := by apply_instance,
+  rwa [←mul_assoc,←H.map_mul],
+end 
+
+lemma unit_of_loc_more_right {R : Type u} [comm_ring R] (f g : R) : is_unit (of_comm_ring R (powers (f * g)) g) :=
+  mul_comm g f ▸ unit_of_loc_more_left g f 
+
+noncomputable def loc_more_left_universal_property {R : Type u} [comm_ring R] (f g : R) :
+is_unique_R_alg_hom (of_comm_ring R (powers f)) (of_comm_ring R (powers (f * g))) 
+  (away.extend_map_of_im_unit (of_comm_ring R (powers (f * g))) $ unit_of_loc_more_left f g) :=
+away_universal_property f (of_comm_ring R (powers (f * g))) (unit_of_loc_more_left f g)
+
+noncomputable def loc_more_right_universal_property {R : Type u} [comm_ring R] (f g : R) :
+is_unique_R_alg_hom (of_comm_ring R (powers g)) (of_comm_ring R (powers (f * g)))
+  (away.extend_map_of_im_unit (of_comm_ring R (powers (f * g))) $ unit_of_loc_more_right f g) :=
+away_universal_property g (of_comm_ring R (powers (f * g))) (unit_of_loc_more_right f g)
+
+
+-- localize_more_left is now (away.extend_map_of_im_unit (of_comm_ring R (powers (f * g))) $ unit_of_loc_more f g)
+-- 
 
 /-
 instance more_left_is_ring_hom {R : Type u} [comm_ring R] (f g : R) : is_ring_hom (localize_more_left f g) := sorry
