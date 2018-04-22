@@ -136,8 +136,8 @@ namespace multiset
 
 variable {α : Type u}
 
-@[simp] theorem map_id (s : multiset α) : map id s = s :=
-quot.induction_on s $ λ l, congr_arg coe $ list.map_id _
+--@[simp] theorem map_id (s : multiset α) : map id s = s :=
+--quot.induction_on s $ λ l, congr_arg coe $ list.map_id _
 
 end multiset
 
