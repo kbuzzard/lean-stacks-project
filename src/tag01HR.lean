@@ -96,8 +96,6 @@ noncomputable definition zariski.structure_presheaf_on_standard_is_loc {R : Type
       localization.of_comm_ring R (non_zero_on_U (Spec.D' f)))
 }
 
-#check zariski.structure_presheaf_on_standard_is_loc
-
 -- just under Definition 25.5.2
 
 -- Definition of presheaf-of-sets on basis
@@ -129,25 +127,36 @@ noncomputable definition zariski.structure_presheaf_of_rings_on_basis_of_standar
 
 -- f invertible in R implies R[1/f] uniquely R-iso to R
 
-#print is_unit 
+noncomputable lemma localization.loc_unit {R : Type u} [comm_ring R] (f : R) (H : is_unit f) : 
+R_alg_equiv (id : R → R) (of_comm_ring R (powers f)) := 
+R_alg_equiv_of_unique_homs 
+  (unique_R_alg_from_R (of_comm_ring R (powers f)))
+  (away_universal_property f id H)
+  (unique_R_alg_from_R id)
+  (id_unique_R_alg_from_loc _) 
 
-lemma localization.loc_unit {R : Type} [comm_ring R] (f : R) (H : is_unit f) : 
-R_alg_equiv (id : R → R) (of_comm_ring R (powers f)) := R_alg_equiv_of_unique_homs _ _ _ _
+-- R[1/f][1/g] uniquely R-iso to R[1/fg]:
 
+noncomputable lemma loc_is_loc_loc {R : Type u} [comm_ring R] (f g : R) :
+R_alg_equiv 
+  ((of_comm_ring (loc R (powers f)) (powers (of_comm_ring R (powers f) g)))
+  ∘ (of_comm_ring R (powers f)))
+  (of_comm_ring R (powers (f * g))) :=
+R_alg_equiv_of_unique_homs
+  (_ -- proof that there's a unique R-alg hom R[1/f][1/g] -> R[1/fg]
+  )
+  (away_universal_property (f*g) 
+    ((of_comm_ring (loc R (powers f)) (powers (of_comm_ring R (powers f) g))) 
+      ∘ (of_comm_ring R (powers f)))
+    _ -- proof that fg is a unit in R[1/f][1/g]
+  )
+  (_ -- proof that id is the unique R-alg hom R[1/f][1/g] -> R[1/f][1/g]
+  )
+  (id_unique_R_alg_from_loc _)
+
+#check id
 
 /-
-Here's the strat:
-
-  1)  f invertible in R implies R[1/f] uniquely R-iso to R:
-
-There's a unique R-algebra map R[1/f] -> R from the universal property. There's a unique
- R-algebra map R -> R[1/f] -- this is trivial. Now the standard argument: composition
-  gives R-algebra maps R[1/f] -> R[1/f] and R->R but again by the universal property 
-  there's a unique R-algebra map R[1/f] -> R[1/f] etc etc, so it's the identity. etc etc.
-   So this gives (1) without any extra lemmas or structures.
-
-  2) R[1/f][1/g] uniquely R-iso to R[1/fg]:
-
 Both f and g have inverses in R[1/f][1/g] so there's a unique R-alg map 
 R[1/fg] -> R[1/f][1/g]. f is invertible in R[1/fg] (it's a lemma that every element
  of S has an inverse in R[1/S]) so there's a unique R-alg map R[1/f] -> R[1/fg] and 
