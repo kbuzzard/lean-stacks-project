@@ -190,6 +190,59 @@ lemma unique_R_alg_from_R {R : Type u} {α : Type v} [comm_ring R] [comm_ring α
   is_unique := λ g Hg H, by simp [H]
 }
 
+-- I couldn't prove this here
+/-
+lemma id_unique_R_alg_from_loc {R : Type u} [comm_ring R] (S : set R) [is_submonoid S] :
+is_unique_R_alg_hom (of_comm_ring R S) (of_comm_ring R S) id :=
+{ R_alg_hom := rfl,
+  is_unique := λ g Hg Hid2,begin
+    letI := Hg,
+    have H : ∀ s ∈ S, ∃ t, of_comm_ring R S s * t = 1 := λ s, unit_of_in_S,
+    have H1 : g = extend_map_of_im_unit (g ∘ of_comm_ring R S) _ := extend_map_unique (g ∘ of_comm_ring R S) (Hid2 ▸ H) g (λ r, rfl),
+    have H2 : @id (loc R S) = extend_map_of_im_unit (of_comm_ring R S) _ := extend_map_unique (of_comm_ring R S) H id (λ r, rfl),
+    rw H1,
+    rw H2,
+--    simp [Hid2],
+--  cases Hid,
+--  exact (Hid ▸ λ _, rfl : ∀ h, extend_map_of_im_unit (g ∘ of_comm_ring R S) _ = extend_map_of_im_unit (of_comm_ring R S) H) _,
+--  exact eq.drec_on Hid2 rfl, -- errors on lemma statement
+  end
+}
+-/
+
+-- I could prove this more general statement
+lemma unique_R_alg_from_loc {R : Type u} [comm_ring R] {S : set R} [is_submonoid S]
+{β : Type v} [comm_ring β] (φ : loc R S → β) [Hphir : is_ring_hom φ] : 
+is_unique_R_alg_hom (of_comm_ring R S) (φ ∘ of_comm_ring R S) φ := {
+  R_alg_hom := rfl,
+  is_unique := λ g Hg Hphi,begin
+    letI := Hg,
+    let sβ : R → β := φ ∘ of_comm_ring R S,
+    have H : ∀ s ∈ S, ∃ t, sβ s * t = 1,
+    { intros s Hs,
+      cases (unit_of_in_S Hs) with sinv Hsinv,
+      existsi (φ sinv),
+      show φ (of_comm_ring R S s) * φ sinv = 1,
+      rw ←Hphir.map_mul,
+      rw Hsinv,
+      exact Hphir.map_one
+    },
+    -- now show they're both some localization map!
+    change φ ∘ of_comm_ring R S with sβ at Hphi,
+  have Hφ1 : φ = _ := extend_map_unique sβ H φ (λ r, rfl),
+  have Hg1 : g = _ := extend_map_unique (g ∘ of_comm_ring R S) 
+    (Hphi ▸ H) g (λ r,rfl),
+  rw Hφ1,
+  rw Hg1,
+  simp [Hphi],
+  end
+}
+
+-- and now I can deduce what I couldn't prove before.
+lemma id_unique_R_alg_from_loc {R : Type u} [comm_ring R] (S : set R) [is_submonoid S] :
+is_unique_R_alg_hom (of_comm_ring R S) (of_comm_ring R S) id :=
+unique_R_alg_from_loc id 
+
 -- here is the universal property of localization for a general mult set.
 noncomputable def loc_universal_property {R : Type u} [comm_ring R] {S : set R} [is_submonoid S]
 {β : Type v} [comm_ring β] (sβ : R → β)[is_ring_hom sβ] (H : ∀ s ∈ S, ∃ t, sβ s * t = 1) :
