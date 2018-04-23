@@ -28,9 +28,10 @@ universes u v
 
 local attribute [instance] classical.prop_decidable
 
--- the next line should not be here. It's in broken Atiyah.lean
+-- the next line should not be here. It's in broken Atiyah.lean.
+-- KB added it to localization_UMP in localization namespace
 
-def is_unit {α : Type u} [comm_ring α] (x : α) := ∃ y, x * y = 1 
+--def is_unit {α : Type u} [comm_ring α] (x : α) := ∃ y, x * y = 1 
 
 --localization.of_comm_ring :
 --  Π (α : Type u_1) [_inst_1 : comm_ring α] (S : set α) [_inst_2 : is_submonoid α S], α → localization.loc α S
@@ -59,7 +60,7 @@ begin
 end
 
 lemma lemma_standard_open_1a (R : Type u) [comm_ring R] (f : R) (g : R) (H : Spec.D'(g) ⊆ Spec.D'(f)) :
-  is_unit (localization.of_comm_ring R (powers g) f) :=
+  localization.is_unit (localization.of_comm_ring R (powers g) f) :=
 let ⟨e, a, h⟩ := lemma_standard_open_1b R f g H in
 ⟨⟦(a,(⟨g^e,⟨e,rfl⟩⟩:powers g))⟧,
  quotient.sound $ ⟨(1:R), ⟨0, rfl⟩, by simp [h, mul_comm]⟩⟩
