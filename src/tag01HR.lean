@@ -48,6 +48,20 @@ structure R_alg_equiv {R : Type u} {α : Type v} {β : Type w} [comm_ring R] [co
   (sα : R → α) (sβ : R → β) extends ring_equiv α β :=
 (R_alg_hom : sβ = to_fun ∘ sα)
 
+open localization -- should have done this ages ago
+
+definition R_alg_equiv_of_unique_homs {R : Type u} {α : Type v} {β : Type w} [comm_ring R] [comm_ring α] [comm_ring β]
+  {sα : R → α} {sβ : R → β} {f : α → β} {g : β → α} [is_ring_hom sα] [is_ring_hom sβ] [H : is_ring_hom f] [is_ring_hom g] : 
+is_unique_R_alg_hom sα sβ f → is_unique_R_alg_hom sβ sα g → is_unique_R_alg_hom sα sα id → is_unique_R_alg_hom sβ sβ id
+  → R_alg_equiv sα sβ := λ Hαβ Hβα Hαα Hββ,
+{ to_fun := f,
+  inv_fun := g,
+  left_inv := λ x, show (g ∘ f) x = x, by rw (comp_unique sα sβ sα f g id Hαβ Hβα Hαα);refl,
+  right_inv := λ x, show (f ∘ g) x = x, by rw (comp_unique sβ sα sβ g f id Hβα Hαβ Hββ);refl,
+  is_ring_hom := H,
+  R_alg_hom := show sβ = f ∘ sα, from Hαβ.R_alg_hom
+}
+
 -- This proof could be simpler: a lot of the definitions would follow from
 -- universal properties, but Kenny just proved them directly anyway.
 noncomputable definition zariski.structure_presheaf_on_standard_is_loc {R : Type u} [comm_ring R] (f : R) :
@@ -107,6 +121,49 @@ noncomputable definition zariski.structure_presheaf_of_rings_on_basis_of_standar
 
 -- computation of stalk: I already did this for R I think.
 
+-- we now begin to check the sheaf axiom for a finite covers by basis elements.
+
+-- To get Chris' lemma to apply to covers of D(f) (rather than a cover of R)
+-- we need R[1/f][1/g] = R[1/g] if D(g) ⊆ D(f), so let's prove this from the
+-- universal property.
+
+-- f invertible in R implies R[1/f] uniquely R-iso to R
+
+#print is_unit 
+
+lemma localization.loc_unit {R : Type} [comm_ring R] (f : R) (H : is_unit f) : 
+R_alg_equiv (id : R → R) (of_comm_ring R (powers f)) := R_alg_equiv_of_unique_homs _ _ _ _
+
+
+/-
+Here's the strat:
+
+  1)  f invertible in R implies R[1/f] uniquely R-iso to R:
+
+There's a unique R-algebra map R[1/f] -> R from the universal property. There's a unique
+ R-algebra map R -> R[1/f] -- this is trivial. Now the standard argument: composition
+  gives R-algebra maps R[1/f] -> R[1/f] and R->R but again by the universal property 
+  there's a unique R-algebra map R[1/f] -> R[1/f] etc etc, so it's the identity. etc etc.
+   So this gives (1) without any extra lemmas or structures.
+
+  2) R[1/f][1/g] uniquely R-iso to R[1/fg]:
+
+Both f and g have inverses in R[1/f][1/g] so there's a unique R-alg map 
+R[1/fg] -> R[1/f][1/g]. f is invertible in R[1/fg] (it's a lemma that every element
+ of S has an inverse in R[1/S]) so there's a unique R-alg map R[1/f] -> R[1/fg] and 
+ also a unique R[1/f]-alg map R[1/f][1/g] -> R[1/fg]. I claim that there's a unique
+  R-alg map R[1/f][1/g] -> R[1/fg]. Indeed any R-alg map gives, by composition with 
+  the R[1/f]-alg map R[1/f] -> R[1/f][1/g], an R-alg map R[1/f] -> R[1/fg] which must 
+  be the unique one, hence our original R-alg map was an R[1/f]-alg map and hence the
+   one we know.
+
+
+(3) and (4) now follow (4 from 3 by switching f and g temporarily)
+
+    cor : g invertible in R[1/f] implies R[1/f] = R[1/fg] uniquely R-iso
+    cor : f invertible in R[1/g] implies R[1/g] = R[1/f][1/g] uniquely R-iso
+
+-/
 
 -- first let's check the sheaf axiom for finite covers, using the fact that 
 -- the intersection of two basis opens is a basic open (meaning we can use
@@ -191,37 +248,9 @@ lemma_standard_open_1c :
 4) cor : f invertible in R[1/g] implies R[1/g] = R[1/f][1/g] uniquely R-iso
 -/
 
-/-
-Here's the strat:
-
-  1)  f invertible in R implies R[1/f] uniquely R-iso to R:
-
-There's a unique R-algebra map R[1/f] -> R from the universal property. There's a unique
- R-algebra map R -> R[1/f] -- this is trivial. Now the standard argument: composition
-  gives R-algebra maps R[1/f] -> R[1/f] and R->R but again by the universal property 
-  there's a unique R-algebra map R[1/f] -> R[1/f] etc etc, so it's the identity. etc etc.
-   So this gives (1) without any extra lemmas or structures.
-
-  2) R[1/f][1/g] uniquely R-iso to R[1/fg]:
-
-Both f and g have inverses in R[1/f][1/g] so there's a unique R-alg map 
-R[1/fg] -> R[1/f][1/g]. f is invertible in R[1/fg] (it's a lemma that every element
- of S has an inverse in R[1/S]) so there's a unique R-alg map R[1/f] -> R[1/fg] and 
- also a unique R[1/f]-alg map R[1/f][1/g] -> R[1/fg]. I claim that there's a unique
-  R-alg map R[1/f][1/g] -> R[1/fg]. Indeed any R-alg map gives, by composition with 
-  the R[1/f]-alg map R[1/f] -> R[1/f][1/g], an R-alg map R[1/f] -> R[1/fg] which must 
-  be the unique one, hence our original R-alg map was an R[1/f]-alg map and hence the
-   one we know.
 
 
-(3) and (4) now follow (4 from 3 by switching f and g temporarily)
 
-    cor : g invertible in R[1/f] implies R[1/f] = R[1/fg] uniquely R-iso
-    cor : f invertible in R[1/g] implies R[1/g] = R[1/f][1/g] uniquely R-iso
-
--/
-
-open localization 
 
 -- everything under here needs to be re-evaluated
 noncomputable definition localization.loc_loc_is_loc {R : Type u} [comm_ring R] {f g : R} (H : Spec.D' g ⊆ Spec.D' f) :
