@@ -127,7 +127,7 @@ noncomputable definition zariski.structure_presheaf_of_rings_on_basis_of_standar
 
 -- f invertible in R implies R[1/f] uniquely R-iso to R
 
-noncomputable lemma localization.loc_unit {R : Type u} [comm_ring R] (f : R) (H : is_unit f) : 
+noncomputable definition localization.loc_unit {R : Type u} [comm_ring R] (f : R) (H : is_unit f) : 
 R_alg_equiv (id : R → R) (of_comm_ring R (powers f)) := 
 R_alg_equiv_of_unique_homs 
   (unique_R_alg_from_R (of_comm_ring R (powers f)))
@@ -135,7 +135,7 @@ R_alg_equiv_of_unique_homs
   (unique_R_alg_from_R id)
   (id_unique_R_alg_from_loc _) 
 
--- R[1/f][1/g] uniquely R-iso to R[1/fg]:
+-- Before R[1/f][1/g] uniquely R-iso to R[1/fg] we need a lemma.
 
 noncomputable lemma loc_is_loc_loc {R : Type u} [comm_ring R] (f g : R) :
 R_alg_equiv 
@@ -148,7 +148,7 @@ R_alg_equiv_of_unique_homs
   (away_universal_property (f*g) 
     ((of_comm_ring (loc R (powers f)) (powers (of_comm_ring R (powers f) g))) 
       ∘ (of_comm_ring R (powers f)))
-    _ -- proof that fg is a unit in R[1/f][1/g]
+    _ -- proof that fg is a unit in R[1/f][1/g] -- not hard
   )
   (_ -- proof that id is the unique R-alg hom R[1/f][1/g] -> R[1/f][1/g]
   )
