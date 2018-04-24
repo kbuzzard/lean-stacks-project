@@ -306,11 +306,6 @@ begin
   exactI Hβγ.is_unique gβγ Hαγ,
 end 
 
-set_option class.instance_max_depth 52 -- !!
---set_option trace.class_instances true
-
-
-
 lemma unit_of_loc_more_left {R : Type u} [comm_ring R] (f g : R) : is_unit (of_comm_ring R (powers (f * g)) f) :=
 begin
   cases (unit_of_in_S (away.in_powers (f * g))) with ifg Hifg,
