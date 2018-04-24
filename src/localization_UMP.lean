@@ -7,6 +7,29 @@ namespace localization
 variables {α : Type u} {β : Type v} [comm_ring α] [comm_ring β]
 variables {S : set α} [is_submonoid S] (f : α → β) [is_ring_hom f]
 
+definition is_unit {R : Type u} [comm_ring R] (f : R) := ∃ finv : R, f * finv = 1
+
+lemma unit_of_prod_unit {R : Type u} [comm_ring R] (f g : R) : is_unit (f * g) → is_unit f :=
+begin
+  intro Hfgunit,cases Hfgunit with u Hu,
+  rw mul_assoc at Hu,
+  existsi g * u,
+  exact Hu
+end
+
+-- should this be in term mode?
+lemma im_unit_of_unit {α : Type u} {β : Type u} [comm_ring α] [comm_ring β] (f : α → β)
+[Hf : is_ring_hom f]
+{u : α} (Hunit : is_unit u) : is_unit (f u) :=
+begin
+  cases Hunit with v Hv,
+  existsi (f v),
+  rw [←Hf.map_mul,Hv,Hf.map_one],
+end 
+
+theorem unit_of_in_S {s : α} (Hs : s ∈ S) : ∃ y : loc α S, (of_comm_ring α S s) * y = 1 :=
+⟨⟦(1, ⟨s,Hs⟩)⟧, by apply quotient.sound; existsi (1:α); existsi is_submonoid.one_mem S; simp⟩
+
 noncomputable def extend_map_of_im_unit
   (H : ∀ s ∈ S, ∃ t, f s * t = 1) : loc α S → β :=
 quotient.lift
@@ -106,8 +129,6 @@ theorem away.extension_unique {x : α} (H : ∃ y, f x * y = 1) (phi : away x �
 extend_map_unique f _ phi R_alg_hom
 
 
-theorem unit_of_in_S {s : α} (Hs : s ∈ S) : ∃ y : loc α S, (of_comm_ring α S s) * y = 1 :=
-⟨⟦(1, ⟨s,Hs⟩)⟧, by apply quotient.sound; existsi (1:α); existsi is_submonoid.one_mem S; simp⟩
 
 -- note that one could make the above definition constructive:
 
@@ -243,7 +264,7 @@ lemma id_unique_R_alg_from_loc {R : Type u} [comm_ring R] (S : set R) [is_submon
 is_unique_R_alg_hom (of_comm_ring R S) (of_comm_ring R S) id :=
 unique_R_alg_from_loc id 
 
--- here is the universal property of localization for a general mult set.
+/-- universal property of localization at a multiplicative set. -/
 noncomputable def loc_universal_property {R : Type u} [comm_ring R] {S : set R} [is_submonoid S]
 {β : Type v} [comm_ring β] (sβ : R → β)[is_ring_hom sβ] (H : ∀ s ∈ S, ∃ t, sβ s * t = 1) :
 is_unique_R_alg_hom (of_comm_ring R S) sβ (extend_map_of_im_unit sβ H) := 
@@ -251,7 +272,7 @@ is_unique_R_alg_hom (of_comm_ring R S) sβ (extend_map_of_im_unit sβ H) :=
   is_unique := λ g Hg HR, @extend_map_unique _ _ _ _ _ _ sβ _ H g Hg (λ r, by rw ←HR.symm)
 }
 
--- here is the universal property of localization at powers of f
+/-- universal property of localization at powers of f -/
 noncomputable def away_universal_property {R : Type u} [comm_ring R] (f : R)
 {β : Type v} [comm_ring β] (sβ : R → β) [is_ring_hom sβ] (H : ∃ t, sβ f * t = 1) :
 is_unique_R_alg_hom (of_comm_ring R (powers f)) sβ (away.extend_map_of_im_unit sβ H) := 
@@ -259,16 +280,43 @@ is_unique_R_alg_hom (of_comm_ring R (powers f)) sβ (away.extend_map_of_im_unit 
   is_unique := λ g Hg HR, by exactI away.extension_unique sβ H g (λ r, by rw ←HR.symm)
 }
 
--- here is the universal property of localization at a bigger multiplicative set
+/-- universal property of localization from one mult set to a  bigger mult set -/
 noncomputable def superset_universal_property {R : Type u} [comm_ring R] (S : set R) [is_submonoid S] 
   (T : set R) [is_submonoid T] (H : S ⊆ T) :
 is_unique_R_alg_hom (of_comm_ring R S) (of_comm_ring R T) (localize_superset H) :=
 { R_alg_hom := funext (λ r, (localize_superset.is_algebra_hom H r).symm),
   is_unique := λ g Hg HR, by exactI localize_superset.unique_algebra_hom H g (λ r,by rw HR)}
 
-  -- other uses can be added later if necessary. For example one day we can do this one
+-- now we prove that R[1/f][1/g] has a universal property
 
-definition is_unit {R : Type u} [comm_ring R] (f : R) := ∃ g : R, f * g = 1
+-- First we introduce another tool for proving is_unique_R_alg_hom
+-- R → α → β → γ; if induced map α → γ is unique R-alg hom and β → γ is unique α-alg hom then it's unique R-alg hom.
+def unique_R_of_unique_R_of_unique_Rloc {R : Type u} {α : Type v} {β : Type w} {γ : Type uu} 
+[comm_ring R] [comm_ring α] [comm_ring β] [comm_ring γ] 
+(sα : R → α) [is_ring_hom sα] (fαβ : α → β) [is_ring_hom fαβ] (fβγ : β → γ) [is_ring_hom fβγ] :
+is_unique_R_alg_hom sα (fβγ ∘ fαβ ∘ sα) (fβγ ∘ fαβ) 
+→ is_unique_R_alg_hom fαβ (fβγ ∘ fαβ) fβγ 
+→ is_unique_R_alg_hom (fαβ ∘ sα) (fβγ  ∘ fαβ ∘ sα) (fβγ) :=
+begin
+  intros Hαβ Hβγ,
+  constructor,refl,
+  intros gβγ Hgβγ H1,
+  have Hαγ : fβγ ∘ fαβ = gβγ ∘ fαβ,
+    exactI (Hαβ.is_unique (gβγ ∘ fαβ) H1).symm,
+  exactI Hβγ.is_unique gβγ Hαγ,
+end 
+
+set_option class.instance_max_depth 52 -- !!
+--set_option trace.class_instances true
+/-- universal property of inverting one element and then another -/
+def away_away_universal_property {R : Type u} [comm_ring R] (f : R)
+(g : loc R (powers f)) {γ : Type v} [comm_ring γ] (sγ : R → γ) [is_ring_hom sγ] (Hf : is_unit (sγ f))
+(Hg : is_unit (away.extend_map_of_im_unit sγ Hf g)) :
+is_unique_R_alg_hom 
+  ((of_comm_ring (loc R (powers f)) (powers g)) ∘ (of_comm_ring R (powers f))) 
+  sγ
+  (away.extend_map_of_im_unit (away.extend_map_of_im_unit sγ Hf) Hg)
+    := sorry 
 
 lemma unit_of_loc_more_left {R : Type u} [comm_ring R] (f g : R) : is_unit (of_comm_ring R (powers (f * g)) f) :=
 begin
@@ -291,8 +339,10 @@ is_unique_R_alg_hom (of_comm_ring R (powers g)) (of_comm_ring R (powers (f * g))
   (away.extend_map_of_im_unit (of_comm_ring R (powers (f * g))) $ unit_of_loc_more_right f g) :=
 away_universal_property g (of_comm_ring R (powers (f * g))) (unit_of_loc_more_right f g)
 
+  -- other uses can be added later if necessary. For example one day we can do this one
 
--- localize_more_left is now (away.extend_map_of_im_unit (of_comm_ring R (powers (f * g))) $ unit_of_loc_more f g)
+-- localize_more_left is now (or was) somethinmg like
+--(away.extend_map_of_im_unit (of_comm_ring R (powers (f * g))) $ unit_of_loc_more f g)
 -- 
 -- recall that Kenny proved that the maps R -> R[1/f] -> R[1/fg] and R -> R[1/g] -> R[1/fg] coincided. 
 -- But this is an immediate consequence of the definition above and comp_unique.
