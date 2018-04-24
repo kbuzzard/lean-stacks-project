@@ -127,7 +127,6 @@ noncomputable definition zariski.structure_presheaf_of_rings_on_basis_of_standar
 
 -- warm-up:
 -- f invertible in R implies R[1/f] uniquely R-iso to R
-
 noncomputable definition localization.loc_unit {R : Type u} [comm_ring R] (f : R) (H : is_unit f) : 
 R_alg_equiv (id : R → R) (of_comm_ring R (powers f)) := 
 R_alg_equiv_of_unique_homs 
@@ -136,6 +135,49 @@ R_alg_equiv_of_unique_homs
   (unique_R_alg_from_R id)
   (id_unique_R_alg_from_loc _) 
 
+set_option class.instance_max_depth 52 -- !!
+--set_option trace.class_instances true
+/-- universal property of inverting one element and then another -/
+theorem away_away_universal_property {R : Type u} [comm_ring R] (f : R)
+(g : loc R (powers f)) {γ : Type v} [comm_ring γ] (sγ : R → γ) [is_ring_hom sγ] (Hf : is_unit (sγ f))
+(Hg : is_unit (away.extend_map_of_im_unit sγ Hf g)) :
+is_unique_R_alg_hom 
+  ((of_comm_ring (loc R (powers f)) (powers g)) ∘ (of_comm_ring R (powers f))) 
+  sγ
+  (away.extend_map_of_im_unit (away.extend_map_of_im_unit sγ Hf) Hg) := 
+begin
+  let α := loc R (powers f),
+  let β := loc α (powers g),
+  let sα := of_comm_ring R (powers f),
+  let fαβ := of_comm_ring α (powers g),
+  let sβ := fαβ ∘ sα,
+  let fαγ := away.extend_map_of_im_unit sγ Hf,
+  let fβγ := away.extend_map_of_im_unit fαγ Hg,
+  have HUαγ : is_unique_R_alg_hom sα sγ fαγ := away_universal_property f sγ Hf,
+  have HUβγ : is_unique_R_alg_hom fαβ fαγ fβγ := away_universal_property g fαγ Hg,
+  have Hαγ : sγ = fαγ ∘ sα := HUαγ.R_alg_hom,
+  have Hβγ : fαγ = fβγ ∘ fαβ := HUβγ.R_alg_hom,
+  have Htemp : is_unique_R_alg_hom sα sγ fαγ ↔ is_unique_R_alg_hom sα (fβγ ∘ fαβ ∘ sα) (fβγ ∘ fαβ),
+    simp [Hαγ,Hβγ],
+  have Htemp2 : is_unique_R_alg_hom fαβ fαγ fβγ ↔ is_unique_R_alg_hom fαβ (fβγ ∘ fαβ) fβγ,
+    simp [Hβγ],
+  have H : is_unique_R_alg_hom (fαβ ∘ sα) (fβγ ∘ fαβ ∘ sα) fβγ := unique_R_of_unique_R_of_unique_Rloc sα fαβ fβγ (Htemp.1 HUαγ) (Htemp2.1 HUβγ),
+  have Htemp3 : is_unique_R_alg_hom (fαβ ∘ sα) (fβγ ∘ fαβ ∘ sα) fβγ ↔ is_unique_R_alg_hom (fαβ ∘ sα) sγ fβγ,
+    simp [Hαγ,Hβγ],
+  exact Htemp3.1 H
+end 
+
+#check away_away_universal_property 
+
+/-
+/-- universal property of inverting two elements of R one by one -/
+theorem away_away_universal_property' {R : Type u} [comm_ring R] (f g : R)
+{γ : Type v} [comm_ring γ] (sγ : R → γ) [is_ring_hom sγ] (Hf : is_unit (sγ f))
+(Hg : is_unit sγ g) :
+is_unique_R_alg_hom 
+  ((of_comm_ring (loc R (powers f)) (powers (away.of_comm_ring R g)) ∘ (of_comm_ring R (powers f))) 
+  sγ
+  (away.extend_map_of_im_unit (away.extend_map_of_im_unit sγ Hf) Hg) := 
 
 -- Before R[1/f][1/g] uniquely R-iso to R[1/fg] we need a lemma.
 
@@ -302,3 +344,4 @@ end
 
 -- now prove it's a sheaf of rings on the full topology.
 -- it's tag009N which should basically be done
+-/

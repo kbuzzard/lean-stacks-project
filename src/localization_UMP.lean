@@ -194,7 +194,7 @@ g = localize_superset H := extend_map_unique _ _ _ R_alg_hom
 
 -- Here is the way KMB wants to package all these things together.
 structure is_unique_R_alg_hom {R : Type u} {α : Type v} {β : Type w} [comm_ring R] [comm_ring α] [comm_ring β] 
-(sα : R → α) (sβ : R → β) (f : α → β) [is_ring_hom sα] [is_ring_hom sβ] [is_ring_hom f] :=
+(sα : R → α) (sβ : R → β) (f : α → β) [is_ring_hom sα] [is_ring_hom sβ] [is_ring_hom f] : Prop :=
 (R_alg_hom : sβ = f ∘ sα)
 (is_unique : ∀ (g : α → β) [is_ring_hom g], sβ = g ∘ sα → g = f)
 
@@ -265,15 +265,15 @@ is_unique_R_alg_hom (of_comm_ring R S) (of_comm_ring R S) id :=
 unique_R_alg_from_loc id 
 
 /-- universal property of localization at a multiplicative set. -/
-noncomputable def loc_universal_property {R : Type u} [comm_ring R] {S : set R} [is_submonoid S]
+theorem loc_universal_property {R : Type u} [comm_ring R] {S : set R} [is_submonoid S]
 {β : Type v} [comm_ring β] (sβ : R → β)[is_ring_hom sβ] (H : ∀ s ∈ S, ∃ t, sβ s * t = 1) :
 is_unique_R_alg_hom (of_comm_ring R S) sβ (extend_map_of_im_unit sβ H) := 
 { R_alg_hom := funext (λ r, (extend_map_extends sβ H r).symm),
-  is_unique := λ g Hg HR, @extend_map_unique _ _ _ _ _ _ sβ _ H g Hg (λ r, by rw ←HR.symm)
+  is_unique := λ g Hg HR, by exactI extend_map_unique sβ H g (λ r, by rw HR)
 }
 
 /-- universal property of localization at powers of f -/
-noncomputable def away_universal_property {R : Type u} [comm_ring R] (f : R)
+theorem away_universal_property {R : Type u} [comm_ring R] (f : R)
 {β : Type v} [comm_ring β] (sβ : R → β) [is_ring_hom sβ] (H : ∃ t, sβ f * t = 1) :
 is_unique_R_alg_hom (of_comm_ring R (powers f)) sβ (away.extend_map_of_im_unit sβ H) := 
 { R_alg_hom := funext (λ r, (away.extend_map_extends sβ H r).symm),
@@ -281,7 +281,7 @@ is_unique_R_alg_hom (of_comm_ring R (powers f)) sβ (away.extend_map_of_im_unit 
 }
 
 /-- universal property of localization from one mult set to a  bigger mult set -/
-noncomputable def superset_universal_property {R : Type u} [comm_ring R] (S : set R) [is_submonoid S] 
+theorem superset_universal_property {R : Type u} [comm_ring R] (S : set R) [is_submonoid S] 
   (T : set R) [is_submonoid T] (H : S ⊆ T) :
 is_unique_R_alg_hom (of_comm_ring R S) (of_comm_ring R T) (localize_superset H) :=
 { R_alg_hom := funext (λ r, (localize_superset.is_algebra_hom H r).symm),
@@ -291,7 +291,7 @@ is_unique_R_alg_hom (of_comm_ring R S) (of_comm_ring R T) (localize_superset H) 
 
 -- First we introduce another tool for proving is_unique_R_alg_hom
 -- R → α → β → γ; if induced map α → γ is unique R-alg hom and β → γ is unique α-alg hom then it's unique R-alg hom.
-def unique_R_of_unique_R_of_unique_Rloc {R : Type u} {α : Type v} {β : Type w} {γ : Type uu} 
+theorem unique_R_of_unique_R_of_unique_Rloc {R : Type u} {α : Type v} {β : Type w} {γ : Type uu} 
 [comm_ring R] [comm_ring α] [comm_ring β] [comm_ring γ] 
 (sα : R → α) [is_ring_hom sα] (fαβ : α → β) [is_ring_hom fαβ] (fβγ : β → γ) [is_ring_hom fβγ] :
 is_unique_R_alg_hom sα (fβγ ∘ fαβ ∘ sα) (fβγ ∘ fαβ) 
@@ -308,15 +308,8 @@ end
 
 set_option class.instance_max_depth 52 -- !!
 --set_option trace.class_instances true
-/-- universal property of inverting one element and then another -/
-def away_away_universal_property {R : Type u} [comm_ring R] (f : R)
-(g : loc R (powers f)) {γ : Type v} [comm_ring γ] (sγ : R → γ) [is_ring_hom sγ] (Hf : is_unit (sγ f))
-(Hg : is_unit (away.extend_map_of_im_unit sγ Hf g)) :
-is_unique_R_alg_hom 
-  ((of_comm_ring (loc R (powers f)) (powers g)) ∘ (of_comm_ring R (powers f))) 
-  sγ
-  (away.extend_map_of_im_unit (away.extend_map_of_im_unit sγ Hf) Hg)
-    := sorry 
+
+
 
 lemma unit_of_loc_more_left {R : Type u} [comm_ring R] (f g : R) : is_unit (of_comm_ring R (powers (f * g)) f) :=
 begin
@@ -329,12 +322,12 @@ end
 lemma unit_of_loc_more_right {R : Type u} [comm_ring R] (f g : R) : is_unit (of_comm_ring R (powers (f * g)) g) :=
   mul_comm g f ▸ unit_of_loc_more_left g f 
 
-noncomputable def loc_more_left_universal_property {R : Type u} [comm_ring R] (f g : R) :
+theorem loc_more_left_universal_property {R : Type u} [comm_ring R] (f g : R) :
 is_unique_R_alg_hom (of_comm_ring R (powers f)) (of_comm_ring R (powers (f * g))) 
   (away.extend_map_of_im_unit (of_comm_ring R (powers (f * g))) $ unit_of_loc_more_left f g) :=
 away_universal_property f (of_comm_ring R (powers (f * g))) (unit_of_loc_more_left f g)
 
-noncomputable def loc_more_right_universal_property {R : Type u} [comm_ring R] (f g : R) :
+theorem loc_more_right_universal_property {R : Type u} [comm_ring R] (f g : R) :
 is_unique_R_alg_hom (of_comm_ring R (powers g)) (of_comm_ring R (powers (f * g)))
   (away.extend_map_of_im_unit (of_comm_ring R (powers (f * g))) $ unit_of_loc_more_right f g) :=
 away_universal_property g (of_comm_ring R (powers (f * g))) (unit_of_loc_more_right f g)
