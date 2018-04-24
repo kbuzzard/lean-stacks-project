@@ -50,9 +50,10 @@ structure R_alg_equiv {R : Type u} {α : Type v} {β : Type w} [comm_ring R] [co
 
 open localization -- should have done this ages ago
 
+-- TODO -- I don't need those two maps to be id! id is clearly an R-alg com so use uniqueness!!
 definition R_alg_equiv_of_unique_homs {R : Type u} {α : Type v} {β : Type w} [comm_ring R] [comm_ring α] [comm_ring β]
   {sα : R → α} {sβ : R → β} {f : α → β} {g : β → α} [is_ring_hom sα] [is_ring_hom sβ] [H : is_ring_hom f] [is_ring_hom g] : 
-is_unique_R_alg_hom sα sβ f → is_unique_R_alg_hom sβ sα g → is_unique_R_alg_hom sα sα id → is_unique_R_alg_hom sβ sβ id
+is_unique_R_alg_hom sα sβ f → is_unique_R_alg_hom sβ sα g → is_unique_R_alg_hom sα sα *id* → is_unique_R_alg_hom sβ sβ *id*
   → R_alg_equiv sα sβ := λ Hαβ Hβα Hαα Hββ,
 { to_fun := f,
   inv_fun := g,
@@ -169,17 +170,16 @@ end
 
 #check away_away_universal_property 
 
-/-
+
 /-- universal property of inverting two elements of R one by one -/
 theorem away_away_universal_property' {R : Type u} [comm_ring R] (f g : R)
 {γ : Type v} [comm_ring γ] (sγ : R → γ) [is_ring_hom sγ] (Hf : is_unit (sγ f))
-(Hg : is_unit sγ g) :
+(Hg : is_unit (sγ g)) :
 is_unique_R_alg_hom 
-  ((of_comm_ring (loc R (powers f)) (powers (away.of_comm_ring R g)) ∘ (of_comm_ring R (powers f))) 
+  ((of_comm_ring (loc R (powers f)) (powers (of_comm_ring R (powers f) g))) ∘ (of_comm_ring R (powers f))) 
   sγ
-  (away.extend_map_of_im_unit (away.extend_map_of_im_unit sγ Hf) Hg) := 
-
--- Before R[1/f][1/g] uniquely R-iso to R[1/fg] we need a lemma.
+  (away.extend_map_of_im_unit (away.extend_map_of_im_unit sγ Hf) (begin rwa away.extend_map_extends end)) :=
+away_away_universal_property f (of_comm_ring R (powers f) g) sγ Hf (begin rwa away.extend_map_extends end)
 
 noncomputable lemma loc_is_loc_loc {R : Type u} [comm_ring R] (f g : R) :
 R_alg_equiv 
@@ -187,19 +187,22 @@ R_alg_equiv
   ∘ (of_comm_ring R (powers f)))
   (of_comm_ring R (powers (f * g))) :=
 R_alg_equiv_of_unique_homs
-  (_ -- proof that there's a unique R-alg hom R[1/f][1/g] -> R[1/fg]
+  (away_away_universal_property' f g (of_comm_ring R (powers (f * g)))
+    (unit_of_loc_more_left f g) -- proof that f is aunit in R[1/fg]
+    (unit_of_loc_more_right f g) -- proof that g is a unit in R[1/fg]
   )
   (away_universal_property (f*g) 
     ((of_comm_ring (loc R (powers f)) (powers (of_comm_ring R (powers f) g))) 
       ∘ (of_comm_ring R (powers f)))
     _ -- proof that fg is a unit in R[1/f][1/g] -- not hard
   )
-  (_ -- proof that id is the unique R-alg hom R[1/f][1/g] -> R[1/f][1/g]
+  (_ -- proof that id is the unique R-alg hom R[1/f][1/g] -> R[1/f][1/g] -- it's clearly an R-alg hom so 
   )
   (id_unique_R_alg_from_loc _)
 
 #check id
 
+/-
 /-
 Both f and g have inverses in R[1/f][1/g] so there's a unique R-alg map 
 R[1/fg] -> R[1/f][1/g]. f is invertible in R[1/fg] (it's a lemma that every element

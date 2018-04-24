@@ -306,7 +306,8 @@ begin
   exactI Hβγ.is_unique gβγ Hαγ,
 end 
 
-lemma unit_of_loc_more_left {R : Type u} [comm_ring R] (f g : R) : is_unit (of_comm_ring R (powers (f * g)) f) :=
+lemma unit_of_loc_more_left {R : Type u} [comm_ring R] (f g : R) : 
+  is_unit (of_comm_ring R (powers (f * g)) f) :=
 begin
   cases (unit_of_in_S (away.in_powers (f * g))) with ifg Hifg,
   existsi ((of_comm_ring R (powers (f * g)) g))* ifg,
