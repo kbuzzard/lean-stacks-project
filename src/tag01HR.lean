@@ -125,6 +125,7 @@ noncomputable definition zariski.structure_presheaf_of_rings_on_basis_of_standar
 -- we need R[1/f][1/g] = R[1/g] if D(g) ⊆ D(f), so let's prove this from the
 -- universal property.
 
+-- warm-up:
 -- f invertible in R implies R[1/f] uniquely R-iso to R
 
 noncomputable definition localization.loc_unit {R : Type u} [comm_ring R] (f : R) (H : is_unit f) : 
@@ -134,6 +135,7 @@ R_alg_equiv_of_unique_homs
   (away_universal_property f id H)
   (unique_R_alg_from_R id)
   (id_unique_R_alg_from_loc _) 
+
 
 -- Before R[1/f][1/g] uniquely R-iso to R[1/fg] we need a lemma.
 
