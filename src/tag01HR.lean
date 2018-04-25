@@ -156,7 +156,7 @@ theorem away_away_universal_property {R : Type u} [comm_ring R] (f : R)
 (g : loc R (powers f)) {γ : Type v} [comm_ring γ] (sγ : R → γ) [is_ring_hom sγ] (Hf : is_unit (sγ f))
 (Hg : is_unit (away.extend_map_of_im_unit sγ Hf g)) :
 is_unique_R_alg_hom 
-  ((of_comm_ring (loc R (powers f)) (powers g)) ∘ (of_comm_ring R (powers f))) 
+  ((of_comm_ring (away f) (powers g)) ∘ (of_comm_ring R (powers f))) 
   sγ
   (away.extend_map_of_im_unit (away.extend_map_of_im_unit sγ Hf) Hg) := 
 begin
@@ -188,8 +188,8 @@ end
 theorem away_away_universal_property' {R : Type u} [comm_ring R] (f g : R)
 {γ : Type v} [comm_ring γ] (sγ : R → γ) [is_ring_hom sγ] (Hf : is_unit (sγ f))
 (Hg : is_unit (sγ g)) :
-is_unique_R_alg_hom 
-  ((of_comm_ring (loc R (powers f)) (powers (of_comm_ring R (powers f) g))) ∘ (of_comm_ring R (powers f))) 
+is_unique_R_alg_hom
+  ((of_comm_ring (away f) (powers (of_comm_ring R (powers f) g))) ∘ (of_comm_ring R (powers f))) 
   sγ
   (away.extend_map_of_im_unit (away.extend_map_of_im_unit sγ Hf) (begin rwa away.extend_map_extends end)) :=
 away_away_universal_property f (of_comm_ring R (powers f) g) sγ Hf (begin rwa away.extend_map_extends end)
@@ -215,7 +215,7 @@ begin
 end 
 
 set_option class.instance_max_depth 93
-
+-- I don't use the next theorem, it was just a test for whether I had the right universal properties.
 noncomputable definition loc_is_loc_loc {R : Type u} [comm_ring R] (f g : R) :
 R_alg_equiv 
   ((of_comm_ring (loc R (powers f)) (powers (of_comm_ring R (powers f) g)))
@@ -237,17 +237,29 @@ R_alg_equiv_of_unique_homs
   )
   (id_unique_R_alg_from_loc _)
 
-
-
 noncomputable definition localization.loc_loc_is_loc {R : Type u} [comm_ring R] {f g : R} (H : Spec.D' g ⊆ Spec.D' f) :
-  let sα := (of_comm_ring (loc R (powers f)) (powers (of_comm_ring R (powers f) g))) ∘ (of_comm_ring R (powers f)) in
-  let sβ := of_comm_ring R (powers (f * g) in
-R_alg_equiv sα sβ :=
-R_alg_equiv_of_unique_homs 
-(_ : is_unique_R_alg_hom sα sβ _)
-(_ : is_unique_R_alg_hom sβ sα _)
-(_ : is_unique_R_alg_hom sα sα _)
-(_ : is_unique_R_alg_hom sβ sβ _)
+  let sα := (of_comm_ring (away f) (powers (of_comm_ring R (powers f) g))) ∘ (of_comm_ring R (powers f)) in
+  let sβ := of_comm_ring R (powers g) in
+R_alg_equiv sα sβ := 
+begin
+  have Htemp : is_ring_hom (of_comm_ring (away f) (powers (of_comm_ring R (powers f) g))) := by apply_instance,
+  letI := Htemp,
+  let sα : R → loc (away f) (powers (of_comm_ring R (powers f) g)) := 
+    (of_comm_ring (away f) (powers (of_comm_ring R (powers f) g))) ∘ (of_comm_ring R (powers f)),
+  let sβ := of_comm_ring R (powers g),
+  have Hfunit : is_unit (of_comm_ring R (powers g) f) := lemma_standard_open_1a R f g H,
+  exact R_alg_equiv_of_unique_homs 
+(away_away_universal_property' f g sβ 
+  (Hfunit : is_unit (sβ f)) (unit_of_in_S (away.in_powers g) : is_unit (sβ g)))-- : is_unique_R_alg_hom sα sβ _)
+(away_universal_property g sα (unit_of_in_S (away.in_powers (of_comm_ring R (powers f) g)) : is_unit (sα g)) : is_unique_R_alg_hom sβ sα _)
+(away_away_universal_property' f g sα 
+  (im_unit_of_unit (of_comm_ring (away f) (powers (of_comm_ring R (powers f) g))) (unit_of_in_S (away.in_powers f)) : 
+    is_unit ((of_comm_ring (away f) (powers (of_comm_ring R (powers f) g))) ((of_comm_ring R (powers f)) f))) 
+  (unit_of_in_S (away.in_powers (of_comm_ring R (powers f) g)) : is_unit (sα g)))-- : is_unique_R_alg_hom sα sα _)
+(away_universal_property g sβ (unit_of_in_S (away.in_powers g) : is_unit (sβ g)))-- : is_unique_R_alg_hom sβ sβ _)
+end 
+
+#check localization.loc_loc_is_loc 
 
 /-
 (3) and (4) now follow (4 from 3 by switching f and g temporarily)
