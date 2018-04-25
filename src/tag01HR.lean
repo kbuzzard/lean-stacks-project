@@ -181,9 +181,6 @@ begin
   exact Htemp3.1 H
 end 
 
-#check away_away_universal_property 
-
-
 /-- universal property of inverting two elements of R one by one -/
 theorem away_away_universal_property' {R : Type u} [comm_ring R] (f g : R)
 {γ : Type v} [comm_ring γ] (sγ : R → γ) [is_ring_hom sγ] (Hf : is_unit (sγ f))
@@ -237,6 +234,7 @@ R_alg_equiv_of_unique_homs
   )
   (id_unique_R_alg_from_loc _)
 
+-- here is what we need to evaluate the sheaf 
 noncomputable definition localization.loc_loc_is_loc {R : Type u} [comm_ring R] {f g : R} (H : Spec.D' g ⊆ Spec.D' f) :
   let sα := (of_comm_ring (away f) (powers (of_comm_ring R (powers f) g))) ∘ (of_comm_ring R (powers f)) in
   let sβ := of_comm_ring R (powers g) in
@@ -247,27 +245,77 @@ begin
   let sα : R → loc (away f) (powers (of_comm_ring R (powers f) g)) := 
     (of_comm_ring (away f) (powers (of_comm_ring R (powers f) g))) ∘ (of_comm_ring R (powers f)),
   let sβ := of_comm_ring R (powers g),
-  have Hfunit : is_unit (of_comm_ring R (powers g) f) := lemma_standard_open_1a R f g H,
+  have HUfα : is_unit (sα f),
+    show is_unit ((of_comm_ring (away f) (powers (of_comm_ring R (powers f) g))) ((of_comm_ring R (powers f)) f)),
+    exact im_unit_of_unit (of_comm_ring (away f) (powers (of_comm_ring R (powers f) g))) (unit_of_in_S (away.in_powers f)),
+  have HUfβ : is_unit (sβ f) := lemma_standard_open_1a R f g H,
+  have HUgα : is_unit (sα g) := unit_of_in_S (away.in_powers (of_comm_ring R (powers f) g)),
+  have HUgβ : is_unit (sβ g) := unit_of_in_S (away.in_powers g),
   exact R_alg_equiv_of_unique_homs 
-(away_away_universal_property' f g sβ 
-  (Hfunit : is_unit (sβ f)) (unit_of_in_S (away.in_powers g) : is_unit (sβ g)))-- : is_unique_R_alg_hom sα sβ _)
-(away_universal_property g sα (unit_of_in_S (away.in_powers (of_comm_ring R (powers f) g)) : is_unit (sα g)) : is_unique_R_alg_hom sβ sα _)
-(away_away_universal_property' f g sα 
-  (im_unit_of_unit (of_comm_ring (away f) (powers (of_comm_ring R (powers f) g))) (unit_of_in_S (away.in_powers f)) : 
-    is_unit ((of_comm_ring (away f) (powers (of_comm_ring R (powers f) g))) ((of_comm_ring R (powers f)) f))) 
-  (unit_of_in_S (away.in_powers (of_comm_ring R (powers f) g)) : is_unit (sα g)))-- : is_unique_R_alg_hom sα sα _)
-(away_universal_property g sβ (unit_of_in_S (away.in_powers g) : is_unit (sβ g)))-- : is_unique_R_alg_hom sβ sβ _)
+    (away_away_universal_property' f g sβ HUfβ HUgβ)
+    (away_universal_property g sα HUgα : is_unique_R_alg_hom sβ sα _)
+    (away_away_universal_property' f g sα HUfα HUgα)
+    (away_universal_property g sβ HUgβ)
+end
+
+-- cover of a standard open translates into a cover of Spec(localization)
+theorem cover_of_cover_standard {R : Type u} [comm_ring R] {r : R}
+{γ : Type u} (f : γ → R) (Hcover : (⋃ (i : γ), Spec.D' (f i)) = Spec.D' r)
+: (⋃ (i : γ), Spec.D' (of_comm_ring R (powers r) (f i))) = set.univ :=
+set.eq_univ_of_univ_subset (λ Pr HPr, 
+begin
+  let φ := Zariski.induced (of_comm_ring R (powers r)),
+  let P := φ Pr,
+  have H : P ∈ Spec.D' r,
+    rw ←(lemma_standard_open R r).2,
+    existsi Pr,simp,
+  rw ←Hcover at H,
+  cases H with Vi HVi,
+  cases HVi with HVi HP,
+  cases HVi with i Hi,
+  existsi φ ⁻¹' Vi,
+  existsi _, -- sorry Mario
+    exact HP,
+  existsi i,
+  rw Hi,
+  exact Zariski.induced.preimage_D _ _,
+end
+)
+
+-- Now let's try and prove the sheaf axiom for finite covers.
+theorem zariski.sheaf_of_types_on_standard_basis_for_finite_covers (R : Type u) [comm_ring R] :
+  ∀ (U : set (X R)) (BU : U ∈ (standard_basis R)) (γ : Type u) (Fγ : fintype γ)
+  (Ui : γ → set (X R)) (BUi :  ∀ i : γ, (Ui i) ∈ (standard_basis R))
+  (Hcover: (⋃ (i : γ), (Ui i)) = U),
+  sheaf_property (D_f_form_basis R) (zariski.structure_presheaf_of_types_on_basis_of_standard R)
+   (λ U V ⟨f,Hf⟩ ⟨g,Hg⟩,⟨f*g,Hf.symm ▸ Hg.symm ▸ (tag00E0.lemma15 _ f g).symm⟩) U BU γ Ui BUi Hcover :=
+begin
+  intros U BU γ Hfγ Ui BUi Hcover si Hglue,
+  -- from all this data our job is to find a global section
+  cases BU with r Hr,
+  let Rr := away r, -- our job is to find an element of Rr
+  -- will get this from lemma_standard_covering₂
+  let f : γ → Rr := λ i, of_comm_ring R (powers r) (classical.some (BUi i)),
+  let f_proof := λ i, classical.some_spec (BUi i),
+  -- need to check 1 ∈ span ↑(finset.image f finset.univ)
+  -- to apply the algebra lemma for coverings.
+
+  -- first let's check the geometric assertion
+  have Hcoverr : (⋃ (i : γ), Spec.D' (f i)) = set.univ,
+    refine cover_of_cover_standard _ _,
+    rw ←Hr,
+    rw ←Hcover,
+    congr,
+    apply funext,
+    intro i,
+    rw ←(f_proof i),
+  
+  -- now let's deduce that the ideal of Rr gen by im f is all of Rr
+  rw tag00E0.lemma16 at Hcoverr, ⋃₀
+
+  repeat {admit},
 end 
-
-#check localization.loc_loc_is_loc 
-
-/-
-(3) and (4) now follow (4 from 3 by switching f and g temporarily)
-
-    cor : g invertible in R[1/f] implies R[1/f] = R[1/fg] uniquely R-iso
-    cor : f invertible in R[1/g] implies R[1/g] = R[1/f][1/g] uniquely R-iso
-
--/
+#check set.Union_eq_sUnion_image
 
 -- first let's check the sheaf axiom for finite covers, using the fact that 
 -- the intersection of two basis opens is a basic open (meaning we can use
@@ -281,9 +329,6 @@ end
 --    D(f) is homeomorphic to Spec(R[1/f]) and this homeo identifies D(g) in D(f) with D(g)
 --    in Spec(R[1/f]) [TODO -- check this is done!]
 --
--- In other words, all the maths is done, it's just a case of glueing it together.
-
-
 -- what we need for (a)
 /-
 #check @lemma_standard_covering₁
@@ -335,39 +380,12 @@ lemma_standard_open_1c :
     Spec.D' g ⊆ Spec.D' f → localization.away f → localization.away g
 -/
 
---#print notation ≃ᵣ
---#print ring_equiv -- this is in temp
 
--- I just put a bunch of notes on how to do this stuff in localization_UMP.lean, which
--- should be moved here.
 
--- some lemmas : what I need is (4). I need this to deduce the sheaf axiom
--- for finite covers of a basic open by basic opens. I need to apply the
--- standard ring theory exact sequence lemma to a localisation, and
--- (4) is, I believe, the issue that I'll have to resolve. 
+
+
 /-
-1) f invertible in R implies R[1/f] uniquely R-iso to R
-2) R[1/f][1/g] uniquely R-iso to R[1/fg]
-3) cor : g invertible in R[1/f] implies R[1/f] = R[1/fg] uniquely R-iso
-4) cor : f invertible in R[1/g] implies R[1/g] = R[1/f][1/g] uniquely R-iso
--/
-
-
-
-
-
--- everything under here needs to be re-evaluated
-noncomputable definition localization.loc_loc_is_loc {R : Type u} [comm_ring R] {f g : R} (H : Spec.D' g ⊆ Spec.D' f) :
-(away g) ≃ᵣ away (of_comm_ring R (powers f) g) := 
-{ to_fun := away.extend_map_of_im_unit 
-              (of_comm_ring (away f) _ ∘ (of_comm_ring R (powers f)) : R → loc (away f) (powers (of_comm_ring R (powers f) g)))
-              sorry,
-  inv_fun := sorry,
-  left_inv := sorry,
-  right_inv := sorry,
-  is_ring_hom := sorry
-}
-
+-- below was initial attempt to formulate stuff
 
 theorem zariski.sheaf_of_types_on_standard_basis_for_finite_covers (R : Type u) [comm_ring R] :
   ∀ (U : set (X R)) (BU : U ∈ (standard_basis R)) (γ : Type u) (Fγ : fintype γ)
