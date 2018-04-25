@@ -202,6 +202,17 @@ R_alg_equiv_of_unique_homs
 
 #check id
 
+
+noncomputable definition localization.loc_loc_is_loc {R : Type u} [comm_ring R] {f g : R} (H : Spec.D' g ⊆ Spec.D' f) :
+  let sα := (of_comm_ring (loc R (powers f)) (powers (of_comm_ring R (powers f) g))) ∘ (of_comm_ring R (powers f)) in
+  let sβ := of_comm_ring R (powers (f * g) in
+R_alg_equiv sα sβ :=
+R_alg_equiv_of_unique_homs 
+(_ : is_unique_R_alg_hom sα sβ _)
+(_ : is_unique_R_alg_hom sβ sα _)
+(_ : is_unique_R_alg_hom sα sα _)
+(_ : is_unique_R_alg_hom sβ sβ _)
+
 /-
 /-
 Both f and g have inverses in R[1/f][1/g] so there's a unique R-alg map 
