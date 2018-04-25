@@ -52,13 +52,26 @@ open localization -- should have done this ages ago
 
 -- TODO -- I don't need those two maps to be id! id is clearly an R-alg com so use uniqueness!!
 definition R_alg_equiv_of_unique_homs {R : Type u} {α : Type v} {β : Type w} [comm_ring R] [comm_ring α] [comm_ring β]
-  {sα : R → α} {sβ : R → β} {f : α → β} {g : β → α} [is_ring_hom sα] [is_ring_hom sβ] [H : is_ring_hom f] [is_ring_hom g] : 
-is_unique_R_alg_hom sα sβ f → is_unique_R_alg_hom sβ sα g → is_unique_R_alg_hom sα sα *id* → is_unique_R_alg_hom sβ sβ *id*
+  {sα : R → α} {sβ : R → β} {f : α → β} {g : β → α} {hα : α → α} {hβ : β → β}
+  [is_ring_hom sα] [is_ring_hom sβ] [H : is_ring_hom f] [is_ring_hom g] [is_ring_hom hα] [is_ring_hom hβ] : 
+is_unique_R_alg_hom sα sβ f → is_unique_R_alg_hom sβ sα g → is_unique_R_alg_hom sα sα hα → is_unique_R_alg_hom sβ sβ hβ
   → R_alg_equiv sα sβ := λ Hαβ Hβα Hαα Hββ,
 { to_fun := f,
   inv_fun := g,
-  left_inv := λ x, show (g ∘ f) x = x, by rw (comp_unique sα sβ sα f g id Hαβ Hβα Hαα);refl,
-  right_inv := λ x, show (f ∘ g) x = x, by rw (comp_unique sβ sα sβ g f id Hβα Hαβ Hββ);refl,
+  left_inv := λ x, begin
+    have Hα : id = hα,
+      exact Hαα.is_unique id rfl,
+    show (g ∘ f) x = x,
+    rw [comp_unique sα sβ sα f g hα Hαβ Hβα Hαα,←Hα],
+    refl
+  end,
+  right_inv := λ x, begin
+    have Hβ : id = hβ,
+      exact Hββ.is_unique id rfl,
+    show (f ∘ g) x = x,
+    rw [comp_unique sβ sα sβ g f hβ Hβα Hαβ Hββ,←Hβ],
+    refl
+  end,  
   is_ring_hom := H,
   R_alg_hom := show sβ = f ∘ sα, from Hαβ.R_alg_hom
 }
@@ -181,7 +194,29 @@ is_unique_R_alg_hom
   (away.extend_map_of_im_unit (away.extend_map_of_im_unit sγ Hf) (begin rwa away.extend_map_extends end)) :=
 away_away_universal_property f (of_comm_ring R (powers f) g) sγ Hf (begin rwa away.extend_map_extends end)
 
-noncomputable lemma loc_is_loc_loc {R : Type u} [comm_ring R] (f g : R) :
+lemma tag01HR.unitf {R : Type u} [comm_ring R] (f g : R) : is_unit (of_comm_ring (loc R (powers f)) (powers (of_comm_ring R (powers f) g)) (of_comm_ring R (powers f) f)) :=
+im_unit_of_unit (of_comm_ring (loc R (powers f)) (powers (of_comm_ring R (powers f) g))) $ unit_of_in_S $ away.in_powers f 
+
+lemma tag01HR.unitg {R : Type u} [comm_ring R] (f g : R) : is_unit (of_comm_ring (loc R (powers f)) (powers (of_comm_ring R (powers f) g)) (of_comm_ring R (powers f) g)) :=
+unit_of_in_S (away.in_powers (of_comm_ring R (powers f) g))
+
+lemma prod_unit {R : Type u} [comm_ring R] {f g : R} : is_unit f → is_unit g → is_unit (f * g) := λ ⟨u,Hu⟩ ⟨v,Hv⟩, ⟨u*v,by rw [mul_comm u,mul_assoc f,←mul_assoc g,Hv,one_mul,Hu]⟩
+
+lemma tag01HR.unitfg {R : Type u} [comm_ring R] (f g : R) : is_unit (of_comm_ring (loc R (powers f)) (powers (of_comm_ring R (powers f) g)) (of_comm_ring R (powers f) (f * g))) :=
+begin 
+  have H := prod_unit (tag01HR.unitf f g) (tag01HR.unitg f g),
+  let φ := of_comm_ring (loc R (powers f)) (powers (of_comm_ring R (powers f) g)),
+  have Hφ : is_ring_hom φ := by apply_instance,
+  rw ←Hφ.map_mul at H,
+  let ψ := of_comm_ring R (powers f),
+  have Hψ : is_ring_hom ψ := by apply_instance,
+  rw ←Hψ.map_mul at H,
+  exact H
+end 
+
+set_option class.instance_max_depth 93
+
+noncomputable definition loc_is_loc_loc {R : Type u} [comm_ring R] (f g : R) :
 R_alg_equiv 
   ((of_comm_ring (loc R (powers f)) (powers (of_comm_ring R (powers f) g)))
   ∘ (of_comm_ring R (powers f)))
@@ -194,26 +229,16 @@ R_alg_equiv_of_unique_homs
   (away_universal_property (f*g) 
     ((of_comm_ring (loc R (powers f)) (powers (of_comm_ring R (powers f) g))) 
       ∘ (of_comm_ring R (powers f)))
-    _ -- proof that fg is a unit in R[1/f][1/g] -- not hard
+    (tag01HR.unitfg f g) -- proof that fg is a unit in R[1/f][1/g]
   )
-  (_ -- proof that id is the unique R-alg hom R[1/f][1/g] -> R[1/f][1/g] -- it's clearly an R-alg hom so 
+  (away_away_universal_property' f g ((of_comm_ring (loc R (powers f)) (powers (of_comm_ring R (powers f) g))) ∘ (of_comm_ring R (powers f)))
+    (tag01HR.unitf f g) -- proof that f is a unit in R[1/f][1/g]
+    (tag01HR.unitg f g) -- proof that g is a unit in R[1/f][1/g]
   )
   (id_unique_R_alg_from_loc _)
 
-#check id
 
 /-
-/-
-Both f and g have inverses in R[1/f][1/g] so there's a unique R-alg map 
-R[1/fg] -> R[1/f][1/g]. f is invertible in R[1/fg] (it's a lemma that every element
- of S has an inverse in R[1/S]) so there's a unique R-alg map R[1/f] -> R[1/fg] and 
- also a unique R[1/f]-alg map R[1/f][1/g] -> R[1/fg]. I claim that there's a unique
-  R-alg map R[1/f][1/g] -> R[1/fg]. Indeed any R-alg map gives, by composition with 
-  the R[1/f]-alg map R[1/f] -> R[1/f][1/g], an R-alg map R[1/f] -> R[1/fg] which must 
-  be the unique one, hence our original R-alg map was an R[1/f]-alg map and hence the
-   one we know.
-
-
 (3) and (4) now follow (4 from 3 by switching f and g temporarily)
 
     cor : g invertible in R[1/f] implies R[1/f] = R[1/fg] uniquely R-iso
