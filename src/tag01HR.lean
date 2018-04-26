@@ -48,6 +48,8 @@ structure R_alg_equiv {R : Type u} {α : Type v} {β : Type w} [comm_ring R] [co
   (sα : R → α) (sβ : R → β) extends ring_equiv α β :=
 (R_alg_hom : sβ = to_fun ∘ sα)
 
+
+
 open localization -- should have done this ages ago
 
 -- TODO -- I don't need those two maps to be id! id is clearly an R-alg com so use uniqueness!!
@@ -297,8 +299,9 @@ begin
   cases BU with r Hr,
   let Rr := away r, -- our job is to find an element of Rr
   -- will get this from lemma_standard_covering₂
+  let f0 : γ → R := λ i, (classical.some (BUi i)),
   let f : γ → Rr := λ i, of_comm_ring R (powers r) (classical.some (BUi i)),
-  let f_proof := λ i, classical.some_spec (BUi i),
+  let f_proof := λ i, (classical.some_spec (BUi i) : Ui i = Spec.D' (f0 i)),
   -- need to check 1 ∈ span ↑(finset.image f finset.univ)
   -- to apply the algebra lemma for coverings.
 
@@ -334,12 +337,30 @@ begin
   have H2 : (1 : Rr) ∈ span ↑(finset.image f finset.univ),
     rw H4,trivial,
   clear H5 H4,
+
   -- next thing we need is (s : Π (i : γ), loc Rr (powers (f i))) .
   let s : Π (i : γ), loc Rr (powers (f i)) := λ i, begin
     let sival := (zariski.structure_presheaf_of_types_on_basis_of_standard R).F (BUi i),
-    let Hi := classical.some (BUi i),
-    have Hi_proof : Ui i = Spec.D' (Hi) := classical.some_spec (BUi i),
-    have Hi := zariski.structure_presheaf_on_standard_is_loc -- unfinished
+    let fi := classical.some (BUi i),
+    have Hfi_proof : Ui i = Spec.D' (fi) := classical.some_spec (BUi i),
+    -- α = R[1/r][1/fi] -- ring Chris proved something about 
+    -- β = R[1/fi] -- intermediate object
+    -- γ = R[1/S(U)] -- definition of sheaf
+    let sα : R → loc (away r) (powers (of_comm_ring R (powers r) fi)) :=
+      of_comm_ring (away r) (powers (of_comm_ring R (powers r) fi)) ∘ of_comm_ring R (powers r),
+    let sβ : R → loc R (powers fi) := of_comm_ring R (powers fi),  
+    let sγ := (of_comm_ring R (non_zero_on_U (Spec.D' fi))),
+    have Hi : R_alg_equiv sγ sβ := zariski.structure_presheaf_on_standard_is_loc fi,
+    -- rw ←Hfi_proof at Hi -- fails,
+    -- exact Hi.to_fun (si i), -- this is *supposed* to fail -- I need R[1/f][1/g] = R[1/g] here
+    -- loc R (powers fi) = loc Rr (powers (f i))
+    -- recall Rr is R[1/r] and U = D(r). We have D(fi) in U so "fi = g and r = f"
+    -- so D(fi) is a subset of D(U)
+    have Hsub : Spec.D' fi ⊆ Spec.D' r,
+      rw [←Hfi_proof,←Hr,←Hcover],
+      exact set.subset_Union Ui i,
+    have Hloc : R_alg_equiv sα sβ := localization.loc_loc_is_loc Hsub, 
+    -- now use symmetry and transitivity to deduce sα = sγ 
     end 
 
   -- now in a position to apply lemma_standard_covering₂
@@ -347,7 +368,9 @@ begin
   repeat {admit},
 end 
 
-#check classical.cases
+definition f : R_alg_equiv _ _ := {
+
+}
 -- first let's check the sheaf axiom for finite covers, using the fact that 
 -- the intersection of two basis opens is a basic open (meaning we can use
 -- tag 009L instead of 009K).
