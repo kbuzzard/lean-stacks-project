@@ -18,7 +18,7 @@ import tag006N -- presheaves / sheaves of rings on a basis
 import tag009P -- presheaf of rings on a basis
 import tag009L -- sheaf for finite covers on basis -> sheaf for basis
 import tag00EJ -- finite cover by basic opens sheaf axiom
-universes u v w
+universes u v w uu
 
 def is_zariski.standard_open {R : Type u} [comm_ring R] (U : set (X R)) := ∃ f : R, U = Spec.D'(f)
 
@@ -52,13 +52,43 @@ lemma R_alg_equiv.symm {R : Type u} {α : Type v} {β : Type w}
   [comm_ring R] [comm_ring α] [comm_ring β]
   {sα : R → α} {sβ : R → β} :
   R_alg_equiv sα sβ → R_alg_equiv sβ sα :=
-  λ H, {-- ..(H.to_ring_equiv).symm,
-    R_alg_hom := begin
-      rw H.R_alg_hom,
-    end,
+  λ H, { R_alg_hom := begin
+         let f := H.to_fun,
+         have H2 : sβ = f ∘ sα := H.R_alg_hom,
+         let g := H.inv_fun,
+         show sα = g ∘ sβ,
+         rw H2,
+         funext,
+         show _ = g (f (sα x)),
+         conv begin
+           to_lhs,
+           rw ←H.left_inv (sα x),
+         end,
+       end,
     ..(H.to_ring_equiv).symm
   }
 
+lemma R_alg_equiv.trans {R : Type u} {α : Type v} {β : Type w} {γ : Type uu}
+  [comm_ring R] [comm_ring α] [comm_ring β] [comm_ring γ]
+  {sα : R → α} {sβ : R → β} {sγ : R → γ} :
+  R_alg_equiv sα sβ → R_alg_equiv sβ sγ → R_alg_equiv sα sγ :=
+λ H1 H2,
+{ R_alg_hom := begin
+     show sγ = H2.to_fun ∘ (H1.to_fun ∘ sα),
+     funext,
+     have H3 : sγ = H2.to_fun ∘ sβ := H2.R_alg_hom,
+     have H4 : sβ = H1.to_fun ∘ sα := H1.R_alg_hom,
+     conv begin
+       to_lhs,
+       rw H3,
+       change H2.to_fun (sβ x),
+     end,
+     conv in (sβ x) begin
+       rw H4,
+     end,
+  end,
+  ..(ring_equiv.trans H1.to_ring_equiv H2.to_ring_equiv)
+}
 
 open localization -- should have done this ages ago
 
