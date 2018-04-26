@@ -281,8 +281,10 @@ begin
   exact Zariski.induced.preimage_D _ _,
 end
 )
+local attribute [instance] classical.prop_decidable
 
 -- Now let's try and prove the sheaf axiom for finite covers.
+--set_option pp.proofs true
 theorem zariski.sheaf_of_types_on_standard_basis_for_finite_covers (R : Type u) [comm_ring R] :
   ∀ (U : set (X R)) (BU : U ∈ (standard_basis R)) (γ : Type u) (Fγ : fintype γ)
   (Ui : γ → set (X R)) (BUi :  ∀ i : γ, (Ui i) ∈ (standard_basis R))
@@ -302,21 +304,50 @@ begin
 
   -- first let's check the geometric assertion
   have Hcoverr : (⋃ (i : γ), Spec.D' (f i)) = set.univ,
-    refine cover_of_cover_standard _ _,
+  { refine cover_of_cover_standard _ _,
     rw ←Hr,
     rw ←Hcover,
     congr,
     apply funext,
     intro i,
-    rw ←(f_proof i),
-  
-  -- now let's deduce that the ideal of Rr gen by im f is all of Rr
-  rw tag00E0.lemma16 at Hcoverr, ⋃₀
+    rw ←(f_proof i) },
 
+  -- now let's deduce that the ideal of Rr gen by im f is all of Rr
+  let F : set Rr := set.range f,
+  have H2 : ⋃₀ (Spec.D' '' (set.range f)) = set.univ,
+    rw [←Hcoverr,←set.image_univ,←set.image_comp],
+    simp [set.Union_eq_sUnion_image],
+  rw [tag00E0.lemma16] at H2,
+  have H3 : Spec.V (set.range f) = ∅,
+    rw [←set.compl_univ,←H2,set.compl_compl],
+  rw ←tag00E0.lemma05 at H3,
+  have H1 : is_submodule (span (set.range f)) := by apply_instance,
+  have H1' : is_ideal (span (set.range f)) := {..H1},
+  letI := H1',
+  have H4 : span (set.range f) = set.univ := (tag00E0.lemma08 Rr _).1 H3,
+  clear F H2 H3 H1,
+  have H5 : set.range f = ↑(finset.image f finset.univ),
+    apply set.ext,intro x,split;intro H2,
+    cases H2 with i Hi,rw ←Hi,simp,existsi i,refl,
+    have : ∃ (a : γ), f a = x := by simpa using H2, exact this,
+  rw H5 at H4,
+  have H2 : (1 : Rr) ∈ span ↑(finset.image f finset.univ),
+    rw H4,trivial,
+  clear H5 H4,
+  -- next thing we need is (s : Π (i : γ), loc Rr (powers (f i))) .
+  let s : Π (i : γ), loc Rr (powers (f i)) := λ i, begin
+    let sival := (zariski.structure_presheaf_of_types_on_basis_of_standard R).F (BUi i),
+    let Hi := classical.some (BUi i),
+    have Hi_proof : Ui i = Spec.D' (Hi) := classical.some_spec (BUi i),
+    have Hi := zariski.structure_presheaf_on_standard_is_loc -- unfinished
+    end 
+
+  -- now in a position to apply lemma_standard_covering₂
+  have H3 := lemma_standard_covering₂ f H2,
   repeat {admit},
 end 
-#check set.Union_eq_sUnion_image
 
+#check classical.cases
 -- first let's check the sheaf axiom for finite covers, using the fact that 
 -- the intersection of two basis opens is a basic open (meaning we can use
 -- tag 009L instead of 009K).
@@ -345,10 +376,10 @@ end
     ∀ (s : Π (i : γ), localization.loc R (powers (f i))), β s = 0 ↔ ∃ (r : R), α f r = s
 -/
 -- what we need for (b)
+
 /-
 #check zariski.structure_presheaf_on_standard_is_loc
-
-  Π (f : ?M_1), zariski.structure_presheaf_on_standard (Spec.D' f) _ ≃ᵣ localization.away f
+  Π (f : ?M_1), R_alg_equiv (of_comm_ring ?M_1 (non_zero_on_U (Spec.D' f))) (of_comm_ring ?M_1 (powers f))
 -/
 -- what we need for (c)
 /-
