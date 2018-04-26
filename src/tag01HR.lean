@@ -48,6 +48,16 @@ structure R_alg_equiv {R : Type u} {α : Type v} {β : Type w} [comm_ring R] [co
   (sα : R → α) (sβ : R → β) extends ring_equiv α β :=
 (R_alg_hom : sβ = to_fun ∘ sα)
 
+lemma R_alg_equiv.symm {R : Type u} {α : Type v} {β : Type w} 
+  [comm_ring R] [comm_ring α] [comm_ring β]
+  {sα : R → α} {sβ : R → β} :
+  R_alg_equiv sα sβ → R_alg_equiv sβ sα :=
+  λ H, {-- ..(H.to_ring_equiv).symm,
+    R_alg_hom := begin
+      rw H.R_alg_hom,
+    end,
+    ..(H.to_ring_equiv).symm
+  }
 
 
 open localization -- should have done this ages ago
