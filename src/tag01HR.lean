@@ -323,10 +323,49 @@ begin
   exact Zariski.induced.preimage_D _ _,
 end
 )
+
+-- Now I need the following technical result:
+-- If V = D(g) in U = D(f) in Spec(R)
+-- then structure sheaf evaluated on V is R-isomorphic to R[1/f][1/gbar]
+-- with gbar = image of g and the R-isomorphism is the unique R-homomorphism
+-- between these rings. Proof goes via R[1/g]
+noncomputable definition canonical_iso {R : Type u} [comm_ring R] {f g : R} (H : Spec.D' g ⊆ Spec.D' f) :
+let gbar := of_comm_ring R (powers f) g in
+let sα : R → loc (away f) (powers gbar) :=
+  of_comm_ring (away f) (powers gbar) ∘ of_comm_ring R (powers f) in
+let sγ := (of_comm_ring R (non_zero_on_U (Spec.D' g))) in
+R_alg_equiv sγ sα :=
+R_alg_equiv.trans
+  (zariski.structure_presheaf_on_standard_is_loc g )
+  (R_alg_equiv.symm (localization.loc_loc_is_loc H))
+
+#check id
+
+-- and we also need that the canonical iso is the unique R-alg hom
+-- NB Chris suggests I remove the first three let's.
+theorem canonical_iso_is_canonical_hom {R : Type u} [comm_ring R] {f g : R} (H : Spec.D' g ⊆ Spec.D' f) :
+let gbar := of_comm_ring R (powers f) g in
+let sα : R → loc (away f) (powers gbar) :=
+  of_comm_ring (away f) (powers gbar) ∘ of_comm_ring R (powers f) in
+let sγ := (of_comm_ring R (non_zero_on_U (Spec.D' g))) in
+let H3 : is_ring_hom sα := by apply_instance in
+let H2 := (canonical_iso H).is_ring_hom in
+let H4 : is_ring_hom sγ := by apply_instance in
+@is_unique_R_alg_hom _ _ _ _ _ _ sγ sα (canonical_iso H).to_fun H4 H3 H2 := 
+begin
+letI := (canonical_iso H).is_ring_hom,
+have H5 := unique_R_alg_from_loc (canonical_iso H).to_fun,
+have H6 := (canonical_iso H).R_alg_hom.symm,
+simp [H6] at H5,
+exact H5,
+end 
+
+-- is_unique_R_alg_hom sγ sα (canonical_hom H) := sorry
+
 local attribute [instance] classical.prop_decidable
 
 -- Now let's try and prove the sheaf axiom for finite covers.
---set_option pp.proofs true
+set_option pp.proofs true
 theorem zariski.sheaf_of_types_on_standard_basis_for_finite_covers (R : Type u) [comm_ring R] :
   ∀ (U : set (X R)) (BU : U ∈ (standard_basis R)) (γ : Type u) (Fγ : fintype γ)
   (Ui : γ → set (X R)) (BUi :  ∀ i : γ, (Ui i) ∈ (standard_basis R))
@@ -378,8 +417,18 @@ begin
     rw H4,trivial,
   clear H5 H4,
 
+  -- H2 is one of the inputs to Chris' lemma.
+
+  -- What we seem to need now is a proof that if V is a standard open and V ⊆ U,
+  -- then R[1/S(V)] = R[1/r][1/f] for V = D(f), and the unique R-algebra hom is an isom.
+
+  -- so let's prove this.
+
+
   -- next thing we need is (s : Π (i : γ), loc Rr (powers (f i))) .
-  let s : Π (i : γ), loc Rr (powers (f i)) := λ i, begin
+  -- But before we do that, let's define a function which sends i to a proof
+  -- that if Ui = D(f i) and fi = image of f i in R[1/r] then O_X(Ui) = R[1/r][1/fi]
+  let s_proof := λ i, begin
     let sival := (zariski.structure_presheaf_of_types_on_basis_of_standard R).F (BUi i),
     let fi := classical.some (BUi i),
     have Hfi_proof : Ui i = Spec.D' (fi) := classical.some_spec (BUi i),
@@ -390,7 +439,7 @@ begin
       of_comm_ring (away r) (powers (of_comm_ring R (powers r) fi)) ∘ of_comm_ring R (powers r),
     let sβ : R → loc R (powers fi) := of_comm_ring R (powers fi),  
     let sγ := (of_comm_ring R (non_zero_on_U (Spec.D' fi))),
-    have Hi : R_alg_equiv sγ sβ := zariski.structure_presheaf_on_standard_is_loc fi,
+    let Hi : R_alg_equiv sγ sβ := zariski.structure_presheaf_on_standard_is_loc fi,
     -- rw ←Hfi_proof at Hi -- fails,
     -- exact Hi.to_fun (si i), -- this is *supposed* to fail -- I need R[1/f][1/g] = R[1/g] here
     -- loc R (powers fi) = loc Rr (powers (f i))
@@ -399,18 +448,18 @@ begin
     have Hsub : Spec.D' fi ⊆ Spec.D' r,
       rw [←Hfi_proof,←Hr,←Hcover],
       exact set.subset_Union Ui i,
-    have Hloc : R_alg_equiv sα sβ := localization.loc_loc_is_loc Hsub, 
+    let Hloc : R_alg_equiv sα sβ := localization.loc_loc_is_loc Hsub, 
     -- now use symmetry and transitivity to deduce sα = sγ 
-    end 
+    let Hαγ : R_alg_equiv sγ sα := R_alg_equiv.trans Hi (R_alg_equiv.symm Hloc),
+    exact Hαγ,
+  end,
 
   -- now in a position to apply lemma_standard_covering₂
   have H3 := lemma_standard_covering₂ f H2,
   repeat {admit},
 end 
 
-definition f : R_alg_equiv _ _ := {
-
-}
+#print R_alg_equiv
 -- first let's check the sheaf axiom for finite covers, using the fact that 
 -- the intersection of two basis opens is a basic open (meaning we can use
 -- tag 009L instead of 009K).
