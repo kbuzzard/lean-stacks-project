@@ -6,7 +6,7 @@ import group_theory.submonoid
 import tactic.ring
 import chris_ring_lemma
 local attribute [instance] classical.prop_decidable
-
+-- Chris' proof of exactness
 universes u v w
 
 open finset classical quotient 

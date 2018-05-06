@@ -1,5 +1,5 @@
 import algebra.group_power algebra.big_operators data.nat.choose
-
+-- This appears to be a proof of the binomial theorem by Chris.
 open finset nat
 variable {α : Type*}
 
