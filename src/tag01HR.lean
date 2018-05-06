@@ -48,6 +48,13 @@ structure R_alg_equiv {R : Type u} {α : Type v} {β : Type w} [comm_ring R] [co
   (sα : R → α) (sβ : R → β) extends ring_equiv α β :=
 (R_alg_hom : sβ = to_fun ∘ sα)
 
+-- KB failed to get this to work
+
+--theorem XXX {α β : Type} : has_coe_to_fun (equiv α β) := by apply_instance
+
+--instance R_alg_equiv_coe_to_fun {R : Type u} {α : Type v} {β : Type w} [comm_ring R] [comm_ring α] [comm_ring β]
+--  (sα : R → α) (sβ : R → β) : has_coe_to_fun (R_alg_equiv sα sβ) := λ C,(C.to_equiv)
+
 lemma R_alg_equiv.symm {R : Type u} {α : Type v} {β : Type w} 
   [comm_ring R] [comm_ring α] [comm_ring β]
   {sα : R → α} {sβ : R → β} :
@@ -120,6 +127,8 @@ is_unique_R_alg_hom sα sβ f → is_unique_R_alg_hom sβ sα g → is_unique_R_
 
 -- This proof could be simpler: a lot of the definitions would follow from
 -- universal properties, but Kenny just proved them directly anyway.
+-- It's the proof that if U=D(f) and S=S(U) is the functions which are non-vanishing
+-- on U then R[1/S]=R[1/f] as R-algebras.
 noncomputable definition zariski.structure_presheaf_on_standard_is_loc {R : Type u} [comm_ring R] (f : R) :
   R_alg_equiv (localization.of_comm_ring R _ : R → zariski.structure_presheaf_on_standard (Spec.D'(f)) (⟨f,rfl⟩))
     (localization.of_comm_ring R (powers f) : R → localization.away f) :=  
@@ -326,9 +335,10 @@ end
 
 -- Now I need the following technical result:
 -- If V = D(g) in U = D(f) in Spec(R)
--- then structure sheaf evaluated on V is R-isomorphic to R[1/f][1/gbar]
--- with gbar = image of g and the R-isomorphism is the unique R-homomorphism
--- between these rings. Proof goes via R[1/g]
+-- then structure sheaf evaluated on V (R[1/S(V)]) is R-isomorphic to R[1/f][1/gbar]
+-- with gbar = image of g. The proof goes via R[1/g]
+-- It is also true that the R-isomorphism is the unique R-homomorphism
+-- between these rings -- see the lemma after this.
 noncomputable definition canonical_iso {R : Type u} [comm_ring R] {f g : R} (H : Spec.D' g ⊆ Spec.D' f) :
 let gbar := of_comm_ring R (powers f) g in
 let sα : R → loc (away f) (powers gbar) :=
@@ -365,7 +375,7 @@ end
 local attribute [instance] classical.prop_decidable
 
 -- Now let's try and prove the sheaf axiom for finite covers.
-set_option pp.proofs true
+--set_option pp.proofs true
 theorem zariski.sheaf_of_types_on_standard_basis_for_finite_covers (R : Type u) [comm_ring R] :
   ∀ (U : set (X R)) (BU : U ∈ (standard_basis R)) (γ : Type u) (Fγ : fintype γ)
   (Ui : γ → set (X R)) (BUi :  ∀ i : γ, (Ui i) ∈ (standard_basis R))
