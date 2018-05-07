@@ -150,12 +150,13 @@ by refine {..}; intros; simp [is_ring_hom.map_add f, is_ring_hom.map_add g,
 structure ring_equiv (α : Type u) (β : Type v) [comm_ring α] [comm_ring β] extends equiv α β :=
 (is_ring_hom : is_ring_hom to_fun)
 
+infix ` ≃ᵣ `:25 := ring_equiv
+
 namespace ring_equiv
 
 variables {α : Type u} {β : Type v} {γ : Type w}
 variables [comm_ring α] [comm_ring β] [comm_ring γ]
 
-infix ` ≃ᵣ `:25 := ring_equiv
 
 variable α
 
@@ -165,8 +166,26 @@ protected def refl : α ≃ᵣ α :=
 
 variable {α}
 
+-- Kevin needs explicit access to this 
+definition inv_fun_is_ring_hom (f : α ≃ᵣ β) : _root_.is_ring_hom f.inv_fun := 
+{ map_add := λ x y, calc
+              f.inv_fun (x + y)
+            = f.inv_fun (f.to_fun (f.inv_fun x) + f.to_fun (f.inv_fun y)) : by rw [f.right_inv, f.right_inv]
+        ... = f.inv_fun (f.to_fun (f.inv_fun x + f.inv_fun y)) : by simp [f.is_ring_hom.map_add]
+        ... = f.inv_fun x + f.inv_fun y : f.left_inv _,
+      map_mul := λ x y, calc
+              f.inv_fun (x * y)
+            = f.inv_fun (f.to_fun (f.inv_fun x) * f.to_fun (f.inv_fun y)) : by rw [f.right_inv, f.right_inv]
+        ... = f.inv_fun (f.to_fun (f.inv_fun x * f.inv_fun y)) : by simp [f.is_ring_hom.map_mul]
+        ... = f.inv_fun x * f.inv_fun y : f.left_inv _,
+      map_one := calc
+              f.inv_fun 1
+            = f.inv_fun (f.to_fun 1) : by simp [f.is_ring_hom.map_one]
+        ... = 1 : f.left_inv 1 }
+
 protected def symm (f : α ≃ᵣ β) : β ≃ᵣ α :=
-{ is_ring_hom :=
+{ is_ring_hom := inv_fun_is_ring_hom f,
+/-
     { map_add := λ x y, calc
               f.inv_fun (x + y)
             = f.inv_fun (f.to_fun (f.inv_fun x) + f.to_fun (f.inv_fun y)) : by rw [f.right_inv, f.right_inv]
@@ -181,6 +200,7 @@ protected def symm (f : α ≃ᵣ β) : β ≃ᵣ α :=
               f.inv_fun 1
             = f.inv_fun (f.to_fun 1) : by simp [f.is_ring_hom.map_one]
         ... = 1 : f.left_inv 1 },
+        -/
   .. equiv.symm f.to_equiv }
 
 protected def trans (f : α ≃ᵣ β) (g : β ≃ᵣ γ) : α ≃ᵣ γ :=
