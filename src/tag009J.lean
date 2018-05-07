@@ -1,8 +1,6 @@
 import analysis.topology.topological_space
 import tag009I 
-
--- helpers 1 to 3 are one-liners, I just didn't do them because
--- of time pressure.
+-- Kevin and Kenny
 
 -- union of a bunch of sets U_i = U implies each U_i subset of U
 def helper1 {X : Type*} {γ : Type*} {U : set X} {Ui : γ → set X} {i : γ} :
