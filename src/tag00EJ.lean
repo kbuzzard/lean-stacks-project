@@ -89,13 +89,15 @@ end
 variables {R : Type u} {γ : Type v} [comm_ring R] [fintype γ]
 open localization
 
-private def α (f : γ → R) (x : R) : Π i, loc R (powers (f i)) :=
+def tag00EJ.α (f : γ → R) (x : R) : Π i, loc R (powers (f i)) :=
   λ i, of_comm_ring R _ x
 
-private noncomputable def β {f : γ → R}
+noncomputable def tag00EJ.β {f : γ → R}
     (r : Π i, loc R (powers (f i))) (j k : γ) :
     loc R (powers (f j * f k)) :=
 localize_more_left (f j) (f k) (r j) - localize_more_right (f j) (f k) (r k)
+
+open tag00EJ 
 
 lemma localize_more_left_eq (f g x : R) (n : ℕ) : 
     localize_more_left f g ⟦⟨x, ⟨f^n, n, rfl⟩⟩⟧ = ⟦⟨x * g^n, (f * g)^n, n, rfl⟩⟧ :=
