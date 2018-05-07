@@ -11,155 +11,21 @@ import group_theory.submonoid
 import ring_theory.localization 
 import Kenny_comm_alg.Zariski 
 import tag00E0 
+import tag00EJ
 import tag01HS_statement 
 import tag009I -- presheaf of types on a basis
 import tag00DY -- claim that D(f) form a basis
 import tag006N -- presheaves / sheaves of rings on a basis
 import tag009P -- presheaf of rings on a basis
 import tag009L -- sheaf for finite covers on basis -> sheaf for basis
-import tag00EJ -- finite cover by basic opens sheaf axiom
+import data.equiv 
+import canonical_isomorphism_nonsense
+
 universes u v w uu
-
-def is_zariski.standard_open {R : Type u} [comm_ring R] (U : set (X R)) := ∃ f : R, U = Spec.D'(f)
-
-def non_zero_on_U {R : Type u} [comm_ring R] (U : set (X R)) : set R := {g : R | U ⊆ Spec.D'(g)}
-
-instance nonzero_on_U_is_mult_set {R : Type u} [comm_ring R] (U : set (X R)) : is_submonoid (non_zero_on_U U) := 
-{ one_mem := λ P HP, @is_proper_ideal.one_not_mem _ _ P.1 P.2.1,
-  mul_mem := begin
-    intros f g Hf Hg,
-    show U ⊆ Spec.D'(f*g),
-    rw [tag00E0.lemma15 R f g],
-    exact set.subset_inter Hf Hg
-    end
-}
-
-lemma nonzero_on_U_mono {R : Type u} [comm_ring R] {U V : set (X R)} : V ⊆ U → non_zero_on_U U ⊆ non_zero_on_U V :=
-λ H _,set.subset.trans H
-
-def zariski.structure_presheaf_on_standard {R : Type u} [comm_ring R] (U : set (X R)) (H : is_zariski.standard_open U) : Type u := 
-  @localization.loc R _ (non_zero_on_U U) (nonzero_on_U_is_mult_set U)
-
-instance zariski.structure_presheaf_on_standard.comm_ring {R : Type u} [comm_ring R] (U : set (X R)) (H : is_zariski.standard_open U) :
-comm_ring (zariski.structure_presheaf_on_standard U H) :=
-@localization.comm_ring _ _ _ (nonzero_on_U_is_mult_set U)
-
-structure R_alg_equiv {R : Type u} {α : Type v} {β : Type w} [comm_ring R] [comm_ring α] [comm_ring β]
-  (sα : R → α) (sβ : R → β) extends ring_equiv α β :=
-(R_alg_hom : sβ = to_fun ∘ sα)
-
--- KB failed to get this to work
-
---theorem XXX {α β : Type} : has_coe_to_fun (equiv α β) := by apply_instance
-
---instance R_alg_equiv_coe_to_fun {R : Type u} {α : Type v} {β : Type w} [comm_ring R] [comm_ring α] [comm_ring β]
---  (sα : R → α) (sβ : R → β) : has_coe_to_fun (R_alg_equiv sα sβ) := λ C,(C.to_equiv)
-
-lemma R_alg_equiv.symm {R : Type u} {α : Type v} {β : Type w} 
-  [comm_ring R] [comm_ring α] [comm_ring β]
-  {sα : R → α} {sβ : R → β} :
-  R_alg_equiv sα sβ → R_alg_equiv sβ sα :=
-  λ H, { R_alg_hom := begin
-         let f := H.to_fun,
-         have H2 : sβ = f ∘ sα := H.R_alg_hom,
-         let g := H.inv_fun,
-         show sα = g ∘ sβ,
-         rw H2,
-         funext,
-         show _ = g (f (sα x)),
-         conv begin
-           to_lhs,
-           rw ←H.left_inv (sα x),
-         end,
-       end,
-    ..(H.to_ring_equiv).symm
-  }
-
-lemma R_alg_equiv.trans {R : Type u} {α : Type v} {β : Type w} {γ : Type uu}
-  [comm_ring R] [comm_ring α] [comm_ring β] [comm_ring γ]
-  {sα : R → α} {sβ : R → β} {sγ : R → γ} :
-  R_alg_equiv sα sβ → R_alg_equiv sβ sγ → R_alg_equiv sα sγ :=
-λ H1 H2,
-{ R_alg_hom := begin
-     show sγ = H2.to_fun ∘ (H1.to_fun ∘ sα),
-     funext,
-     have H3 : sγ = H2.to_fun ∘ sβ := H2.R_alg_hom,
-     have H4 : sβ = H1.to_fun ∘ sα := H1.R_alg_hom,
-     conv begin
-       to_lhs,
-       rw H3,
-       change H2.to_fun (sβ x),
-     end,
-     conv in (sβ x) begin
-       rw H4,
-     end,
-  end,
-  ..(ring_equiv.trans H1.to_ring_equiv H2.to_ring_equiv)
-}
 
 open localization -- should have done this ages ago
 
--- TODO -- I don't need those two maps to be id! id is clearly an R-alg com so use uniqueness!!
-definition R_alg_equiv_of_unique_homs {R : Type u} {α : Type v} {β : Type w} [comm_ring R] [comm_ring α] [comm_ring β]
-  {sα : R → α} {sβ : R → β} {f : α → β} {g : β → α} {hα : α → α} {hβ : β → β}
-  [is_ring_hom sα] [is_ring_hom sβ] [H : is_ring_hom f] [is_ring_hom g] [is_ring_hom hα] [is_ring_hom hβ] : 
-is_unique_R_alg_hom sα sβ f → is_unique_R_alg_hom sβ sα g → is_unique_R_alg_hom sα sα hα → is_unique_R_alg_hom sβ sβ hβ
-  → R_alg_equiv sα sβ := λ Hαβ Hβα Hαα Hββ,
-{ to_fun := f,
-  inv_fun := g,
-  left_inv := λ x, begin
-    have Hα : id = hα,
-      exact Hαα.is_unique id rfl,
-    show (g ∘ f) x = x,
-    rw [comp_unique sα sβ sα f g hα Hαβ Hβα Hαα,←Hα],
-    refl
-  end,
-  right_inv := λ x, begin
-    have Hβ : id = hβ,
-      exact Hββ.is_unique id rfl,
-    show (f ∘ g) x = x,
-    rw [comp_unique sβ sα sβ g f hβ Hβα Hαβ Hββ,←Hβ],
-    refl
-  end,  
-  is_ring_hom := H,
-  R_alg_hom := show sβ = f ∘ sα, from Hαβ.R_alg_hom
-}
 
--- This proof could be simpler: a lot of the definitions would follow from
--- universal properties, but Kenny just proved them directly anyway.
--- It's the proof that if U=D(f) and S=S(U) is the functions which are non-vanishing
--- on U then R[1/S]=R[1/f] as R-algebras.
-noncomputable definition zariski.structure_presheaf_on_standard_is_loc {R : Type u} [comm_ring R] (f : R) :
-  R_alg_equiv (localization.of_comm_ring R _ : R → zariski.structure_presheaf_on_standard (Spec.D'(f)) (⟨f,rfl⟩))
-    (localization.of_comm_ring R (powers f) : R → localization.away f) :=  
-{ to_fun      := localization.extend_map_of_im_unit
-    (localization.of_comm_ring R (powers f))
-    (λ s hs, lemma_standard_open_1a R _ _ hs),
-  is_ring_hom := localization.extend_map_of_im_unit.is_ring_hom _ _,
-  inv_fun     := localization.away.extend_map_of_im_unit
-    (localization.of_comm_ring R _)
-    ⟨localization.mk _ _ ⟨1, f, set.subset.refl _⟩,
-     quotient.sound ⟨1, is_submonoid.one_mem _, by simp⟩⟩,
-  left_inv    := @localization.unique _ _ _ _ _ _ _ _ 
-    (@@is_ring_hom.comp _ _ _
-       (localization.extend_map_of_im_unit.is_ring_hom _ _) _ _
-       (localization.extend_map_of_im_unit.is_ring_hom _ _))
-    (ring_equiv.refl _).is_ring_hom
-    (by intro x; dsimp [ring_equiv.refl, equiv.refl]; rw [localization.extend_map_extends, localization.extend_map_extends]),
-  right_inv   := @localization.unique _ _ _ _ _ _ _ _
-    (@@is_ring_hom.comp _ _ _
-       (localization.extend_map_of_im_unit.is_ring_hom _ _) _ _
-       (localization.extend_map_of_im_unit.is_ring_hom _ _))
-    (ring_equiv.refl _).is_ring_hom
-    (by intro x; dsimp [ring_equiv.refl, equiv.refl]; rw [localization.extend_map_extends, localization.extend_map_extends]),
-  R_alg_hom := (funext (λ r, (localization.extend_map_extends
-     (_ : R → localization.loc R (powers f))
-     _ r 
-       ).symm)
-  : localization.of_comm_ring R (powers f) =
-    localization.extend_map_of_im_unit (localization.of_comm_ring R (powers f)) _ ∘
-      localization.of_comm_ring R (non_zero_on_U (Spec.D' f)))
-}
 
 -- just under Definition 25.5.2
 
@@ -184,63 +50,20 @@ noncomputable definition zariski.structure_presheaf_of_rings_on_basis_of_standar
 
 -- computation of stalk: I already did this for R I think.
 
--- we now begin to check the sheaf axiom for a finite covers by basis elements.
-
--- To get Chris' lemma to apply to covers of D(f) (rather than a cover of R)
--- we need R[1/f][1/g] = R[1/g] if D(g) ⊆ D(f), so let's prove this from the
--- universal property.
-
--- warm-up:
+/-
+-- warm-up: I never use this.
 -- f invertible in R implies R[1/f] uniquely R-iso to R
 noncomputable definition localization.loc_unit {R : Type u} [comm_ring R] (f : R) (H : is_unit f) : 
 R_alg_equiv (id : R → R) (of_comm_ring R (powers f)) := 
-R_alg_equiv_of_unique_homs 
+R_alg_equiv.of_unique_homs 
   (unique_R_alg_from_R (of_comm_ring R (powers f)))
   (away_universal_property f id H)
   (unique_R_alg_from_R id)
   (id_unique_R_alg_from_loc _) 
 
-set_option class.instance_max_depth 52 -- !!
---set_option trace.class_instances true
-/-- universal property of inverting one element and then another -/
-theorem away_away_universal_property {R : Type u} [comm_ring R] (f : R)
-(g : loc R (powers f)) {γ : Type v} [comm_ring γ] (sγ : R → γ) [is_ring_hom sγ] (Hf : is_unit (sγ f))
-(Hg : is_unit (away.extend_map_of_im_unit sγ Hf g)) :
-is_unique_R_alg_hom 
-  ((of_comm_ring (away f) (powers g)) ∘ (of_comm_ring R (powers f))) 
-  sγ
-  (away.extend_map_of_im_unit (away.extend_map_of_im_unit sγ Hf) Hg) := 
-begin
-  let α := loc R (powers f),
-  let β := loc α (powers g),
-  let sα := of_comm_ring R (powers f),
-  let fαβ := of_comm_ring α (powers g),
-  let sβ := fαβ ∘ sα,
-  let fαγ := away.extend_map_of_im_unit sγ Hf,
-  let fβγ := away.extend_map_of_im_unit fαγ Hg,
-  have HUαγ : is_unique_R_alg_hom sα sγ fαγ := away_universal_property f sγ Hf,
-  have HUβγ : is_unique_R_alg_hom fαβ fαγ fβγ := away_universal_property g fαγ Hg,
-  have Hαγ : sγ = fαγ ∘ sα := HUαγ.R_alg_hom,
-  have Hβγ : fαγ = fβγ ∘ fαβ := HUβγ.R_alg_hom,
-  have Htemp : is_unique_R_alg_hom sα sγ fαγ ↔ is_unique_R_alg_hom sα (fβγ ∘ fαβ ∘ sα) (fβγ ∘ fαβ),
-    simp [Hαγ,Hβγ],
-  have Htemp2 : is_unique_R_alg_hom fαβ fαγ fβγ ↔ is_unique_R_alg_hom fαβ (fβγ ∘ fαβ) fβγ,
-    simp [Hβγ],
-  have H : is_unique_R_alg_hom (fαβ ∘ sα) (fβγ ∘ fαβ ∘ sα) fβγ := unique_R_of_unique_R_of_unique_Rloc sα fαβ fβγ (Htemp.1 HUαγ) (Htemp2.1 HUβγ),
-  have Htemp3 : is_unique_R_alg_hom (fαβ ∘ sα) (fβγ ∘ fαβ ∘ sα) fβγ ↔ is_unique_R_alg_hom (fαβ ∘ sα) sγ fβγ,
-    simp [Hαγ,Hβγ],
-  exact Htemp3.1 H
-end 
+-/
 
-/-- universal property of inverting two elements of R one by one -/
-theorem away_away_universal_property' {R : Type u} [comm_ring R] (f g : R)
-{γ : Type v} [comm_ring γ] (sγ : R → γ) [is_ring_hom sγ] (Hf : is_unit (sγ f))
-(Hg : is_unit (sγ g)) :
-is_unique_R_alg_hom
-  ((of_comm_ring (away f) (powers (of_comm_ring R (powers f) g))) ∘ (of_comm_ring R (powers f))) 
-  sγ
-  (away.extend_map_of_im_unit (away.extend_map_of_im_unit sγ Hf) (begin rwa away.extend_map_extends end)) :=
-away_away_universal_property f (of_comm_ring R (powers f) g) sγ Hf (begin rwa away.extend_map_extends end)
+
 
 lemma tag01HR.unitf {R : Type u} [comm_ring R] (f g : R) : is_unit (of_comm_ring (loc R (powers f)) (powers (of_comm_ring R (powers f) g)) (of_comm_ring R (powers f) f)) :=
 im_unit_of_unit (of_comm_ring (loc R (powers f)) (powers (of_comm_ring R (powers f) g))) $ unit_of_in_S $ away.in_powers f 
@@ -262,6 +85,7 @@ begin
   exact H
 end 
 
+/-
 set_option class.instance_max_depth 93
 -- I don't use the next theorem, it was just a test for whether I had the right universal properties.
 noncomputable definition loc_is_loc_loc {R : Type u} [comm_ring R] (f g : R) :
@@ -269,7 +93,7 @@ R_alg_equiv
   ((of_comm_ring (loc R (powers f)) (powers (of_comm_ring R (powers f) g)))
   ∘ (of_comm_ring R (powers f)))
   (of_comm_ring R (powers (f * g))) :=
-R_alg_equiv_of_unique_homs
+R_alg_equiv.of_unique_homs
   (away_away_universal_property' f g (of_comm_ring R (powers (f * g)))
     (unit_of_loc_more_left f g) -- proof that f is aunit in R[1/fg]
     (unit_of_loc_more_right f g) -- proof that g is a unit in R[1/fg]
@@ -284,30 +108,7 @@ R_alg_equiv_of_unique_homs
     (tag01HR.unitg f g) -- proof that g is a unit in R[1/f][1/g]
   )
   (id_unique_R_alg_from_loc _)
-
--- here is what we need to evaluate the sheaf 
-noncomputable definition localization.loc_loc_is_loc {R : Type u} [comm_ring R] {f g : R} (H : Spec.D' g ⊆ Spec.D' f) :
-  let sα := (of_comm_ring (away f) (powers (of_comm_ring R (powers f) g))) ∘ (of_comm_ring R (powers f)) in
-  let sβ := of_comm_ring R (powers g) in
-R_alg_equiv sα sβ := 
-begin
-  have Htemp : is_ring_hom (of_comm_ring (away f) (powers (of_comm_ring R (powers f) g))) := by apply_instance,
-  letI := Htemp,
-  let sα : R → loc (away f) (powers (of_comm_ring R (powers f) g)) := 
-    (of_comm_ring (away f) (powers (of_comm_ring R (powers f) g))) ∘ (of_comm_ring R (powers f)),
-  let sβ := of_comm_ring R (powers g),
-  have HUfα : is_unit (sα f),
-    show is_unit ((of_comm_ring (away f) (powers (of_comm_ring R (powers f) g))) ((of_comm_ring R (powers f)) f)),
-    exact im_unit_of_unit (of_comm_ring (away f) (powers (of_comm_ring R (powers f) g))) (unit_of_in_S (away.in_powers f)),
-  have HUfβ : is_unit (sβ f) := lemma_standard_open_1a R f g H,
-  have HUgα : is_unit (sα g) := unit_of_in_S (away.in_powers (of_comm_ring R (powers f) g)),
-  have HUgβ : is_unit (sβ g) := unit_of_in_S (away.in_powers g),
-  exact R_alg_equiv_of_unique_homs 
-    (away_away_universal_property' f g sβ HUfβ HUgβ)
-    (away_universal_property g sα HUgα : is_unique_R_alg_hom sβ sα _)
-    (away_away_universal_property' f g sα HUfα HUgα)
-    (away_universal_property g sβ HUgβ)
-end
+-/
 
 -- cover of a standard open translates into a cover of Spec(localization)
 theorem cover_of_cover_standard {R : Type u} [comm_ring R] {r : R}
@@ -333,44 +134,7 @@ begin
 end
 )
 
--- Now I need the following technical result:
--- If V = D(g) in U = D(f) in Spec(R)
--- then structure sheaf evaluated on V (R[1/S(V)]) is R-isomorphic to R[1/f][1/gbar]
--- with gbar = image of g. The proof goes via R[1/g]
--- It is also true that the R-isomorphism is the unique R-homomorphism
--- between these rings -- see the lemma after this.
-noncomputable definition canonical_iso {R : Type u} [comm_ring R] {f g : R} (H : Spec.D' g ⊆ Spec.D' f) :
-let gbar := of_comm_ring R (powers f) g in
-let sα : R → loc (away f) (powers gbar) :=
-  of_comm_ring (away f) (powers gbar) ∘ of_comm_ring R (powers f) in
-let sγ := (of_comm_ring R (non_zero_on_U (Spec.D' g))) in
-R_alg_equiv sγ sα :=
-R_alg_equiv.trans
-  (zariski.structure_presheaf_on_standard_is_loc g )
-  (R_alg_equiv.symm (localization.loc_loc_is_loc H))
 
-#check id
-
--- and we also need that the canonical iso is the unique R-alg hom
--- NB Chris suggests I remove the first three let's.
-theorem canonical_iso_is_canonical_hom {R : Type u} [comm_ring R] {f g : R} (H : Spec.D' g ⊆ Spec.D' f) :
-let gbar := of_comm_ring R (powers f) g in
-let sα : R → loc (away f) (powers gbar) :=
-  of_comm_ring (away f) (powers gbar) ∘ of_comm_ring R (powers f) in
-let sγ := (of_comm_ring R (non_zero_on_U (Spec.D' g))) in
-let H3 : is_ring_hom sα := by apply_instance in
-let H2 := (canonical_iso H).is_ring_hom in
-let H4 : is_ring_hom sγ := by apply_instance in
-@is_unique_R_alg_hom _ _ _ _ _ _ sγ sα (canonical_iso H).to_fun H4 H3 H2 := 
-begin
-letI := (canonical_iso H).is_ring_hom,
-have H5 := unique_R_alg_from_loc (canonical_iso H).to_fun,
-have H6 := (canonical_iso H).R_alg_hom.symm,
-simp [H6] at H5,
-exact H5,
-end 
-
--- is_unique_R_alg_hom sγ sα (canonical_hom H) := sorry
 
 local attribute [instance] classical.prop_decidable
 
