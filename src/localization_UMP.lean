@@ -266,7 +266,7 @@ unique_R_alg_from_loc id
 
 /-- universal property of localization at a multiplicative set. -/
 theorem loc_universal_property {R : Type u} [comm_ring R] {S : set R} [is_submonoid S]
-{β : Type v} [comm_ring β] (sβ : R → β)[is_ring_hom sβ] (H : ∀ s ∈ S, ∃ t, sβ s * t = 1) :
+{β : Type v} [comm_ring β] (sβ : R → β) [is_ring_hom sβ] (H : ∀ s ∈ S, ∃ t, sβ s * t = 1) :
 is_unique_R_alg_hom (of_comm_ring R S) sβ (extend_map_of_im_unit sβ H) := 
 { R_alg_hom := funext (λ r, (extend_map_extends sβ H r).symm),
   is_unique := λ g Hg HR, by exactI extend_map_unique sβ H g (λ r, by rw HR)
