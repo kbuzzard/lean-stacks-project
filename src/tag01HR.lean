@@ -63,8 +63,6 @@ R_alg_equiv.of_unique_homs
 
 -/
 
-#check lemma_standard_open_1a
-
 lemma tag01HR.unitf {R : Type u} [comm_ring R] (f g : R) : is_unit (of_comm_ring (loc R (powers f)) (powers (of_comm_ring R (powers f) g)) (of_comm_ring R (powers f) f)) :=
 im_unit_of_unit (of_comm_ring (loc R (powers f)) (powers (of_comm_ring R (powers f) g))) $ unit_of_in_S $ away.in_powers f 
 
@@ -140,11 +138,13 @@ local attribute [instance] classical.prop_decidable
 
 -- Now let's try and prove the sheaf axiom for finite covers.
 --set_option pp.proofs true
-theorem zariski.sheaf_of_types_on_standard_basis_for_finite_covers (R : Type u) [comm_ring R] :
+
+-- THIS IS BEING MOVED TO CANONICAL_ISOMORPHISM_NONSENSE
+theorem zariski.sheaf_of_types_on_standard_basis_for_finite_covers' (R : Type u) [comm_ring R] :
   ∀ (U : set (X R)) (BU : U ∈ (standard_basis R)) (γ : Type u) (Fγ : fintype γ)
   (Ui : γ → set (X R)) (BUi :  ∀ i : γ, (Ui i) ∈ (standard_basis R))
   (Hcover: (⋃ (i : γ), (Ui i)) = U),
-  sheaf_property (D_f_form_basis R) (zariski.structure_presheaf_of_types_on_basis_of_standard R)
+  sheaf_property_for_standard_basis (D_f_form_basis R) (zariski.structure_presheaf_of_types_on_basis_of_standard R)
    (λ U V ⟨f,Hf⟩ ⟨g,Hg⟩,⟨f*g,Hf.symm ▸ Hg.symm ▸ (tag00E0.lemma15 _ f g).symm⟩) U BU γ Ui BUi Hcover :=
 begin
   intros U BU γ Hfγ Ui BUi Hcover si Hglue,
@@ -202,6 +202,7 @@ begin
   -- next thing we need is (s : Π (i : γ), loc Rr (powers (f i))) .
   -- But before we do that, let's define a function which sends i to a proof
   -- that if Ui = D(f i) and fi = image of f i in R[1/r] then O_X(Ui) = R[1/r][1/fi]
+  -- Note that this is data -- the "=" is a given isomorphism between two totally different types
   let s_proof := λ i, begin
     let sival := (zariski.structure_presheaf_of_types_on_basis_of_standard R).F (BUi i),
     let fi := classical.some (BUi i),
@@ -229,8 +230,27 @@ begin
   end,
 
   -- now in a position to apply lemma_standard_covering₂
-  have H3 := lemma_standard_covering₂ f H2,
-  repeat {admit},
+  have Hexact1 := lemma_standard_covering₁ H2,
+  have Hexact2 := lemma_standard_covering₂ f H2,
+  
+  -- At this point we have Hexact1 and Hexact2, which together are the assertion that
+  -- if Rr = R[1/r] (with U=D(r)) and f : gamma -> Rr gives us a cover of U by U_i=D(f i)
+  -- then the comm algebra sequence 00EJ is exact.
+
+  -- We want to deduce an analogous statement for the global sections of O_X
+  -- defined as O_X(U) = R[1/S(U)] and O_X(U_i) = R[1/S(U_i)].
+  -- We have s_proof i : R_alg_equiv (R->R[1/S(U_i)]) (R->R[1/r]->R[1/r][1/f_i])
+  -- We will surely need R_alg_equiv (R->R[1/S(U)]) (R->R[1/r]) but we will have
+  -- this somewhere : it will be zariski.structure_presheaf_on_standard_is_loc blah
+  have HUbasic := zariski.structure_presheaf_on_standard_is_loc r,
+
+  -- goal currently
+  --∃! (s : (zariski.structure_presheaf_of_types_on_basis_of_standard R).F _),
+  --  ∀ (i : γ), (zariski.structure_presheaf_of_types_on_basis_of_standard R).res _ _ _ s = si i
+
+  -- This is the point where I want to say "done because everything is canonical".
+  -- 
+  admit
 end 
 
 #print R_alg_equiv

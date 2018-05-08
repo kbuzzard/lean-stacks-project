@@ -15,6 +15,7 @@
 
 -/
 import algebra.group data.set data.equiv -- for comm diag stuff
+import tag00DY -- definition of standard basis on Spec(R) plus proof it's a basis
 import tag00E0
 import tag00EJ -- finite cover by basic opens sheaf axiom
 import tag009I -- definition of presheaf of types on basis
@@ -60,7 +61,16 @@ def ker : set α :=
 
 end is_add_group_hom
 
+namespace equiv
+
+theorem to_fun.injective {α β : Type u} (e : α ≃ β) : function.injective e := 
+function.injective_of_has_left_inverse ⟨e.symm,e.inverse_apply_apply⟩
+
+end equiv
+
 -- If A -> B -> C is isomorphic to A' -> B' -> C' and first sequence is exact then second is.
+-- But I don't ever use this now.
+/-
 theorem three (A B C A' B' C' : Type*)
   [add_comm_group A] [add_comm_group A']
   [add_comm_group B] [add_comm_group B']
@@ -119,6 +129,8 @@ begin
 end
 
 -- Thanks Kenny.
+-/
+
 
 -- Now start moving stuff from tag01HR.lean which has got really
 -- unwieldy. Here I am going to prove the sheaf on a finite basis
@@ -412,14 +424,90 @@ let H4 : is_ring_hom sγ := by apply_instance in
 -- and if A = R[1/S(U)] then
 -- 0 -> A -> sum R[1/S(U_i)] -> sum R[1/S(U_i intersect U_j)] is exact
 
+-- Let's formulate exactly what we need.
+
+theorem unique_from_iso_to_unique {A B C A' B' C' : Type u}
+  [add_comm_group A] [add_comm_group A']
+  [add_comm_group B] [add_comm_group B']
+  [add_comm_group C] [add_comm_group C']
+  (ab : A → B) [is_add_group_hom ab]
+  (bc : B → C) [is_add_group_hom bc]
+--  (Habc : set.range ab = is_add_group_hom.ker bc)
+  (H4exact : ∀ b : B, bc b = 0 → ∃! a : A, ab a = b)
+  (fa : A ≃ A') [is_add_group_hom fa]
+  (fb : B ≃ B') [is_add_group_hom fb]
+  (fc : C ≃ C') [is_add_group_hom fc]
+
+  (ab' : A' → B') [is_add_group_hom ab']
+  (bc' : B' → C') [is_add_group_hom bc']
+  (H1 : ∀ a, fb (ab a) = ab' (fa a))
+  (H2 : ∀ b, fc (bc b) = bc' (fb b))
+  : ∀ b' : B', (bc' b' = 0 → ∃! a' : A', ab' a' = b') := 
+begin
+  intros b' Hb',
+  let b := fb.symm b',
+    have H3 : fc (bc b) = 0,
+    rw H2 b,
+    simp [Hb'],
+  have Hb : bc b = 0,
+    have H4 : fc.symm (fc (bc b)) = 0,
+      rw H3,
+      have H5 : fc (0 : C) = 0 := is_add_group_hom.zero fc,
+      rw ←H5,
+      simp,
+    simp only [equiv.inverse_apply_apply fc] at H4,
+    exact H4,
+  cases H4exact b Hb with a Ha,
+  existsi (fa a),
+  split,
+  { show ab' (fa a) = b',
+    rw ←H1,
+    rw Ha.1,
+    exact equiv.apply_inverse_apply fb b'
+  },
+  intros a₁' Ha₁',
+  have H4 := Ha.2 (fa.symm a₁'),
+  suffices H5 : ab (fa.symm a₁') = b,
+    rw ←(H4 H5),simp,
+  apply equiv.to_fun.injective fb,
+  rw H1,
+  simp [Ha₁'],
+end 
+
+-- In the application, A B C = Chris stuff Rr[1/gi] etc
+-- and A' B' C' = R[1/S(U)] etc.
+
+-- H4exact will be Chris' Lemma.
+
+
+
+
+
 -- I first need to prove that two diagrams commute!
 
 -- First the injection from O_X(U) into prod_i O_X(U_i)
 
 -- WILL BE IMPORTANT AT SOME POINT
---lemma alphadiag_commutes : 
+--lemma alphadiag_commutes : blah
+
+
+
+-- END OF FILE
 
 -- dream goal to be fed into 009L
+
+-- NOT RIGHT YET THOUGH
+
+-- it's in tag01HR
+
+#exit
+
+theorem zariski.sheaf_of_types_on_standard_basis_for_finite_covers (R : Type u) [comm_ring R] :
+  ∀ (U : set (X R)) (BU : U ∈ (standard_basis R)) (γ : Type u) (Fγ : fintype γ)
+  (Ui : γ → set (X R)) (BUi :  ∀ i : γ, (Ui i) ∈ (standard_basis R))
+  (Hcover: (⋃ (i : γ), (Ui i)) = U),
+  sheaf_property_for_standard_basis (D_f_form_basis R) (zariski.structure_presheaf_of_types_on_basis_of_standard R)
+   (λ U V ⟨f,Hf⟩ ⟨g,Hg⟩,⟨f*g,Hf.symm ▸ Hg.symm ▸ (tag00E0.lemma15 _ f g).symm⟩) U BU γ Ui BUi Hcover :=
 
 theorem finite_standard_cover_sheaf_property {R : Type u} [comm_ring R]
 --  {X : Type u} [T : topological_space X] 
@@ -435,4 +523,10 @@ theorem finite_standard_cover_sheaf_property {R : Type u} [comm_ring R]
   ∀ Ui : γ → set (X R),
   ∀ BUi :  ∀ i : γ, B (Ui i),
   ∀ Hcover: (⋃ (i : γ), (Ui i)) = U,
-  sheaf_property HB FPTB Hstandard U BU γ Ui BUi Hcover) := sorry 
+  sheaf_property_for_standard_basis HB FPTB Hstandard U BU γ Ui BUi Hcover) := 
+begin
+  intros U BU γ Hγ f Bfi Hun si Hglue,
+  -- ∃! (s : FPTB.F BU), ∀ (i : γ), FPTB.res BU _ _ s = si i
+  admit
+end  
+
