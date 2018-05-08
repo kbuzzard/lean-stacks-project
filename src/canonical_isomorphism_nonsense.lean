@@ -15,18 +15,22 @@
 
 -/
 import algebra.group data.set data.equiv -- for comm diag stuff
+import tag00E0
 import tag00EJ -- finite cover by basic opens sheaf axiom
+import tag009I -- definition of presheaf of types on basis
+import tag009L -- definition of basis_is_compact 
 --import group_theory.submonoid  
 import ring_theory.localization 
 import Kenny_comm_alg.Zariski 
-import tag00E0 
-import tag01HS_statement 
-import tag009I -- presheaf of types on a basis
-import tag00DY -- claim that D(f) form a basis
-import tag006N -- presheaves / sheaves of rings on a basis
-import tag009P -- presheaf of rings on a basis
-import tag009L -- sheaf for finite covers on basis -> sheaf for basis
+--import tag00E0 
+import tag01HS_statement -- for "lemma_standard_open" giving map R[1/f] -> R[1/g] from D(g) ⊆ D(f) 
+--import tag009I -- presheaf of types on a basis
+--import tag00DY -- claim that D(f) form a basis
+--import tag006N -- presheaves / sheaves of rings on a basis
+--import tag009P -- presheaf of rings on a basis
+--import tag009L -- sheaf for finite covers on basis -> sheaf for basis
 import data.equiv 
+import tag00EJ 
 
 universes u0 u v w
 
@@ -236,7 +240,7 @@ is_unique_R_alg_hom sα sβ f → is_unique_R_alg_hom sβ sα g → is_unique_R_
 end R_alg_equiv -- namespace
 
 
--- This proof could be simpler: a lot of the definitions would follow from
+-- The proof below (is_loc) could be simpler: a lot of the definitions would follow from
 -- universal properties, but Kenny just proved them directly anyway.
 -- It's the proof that if U=D(f) and S=S(U) is the functions which are non-vanishing
 -- on U then R[1/S]=R[1/f] as R-algebras.
@@ -394,16 +398,7 @@ let sγ := (of_comm_ring R (non_zero_on_U (Spec.D' g))) in
 let H3 : is_ring_hom sα := by apply_instance in
 let H2 : is_ring_hom ((((canonical_iso H).to_ring_equiv).to_equiv).inv_fun) := (canonical_iso H).symm.is_ring_hom in
 let H4 : is_ring_hom sγ := by apply_instance in
-@is_unique_R_alg_hom _ _ _ _ _ _ sα sγ (canonical_iso H).inv_fun H3 H4 H2 := 
-begin
-letI := (canonical_iso H).is_ring_hom,
-have H5 := unique_R_alg_from_loc (canonical_iso H).to_fun,
-have H6 := (canonical_iso H).R_alg_hom.symm,
-simp [H6] at H5,
-exact H5,
-end 
-
-
+@is_unique_R_alg_hom _ _ _ _ _ _ sα sγ (canonical_iso H).inv_fun H3 H4 H2 := sorry
 
 -- Chris has proved that 0-> A -> sum A_{g_i} -> sum A_{g_i g_j} is exact
 -- if Spec(A) is covered by D(g_i) (a finite cover).
@@ -412,3 +407,27 @@ end
 -- and if A = R[1/S(U)] then
 -- 0 -> A -> sum R[1/S(U_i)] -> sum R[1/S(U_i intersect U_j)] is exact
 
+-- I first need to prove that two diagrams commute!
+
+-- First the injection from O_X(U) into prod_i O_X(U_i)
+
+-- WILL BE IMPORTANT AT SOME POINT
+--lemma alphadiag_commutes : 
+
+-- dream goal to be fed into 009L
+
+theorem finite_standard_cover_sheaf_property {R : Type u} [comm_ring R]
+--  {X : Type u} [T : topological_space X] 
+  {B : set (set (X R))} 
+  (HB : topological_space.is_topological_basis B)
+  (FPTB : presheaf_of_types_on_basis HB)
+  (Hstandard : ∀ U V : set (X R), B U → B V → B (U ∩ V))
+  -- cofinal system is finite covers
+  (HBcompact: basis_is_compact HB)
+  : 
+  (∀ U : set (X R), ∀ BU : B U,
+  ∀ γ : Type u, fintype γ → -- note fintype here
+  ∀ Ui : γ → set X,
+  ∀ BUi :  ∀ i : γ, B (Ui i),
+  ∀ Hcover: (⋃ (i : γ), (Ui i)) = U,
+  sheaf_property HB FPTB Hstandard U BU γ Ui BUi Hcover) := sorry 
