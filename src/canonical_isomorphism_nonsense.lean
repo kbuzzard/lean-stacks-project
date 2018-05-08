@@ -181,6 +181,11 @@ lemma symm {R : Type u} {α : Type v} {β : Type w}
     ..(H.to_ring_equiv).symm
   }
 
+/- we have his for ring_equiv and I've never implemented this version here
+  lemma inv_fun_is_ring_hom {R : Type u} {α : Type v} {β : Type w} 
+  [comm_ring R] [comm_ring α] [comm_ring β]
+  {sα : R → α} {sβ : R → β} (H : R_alg_equiv sα sβ) : is_ring_hom H.inv_fun := sorry 
+-/
 lemma trans {R : Type u0} {α : Type u} {β : Type v} {γ : Type w}
   [comm_ring R] [comm_ring α] [comm_ring β] [comm_ring γ]
   {sα : R → α} {sβ : R → β} {sγ : R → γ} :
@@ -385,24 +390,16 @@ simp [H6] at H5,
 exact H5,
 end 
 
--- now let's go the other way
+-- now let's go the other way -- but do I need this?
 theorem canonical_iso_is_canonical_hom₂ {R : Type u} [comm_ring R] {f g : R} (H : Spec.D' g ⊆ Spec.D' f) :
 let gbar := of_comm_ring R (powers f) g in
 let sα : R → loc (away f) (powers gbar) :=
   of_comm_ring (away f) (powers gbar) ∘ of_comm_ring R (powers f) in
 let sγ := (of_comm_ring R (non_zero_on_U (Spec.D' g))) in
 let H3 : is_ring_hom sα := by apply_instance in
-let H2 : is_ring_hom ((((canonical_iso H).to_ring_equiv).to_equiv).inv_fun) := (canonical_iso H).symm.is_ring_hom in
+let H2 : is_ring_hom (canonical_iso H).inv_fun := ring_equiv.inv_fun_is_ring_hom (canonical_iso H).to_ring_equiv in
 let H4 : is_ring_hom sγ := by apply_instance in
-@is_unique_R_alg_hom _ _ _ _ _ _ sα sγ (canonical_iso H).inv_fun H3 H4 H2 := 
-begin
-letI := (canonical_iso H).is_ring_hom,
-have H5 := unique_R_alg_from_loc (canonical_iso H).to_fun,
-have H6 := (canonical_iso H).R_alg_hom.symm,
-simp [H6] at H5,
-exact H5,
-end 
-
+@is_unique_R_alg_hom _ _ _ _ _ _ sα sγ (canonical_iso H).inv_fun H3 H4 H2 := sorry
 
 
 -- Chris has proved that 0-> A -> sum A_{g_i} -> sum A_{g_i g_j} is exact
