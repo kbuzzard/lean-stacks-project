@@ -10,7 +10,9 @@ the intersection of two basis opens is a basic open.
 
 import tag009J 
 universe u
-definition sheaf_property 
+-- A "standard" basis -- I just mean intersection of two basic opens is basic open.
+-- Makes the sheaf axiom easier, and is satisfied in the case of Spec of a ring.
+definition sheaf_property_for_standard_basis 
   {X : Type u} [T : topological_space X] 
   {B : set (set X)} 
   (HB : topological_space.is_topological_basis B)
@@ -19,7 +21,6 @@ definition sheaf_property
   (U : set X)
   (BU : B U)
   (γ : Type u)
-  --(Hfingamma: fintype γ) -- only interested in finite covers here
   (Ui : γ → set X)
   (BUi : ∀ i : γ, B (Ui i))
   (Hcover: (⋃ (i : γ), (Ui i)) = U) : Prop := 
@@ -40,6 +41,21 @@ definition basis_is_compact
     ∃ f : γ → β, 
     (⋃ (j : γ), Ui (f j)) = U 
 
+definition sheaf_for_standard_cofinal_system  {X : Type u} [T : topological_space X] 
+  {B : set (set X)} 
+  (HB : topological_space.is_topological_basis B)
+  (FPTB : presheaf_of_types_on_basis HB)
+  (Hstandard : ∀ U V : set X, B U → B V → B (U ∩ V))
+  -- cofinal system is finite covers
+  (HBcompact: basis_is_compact HB)
+  := 
+  (∀ U : set X, ∀ BU : B U,
+  ∀ γ : Type u, fintype γ → -- note fintype here
+  ∀ Ui : γ → set X,
+  ∀ BUi :  ∀ i : γ, B (Ui i),
+  ∀ Hcover: (⋃ (i : γ), (Ui i)) = U,
+  sheaf_property_for_standard_basis HB FPTB Hstandard U BU γ Ui BUi Hcover)
+
 theorem lemma_cofinal_systems_coverings_standard_case 
   {X : Type u} [T : topological_space X] 
   {B : set (set X)} 
@@ -48,20 +64,20 @@ theorem lemma_cofinal_systems_coverings_standard_case
   (Hstandard : ∀ U V : set X, B U → B V → B (U ∩ V))
   -- cofinal system is finite covers
   (HBcompact: basis_is_compact HB)
-  : 
-  (∀ U : set X, ∀ BU : B U,
-  ∀ γ : Type u, fintype γ → -- note fintype here
-  ∀ Ui : γ → set X,
-  ∀ BUi :  ∀ i : γ, B (Ui i),
-  ∀ Hcover: (⋃ (i : γ), (Ui i)) = U,
-  sheaf_property HB FPTB Hstandard U BU γ Ui BUi Hcover)
-  → 
+  : sheaf_for_standard_cofinal_system HB FPTB Hstandard HBcompact → 
+--  (∀ U : set X, ∀ BU : B U,
+--  ∀ γ : Type u, fintype γ → -- note fintype here
+--  ∀ Ui : γ → set X,
+--  ∀ BUi :  ∀ i : γ, B (Ui i),
+--  ∀ Hcover: (⋃ (i : γ), (Ui i)) = U,
+--  sheaf_property_for_standard_basis HB FPTB Hstandard U BU γ Ui BUi Hcover)
+--  → 
   (∀ U : set X, ∀ BU : B U,
   ∀ γ : Type u, 
   ∀ Ui : γ → set X,
   ∀ BUi :  ∀ i : γ, B (Ui i),
   ∀ Hcover: (⋃ (i : γ), (Ui i)) = U,  
-  sheaf_property HB FPTB Hstandard U BU γ Ui BUi Hcover)
+  sheaf_property_for_standard_basis HB FPTB Hstandard U BU γ Ui BUi Hcover)
   := 
 begin
   intro Hfinite,
