@@ -12,6 +12,7 @@ import tag009J
 universe u
 -- A "standard" basis -- I just mean intersection of two basic opens is basic open.
 -- Makes the sheaf axiom easier, and is satisfied in the case of Spec of a ring.
+-- Below is the statement of the sheaf axiom for a given open cover in this case. 
 definition sheaf_property_for_standard_basis 
   {X : Type u} [T : topological_space X] 
   {B : set (set X)} 
@@ -65,6 +66,7 @@ theorem lemma_cofinal_systems_coverings_standard_case
   -- cofinal system is finite covers
   (HBcompact: basis_is_compact HB)
   : sheaf_for_standard_cofinal_system HB FPTB Hstandard HBcompact → 
+-- that line above is shorthand for:
 --  (∀ U : set X, ∀ BU : B U,
 --  ∀ γ : Type u, fintype γ → -- note fintype here
 --  ∀ Ui : γ → set X,
