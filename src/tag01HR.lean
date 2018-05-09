@@ -132,15 +132,60 @@ begin
 end
 )
 
-
-
 local attribute [instance] classical.prop_decidable
 
+/-
+open finset 
+open presheaf_of_types_on_basis 
+theorem application_of_tag00EJ {R : Type u} [comm_ring R] (r : R) {γ : Type u} {H : fintype γ}
+  (f : γ → R) (Hcover : (1 : away r) ∈ span (↑(univ.image (of_comm_ring R (powers r) ∘ f)) : set (loc R (powers r)))) :
+  let FPTB := (zariski.structure_presheaf_of_types_on_basis_of_standard R) in 
+  
+  
+  (si : Π (i : γ), (zariski.structure_presheaf_of_types_on_basis_of_standard R).F ⟨f i,rfl⟩)
+  (Hglue : ∀ i j : γ, res ⟨f i, rfl⟩ (Hstandard (BUi i) (BUi j) : B (Ui i ∩ Ui j)) (set.inter_subset_left _ _) (si i) = 
+              FPTB.res (BUi j) (Hstandard (BUi i) (BUi j) : B (Ui i ∩ Ui j)) (set.inter_subset_right _ _) (si j))
+  → ∃! s : FPTB.F BU, ∀ i : γ, FPTB.res BU (BUi i) (Hcover ▸ (set.subset_Union Ui i)) s = si i 
+
+
+-/
+
 -- Now let's try and prove the sheaf axiom for finite covers.
+
+instance alpha_is_add_group_hom {R : Type u} {γ : Type u} [comm_ring R] [fintype γ] (f : γ → R) :
+is_add_group_hom (tag00EJ.α f) :=
+begin
+  constructor,
+  intros a b,
+  funext,
+  unfold tag00EJ.α,
+  have H := localization.of_comm_ring_is_ring_hom R (powers (f i)),
+  apply H.map_add,
+end 
+
+instance beta_is_add_group_hom {R : Type u} {γ : Type u} [comm_ring R] [fintype γ] (f : γ → R) :
+is_add_group_hom (@tag00EJ.β R γ _ _ f) := begin
+--unfold is_add_group_hom,
+constructor,
+intros a b,
+funext,
+show _ = (tag00EJ.β a j k) + (tag00EJ.β b j k),
+unfold tag00EJ.β,
+have H1 : localize_more_left (f j) (f k) ((a * b) j) = localize_more_left (f j) (f k) (a j)
++ localize_more_left (f j) (f k) (b j) := is_add_group_hom.add _ (a j) (b j),
+rw H1,
+have H2 : localize_more_right (f j) (f k) ((a * b) k) = localize_more_right (f j) (f k) (a k)
++ localize_more_right (f j) (f k) (b k) := is_add_group_hom.add _ (a k) (b k),
+rw H2,
+simp,
+end 
+
+
 --set_option pp.proofs true
 
 -- THIS IS BEING MOVED TO CANONICAL_ISOMORPHISM_NONSENSE
-theorem zariski.sheaf_of_types_on_standard_basis_for_finite_covers' (R : Type u) [comm_ring R] :
+-- THIS PROOF IS LONG AND CURRENTLY UNFINISHED
+theorem zariski.sheaf_of_types_on_standard_basis_for_finite_covers (R : Type u) [comm_ring R] :
   ∀ (U : set (X R)) (BU : U ∈ (standard_basis R)) (γ : Type u) (Fγ : fintype γ)
   (Ui : γ → set (X R)) (BUi :  ∀ i : γ, (Ui i) ∈ (standard_basis R))
   (Hcover: (⋃ (i : γ), (Ui i)) = U),
@@ -199,10 +244,13 @@ begin
   -- so let's prove this.
 
 
+-- s_proof no longer needed: we have canonical_iso.
+
   -- next thing we need is (s : Π (i : γ), loc Rr (powers (f i))) .
   -- But before we do that, let's define a function which sends i to a proof
   -- that if Ui = D(f i) and fi = image of f i in R[1/r] then O_X(Ui) = R[1/r][1/fi]
   -- Note that this is data -- the "=" is a given isomorphism between two totally different types
+  /-
   let s_proof := λ i, begin
     let sival := (zariski.structure_presheaf_of_types_on_basis_of_standard R).F (BUi i),
     let fi := classical.some (BUi i),
@@ -228,6 +276,7 @@ begin
     let Hαγ : R_alg_equiv sγ sα := R_alg_equiv.trans Hi (R_alg_equiv.symm Hloc),
     exact Hαγ,
   end,
+-/
 
   -- now in a position to apply lemma_standard_covering₂
   have Hexact1 := lemma_standard_covering₁ H2,
@@ -250,10 +299,74 @@ begin
 
   -- This is the point where I want to say "done because everything is canonical".
   -- 
-  admit
+  -- A = Rr
+  -- B = prod_i Rr[1/f i]
+  -- C = prod_{j,k} Rr[1/(f j) * (f k)] 
+  -- A' = value of sheaf on U
+  -- B' = prod_i values on D(f0 i)
+  -- C' = prod j k values in D((f0 j) * (f0 k))
+
+  have H4exact : ∀ (b : Π (i : γ), loc Rr (powers (f i))), tag00EJ.β b = 0 → (∃! (a : Rr), tag00EJ.α f a = b),
+  { intros b Hb,
+    cases ((Hexact2 b).1 Hb) with a Ha,
+    existsi a,
+    split,exact Ha,
+    intros y Hy,
+    apply Hexact1,
+    rw Ha,
+    rw Hy
+  }, 
+
+  have fa : R_alg_equiv 
+              (of_comm_ring R (powers r)) 
+              (of_comm_ring R (non_zero_on_U U)) := begin 
+                rw Hr,
+                exact (zariski.structure_presheaf_on_standard_is_loc r).symm,
+              end, 
+
+--  have : is_add_group_hom fa.to_equiv := sorry, --fa.to_is_ring_hom.map_add,
+
+  have fbi : ∀ i : γ, R_alg_equiv
+               ((of_comm_ring Rr (powers (f i))) ∘ (of_comm_ring R (powers r)))
+               (of_comm_ring R (non_zero_on_U (Ui i))) := begin
+                 intro i,
+                 rw f_proof i,
+                 have H : Spec.D' (f0 i) ⊆ Spec.D' r,
+                 { rw ←Hr,
+                   rw ←(f_proof i),
+                   rw ←Hcover,
+                   apply set.subset_Union Ui i,
+                 },
+      exact (canonical_iso H).symm,
+
+  end,
+
+  have fcjk : ∀ j k : γ, R_alg_equiv 
+                ((of_comm_ring Rr (powers (f j * f k))) ∘ (of_comm_ring R (powers r)))
+                (of_comm_ring R (non_zero_on_U (Ui j ∩ Ui k))) := begin
+                  intros j k,
+                  -- now rewrite Uj ∩ Uk as D(f0j * f0k)
+                  -- and there might be an issue that f j * f k isn't
+                  -- defeq to the image of f0 j * f0 k
+                  -- Once these are fixed the below might work.
+                  -- exact (canonical_iso _).symm,
+                  sorry
+                end,
+
+  have Hcanonical := fourexact_from_iso_to_fourexact 
+   (tag00EJ.α f : Rr → (Π (i : γ), away (f i)))
+   (tag00EJ.β) 
+   H4exact --H4exact
+   fa.to_equiv -- fa
+   (_ : (Π (i : γ), loc Rr (powers (f i))) ≃ Π (i : γ), loc R (non_zero_on_U (Ui i))) -- fb
+   (_ : (Π (j k : γ), loc Rr (powers (f j * f k))) ≃ Π (j k : γ),loc R (non_zero_on_U (Ui j ∩ Ui k))) -- fa : A ≃ A', fb fc
+  _ _ -- ab' bc' -- maps 
+  _ _, -- H1 H2 -- diags commute
+
+repeat {sorry},
 end 
 
-#print R_alg_equiv
+
 -- first let's check the sheaf axiom for finite covers, using the fact that 
 -- the intersection of two basis opens is a basic open (meaning we can use
 -- tag 009L instead of 009K).
