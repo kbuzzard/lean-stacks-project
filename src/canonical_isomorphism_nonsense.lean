@@ -32,6 +32,11 @@ import tag01HS_statement -- for "lemma_standard_open" giving map R[1/f] -> R[1/g
 --import tag009L -- sheaf for finite covers on basis -> sheaf for basis
 import data.equiv 
 import tag00EJ 
+import linear_algebra -- for span 
+
+local attribute [instance] classical.prop_decidable
+
+
 
 universes u0 u v w
 
@@ -49,6 +54,9 @@ theorem mk (H : ∀ x y, f (x + y) = f x + f y) : is_add_group_hom f :=
 
 theorem add (x y) : f (x + y) = f x + f y :=
 @is_group_hom.mul (multiplicative α) (multiplicative β) _ _ f hf x y
+
+instance ring_hom_is_add_group_hom {α β : Type u} [ring α] [ring β] (f : α → β) [is_ring_hom f] : is_add_group_hom f :=
+⟨λ _ _, is_ring_hom.map_add f⟩
 
 theorem zero : f 0 = 0 :=
 @is_group_hom.one (multiplicative α) (multiplicative β) _ _ f hf
@@ -170,10 +178,14 @@ structure R_alg_equiv {R : Type u} {α : Type v} {β : Type w} [comm_ring R] [co
   (sα : R → α) (sβ : R → β) extends ring_equiv α β :=
 (R_alg_hom : sβ = to_fun ∘ sα)
 
-/- fail
+#print has_coe_to_fun 
+
 instance R_alg_equiv_coe_to_fun {R : Type u} {α : Type v} {β : Type w} [comm_ring R] [comm_ring α] [comm_ring β]
-  (sα : R → α) (sβ : R → β) : has_coe_to_fun (R_alg_equiv sα sβ) := ⟨_,to_fun⟩
--/
+  (sα : R → α) (sβ : R → β) : has_coe_to_fun (R_alg_equiv sα sβ) := ⟨_,λ h,h.to_fun⟩
+
+instance R_alg_equiv_is_ring_hom {R : Type u} {α : Type v} {β : Type w} [comm_ring R] [comm_ring α] [comm_ring β]
+  (sα : R → α) (sβ : R → β) (H : R_alg_equiv sα sβ) : is_ring_hom H := H.is_ring_hom 
+
 
 namespace R_alg_equiv
 
@@ -426,7 +438,7 @@ let H4 : is_ring_hom sγ := by apply_instance in
 
 -- Let's formulate exactly what we need.
 
-theorem unique_from_iso_to_unique {A B C A' B' C' : Type u}
+theorem fourexact_from_iso_to_fourexact {A B C A' B' C' : Type u}
   [add_comm_group A] [add_comm_group A']
   [add_comm_group B] [add_comm_group B']
   [add_comm_group C] [add_comm_group C']
@@ -478,8 +490,6 @@ end
 -- and A' B' C' = R[1/S(U)] etc.
 
 -- H4exact will be Chris' Lemma.
-
-
 
 
 
