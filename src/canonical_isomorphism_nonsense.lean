@@ -178,8 +178,6 @@ structure R_alg_equiv {R : Type u} {α : Type v} {β : Type w} [comm_ring R] [co
   (sα : R → α) (sβ : R → β) extends ring_equiv α β :=
 (R_alg_hom : sβ = to_fun ∘ sα)
 
-#print has_coe_to_fun 
-
 instance R_alg_equiv_coe_to_fun {R : Type u} {α : Type v} {β : Type w} [comm_ring R] [comm_ring α] [comm_ring β]
   (sα : R → α) (sβ : R → β) : has_coe_to_fun (R_alg_equiv sα sβ) := ⟨_,λ h,h.to_fun⟩
 
