@@ -420,6 +420,7 @@ exact H5,
 end 
 
 -- now let's go the other way -- but do I need this?
+/-
 theorem canonical_iso_is_canonical_hom₂ {R : Type u} [comm_ring R] {f g : R} (H : Spec.D' g ⊆ Spec.D' f) :
 let gbar := of_comm_ring R (powers f) g in
 let sα : R → loc (away f) (powers gbar) :=
@@ -429,6 +430,7 @@ let H3 : is_ring_hom sα := by apply_instance in
 let H2 : is_ring_hom (canonical_iso H).inv_fun := ring_equiv.inv_fun_is_ring_hom (canonical_iso H).to_ring_equiv in
 let H4 : is_ring_hom sγ := by apply_instance in
 @is_unique_R_alg_hom _ _ _ _ _ _ sα sγ (canonical_iso H).inv_fun H3 H4 H2 := sorry
+-/
 
 -- Chris has proved that 0-> A -> sum A_{g_i} -> sum A_{g_i g_j} is exact
 -- if Spec(A) is covered by D(g_i) (a finite cover).
