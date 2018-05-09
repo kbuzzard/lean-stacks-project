@@ -36,8 +36,6 @@ import linear_algebra -- for span
 
 local attribute [instance] classical.prop_decidable
 
-
-
 universes u0 u v w
 
 def is_add_group_hom {α : Type u} {β : Type v} [add_group α] [add_group β] (f : α → β) : Prop :=
@@ -73,6 +71,11 @@ namespace equiv
 
 theorem to_fun.injective {α β : Type u} (e : α ≃ β) : function.injective e := 
 function.injective_of_has_left_inverse ⟨e.symm,e.inverse_apply_apply⟩
+
+theorem prod {γ : Type u} {F : γ → Type u} {G : γ → Type u} (H : ∀ i : γ, F i ≃ G i) :
+(Π i, F i) ≃ (Π i, G i) := ⟨λ Fi i,H i (Fi i),λ Gi i,(H i).symm (Gi i),
+λ Fi,begin funext i,simp [(H i).apply_inverse_apply] end,
+λ Gi, begin funext i, simp [(H i).inverse_apply_apply] end⟩
 
 end equiv
 
