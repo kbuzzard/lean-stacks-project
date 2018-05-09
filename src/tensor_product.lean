@@ -220,7 +220,12 @@ begin
     rcases hg with ⟨z, hzs, hg⟩,
     cases z with x y,
     exact ⟨x, y, f (x, y), (hs (x, y)).1 hzs, by simp [hg]⟩ },
-  { rw finset.sum_image,
+  { rw @finset.sum_image _ _ _  _  _ _ _  _  (λ (z : β × γ),finsupp.single z (f z)) _,
+  --finset.sum_image : ∀ {α : Type ?} {β : Type ?} {γ : Type ?} {f : α → β}
+  -- [_inst_1 : add_comm_monoid β] [_inst_2 : decidable_eq α] [_inst_3 : decidable_eq γ] 
+  --{s : finset γ} {g : γ → α}, (∀ (x : γ), x ∈ s → ∀ (y : γ), y ∈ s → g x = g y → x = y) 
+  -- → finset.sum (finset.image g s) f = finset.sum s (λ (x : γ), f (g x))
+
     { apply finsupp.ext,
       intro z,
       by_cases hz : f z = 0,
@@ -250,7 +255,8 @@ begin
     { intros x hx y hy hxy,
       by_contradiction hnxy,
       have hxyx : (finsupp.single x (f x) : β × γ →₀ ℤ) x = (finsupp.single y (f y) : β × γ →₀ ℤ) x,
-      { rw hxy },
+      { change finsupp.single x (f x) = finsupp.single y (f y) at hxy,
+        rw hxy },
       rw finsupp.single_apply at hxyx,
       rw finsupp.single_apply at hxyx,
       rw if_pos rfl at hxyx,
