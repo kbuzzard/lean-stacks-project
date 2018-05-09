@@ -160,10 +160,16 @@ noncomputable def localize_more_left {R : Type u} [comm_ring R] (f g) :
 localization.away.extend_map_of_im_unit (localization.of_comm_ring R _) $
 ⟨⟦⟨g, f * g, 1, by simp⟩⟧, by simp [localization.of_comm_ring, localization.mk_eq, localization.mul_frac]⟩
 
+instance localize_more_left_is_ring_hom {R : Type u} [comm_ring R] (f g : R) :
+is_ring_hom (localize_more_left f g) := by apply away.extend_map_of_im_unit.is_ring_hom
+
 noncomputable def localize_more_right {R : Type u} [comm_ring R] (f g) :
   localization.loc R (powers g) → localization.loc R (powers (f * g)) :=
 localization.away.extend_map_of_im_unit (localization.of_comm_ring R _) $
 ⟨⟦⟨f, f * g, 1, by simp⟩⟧, by simp [localization.of_comm_ring, localization.mk_eq, localization.mul_frac, mul_comm]⟩
+
+instance localize_more_right_is_ring_hom {R : Type u} [comm_ring R] (f g : R) :
+is_ring_hom (localize_more_right f g) := by apply away.extend_map_of_im_unit.is_ring_hom
 
 theorem loc_commutes (f g r : α) : 
   localize_more_left f g (localization.of_comm_ring α (powers f) r) =
