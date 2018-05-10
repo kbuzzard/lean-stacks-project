@@ -182,7 +182,7 @@ end
 
 
 --set_option pp.proofs true
-
+set_option class.instance_max_depth 100
 -- THIS IS BEING MOVED TO CANONICAL_ISOMORPHISM_NONSENSE
 -- THIS PROOF IS LONG AND CURRENTLY UNFINISHED
 theorem zariski.sheaf_of_types_on_standard_basis_for_finite_covers (R : Type u) [comm_ring R] :
@@ -345,26 +345,96 @@ begin
                 ((of_comm_ring Rr (powers (f j * f k))) ∘ (of_comm_ring R (powers r)))
                 (of_comm_ring R (non_zero_on_U (Ui j ∩ Ui k))) := begin
                   intros j k,
+                  rw f_proof j,
+                  rw f_proof k,
+                  rw ←tag00E0.lemma15,
+                  have H : f j * f k = of_comm_ring R (powers r) (f0 j * f0 k),
+                    rw (localization.of_comm_ring_is_ring_hom R (powers r)).map_mul,
+                  rw H,
+                  have H' : Spec.D' (f0 j * f0 k) ⊆ Spec.D' r,
+                  { rw tag00E0.lemma15,
+                    apply set.subset.trans 
+                      (set.inter_subset_left (Spec.D' (f0 j)) (Spec.D' (f0 k))) (_ :
+                      (Spec.D' (f0 j)) ⊆ Spec.D' r),
+                    rw ←Hr,
+                    rw ←(f_proof j),
+                    rw ←Hcover,
+                    apply set.subset_Union Ui j,
+                  },
                   -- now rewrite Uj ∩ Uk as D(f0j * f0k)
                   -- and there might be an issue that f j * f k isn't
                   -- defeq to the image of f0 j * f0 k
                   -- Once these are fixed the below might work.
-                  -- exact (canonical_iso _).symm,
-                  sorry
+                  exact (canonical_iso H').symm,
                 end,
+
+  let H3 : ∀ (i : γ), loc Rr (powers (f i)) ≃ loc R (non_zero_on_U (Ui i)),
+    intro i,exact (fbi i).to_equiv,
+  let H3' : (Π (i : γ), loc Rr (powers (f i))) ≃ Π (i : γ), loc R (non_zero_on_U (Ui i)) := equiv.Pi_congr_right H3,
+
+  let H4 : ∀ (j k : γ), loc Rr (powers (f j * f k)) ≃ loc R (non_zero_on_U (Ui j ∩ Ui k)),
+    intros j k, exact (fcjk j k).to_equiv,
+
+  let H4' : ∀ j, (Π k, loc Rr (powers (f j * f k))) ≃ (Π k, loc R (non_zero_on_U (Ui j ∩ Ui k))),
+    intro j, exact equiv.Pi_congr_right (H4 j),
+  
+  let H4'' : (Π (j k : γ), loc Rr (powers (f j * f k))) ≃ Π (j k : γ),loc R (non_zero_on_U (Ui j ∩ Ui k)),
+    exact equiv.Pi_congr_right H4',
+
+  have H4g : ∀ j k, is_add_group_hom (H4 j k) := by apply_instance,
+  have H4g' : ∀ j, is_add_group_hom (H4' j) := by apply_instance,
+
+--  have H4 : ∀ j k : γ, loc Rr (powers (f j * f k)) ≃ loc R (non_zero_on_U (Ui j ∩ Ui k)),
+--    intros j k, exact (fcjk j k).to_equiv,
 
   have Hcanonical := fourexact_from_iso_to_fourexact 
    (tag00EJ.α f : Rr → (Π (i : γ), away (f i)))
    (tag00EJ.β) 
-   H4exact --H4exact
-   fa.to_equiv -- fa
-   (_ : (Π (i : γ), loc Rr (powers (f i))) ≃ Π (i : γ), loc R (non_zero_on_U (Ui i))) -- fb
+   (H4exact) --H4exact
+   (fa.to_equiv) -- fa
+--   (equiv.prod H3 : (Π (i : γ), loc Rr (powers (f i))) ≃ Π (i : γ), loc R (non_zero_on_U (Ui i))) -- fb
+--   (H3' : (Π (i : γ), loc Rr (powers (f i))) ≃ Π (i : γ), loc R (non_zero_on_U (Ui i))) -- fb
+--   H3'
+--   (H3' : ((Π (i : γ), loc Rr (powers (f i))) ≃ (Π (i : γ), loc R (non_zero_on_U (Ui i))))) -- fb
+--   (by exact H3')
+   (_ : ((Π (i : γ), loc Rr (powers (f i))) ≃ (Π (i : γ), loc R (non_zero_on_U (Ui i))))) -- fb
    (_ : (Π (j k : γ), loc Rr (powers (f j * f k))) ≃ Π (j k : γ),loc R (non_zero_on_U (Ui j ∩ Ui k))) -- fa : A ≃ A', fb fc
-  _ _ -- ab' bc' -- maps 
-  _ _, -- H1 H2 -- diags commute
+    _ -- ab' -- map
+    _ -- bc' -- map 
+    _ _, -- H1 H2 -- diags commute
+
+    -- modulo the ten extra goals which just appeared, we're nearly done!
+  show (Π (i : γ), loc Rr (powers (f i))) ≃ Π (i : γ), loc R (non_zero_on_U (Ui i)),
+    exact H3',  
+  show (Π (j k : γ), loc Rr (powers (f j * f k))) ≃ Π (j k : γ),loc R (non_zero_on_U (Ui j ∩ Ui k)),
+    exact H4'',
+
+  show is_add_group_hom H3',
+    exact is_add_group_hom.Pi_lift (λ i, fbi i),
+
+--  let H4'' : (Π (j k : γ), loc Rr (powers (f j * f k))) ≃ Π (j k : γ),loc R (non_zero_on_U (Ui j ∩ Ui k)),
+ --   have H4'' (j : γ) : is_group_hom (Π (k : γ),   
+ --   exact is_add_group_hom.Pi_lift (λ j, _),--is_add_group_hom.Pi_lift (λ k,_)),
+  show is_add_group_hom ⇑H4'',
+  { have H4unravel : 
+      (H4'' : (Π (j k : γ), loc Rr (powers (f j * f k))) → Π (j k : γ),loc R (non_zero_on_U (Ui j ∩ Ui k)))
+           = (λ Fjk j k, fcjk j k (Fjk j k)),
+      refl,
+    show is_add_group_hom (λ Fjk j k, fcjk j k (Fjk j k) : (Π (j k : γ), loc Rr (powers (f j * f k))) → Π (j k : γ),loc R (non_zero_on_U (Ui j ∩ Ui k))),
+    sorry    
+--    suffices : ∀ j, is_add_group_hom (
+--      λ Fk k, fcjk j k (Fk k) : (Π k,loc Rr (powers (f j * f k))) → Π (k : γ),loc R (non_zero_on_U (Ui j ∩ Ui k))),
+--      exact is_add_group_hom.Pi_lift (∀ j, (λ Fk k, fcjk j k (Fk k))),
+  },
+      -- : (Π k,loc Rr (powers (f j * f k))) → Π (k : γ),loc R (non_zero_on_U (Ui j ∩ Ui k)))),
+        
 
 repeat {sorry},
 end 
+#print ring_equiv
+#check equiv.Pi_congr_right
+
+#check @fourexact_from_iso_to_fourexact
 
 
 -- first let's check the sheaf axiom for finite covers, using the fact that 
