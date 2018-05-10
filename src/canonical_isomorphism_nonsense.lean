@@ -90,14 +90,32 @@ namespace equiv
 theorem to_fun.injective {α β : Type u} (e : α ≃ β) : function.injective e := 
 function.injective_of_has_left_inverse ⟨e.symm,e.inverse_apply_apply⟩
 
---#print Pi_congr_right
--- this is Pi_congr_right
---definition prod {γ : Type u} {F : γ → Type u} {G : γ → Type u} (H : ∀ i : γ, F i ≃ G i) :
---(Π i, F i) ≃ (Π i, G i) := ⟨λ Fi i,H i (Fi i),λ Gi i,(H i).symm (Gi i),
---λ Fi,begin funext i,simp [(H i).apply_inverse_apply] end,
---λ Gi, begin funext i, simp [(H i).inverse_apply_apply] end⟩
-
 end equiv
+
+--class is_alg_hom (R : Type u) [ring R] {A B : Type u} [ring A] [ring B] (sA : R → A) (sB : R → B)
+--[is_ring_hom sA] [is_ring_hom sB] (f : A → B) extends is_ring_hom f : Prop :=
+--(commutes : ∀ r, f (sA r) = sB r)
+
+namespace is_ring_hom
+
+instance Pi_congr_right {γ : Type u} {F : γ → Type u} {G : γ → Type u} [∀ i, ring (F i)]
+[∀ i, ring (G i)] (H : ∀ i : γ, F i → G i) [H' : ∀ i, is_ring_hom (H i)] :
+ is_ring_hom (Pi_lift_map₁ H) := 
+{ map_add := λ a b, funext $ λ x,begin 
+    show H x (a x + b x) = H x (a x) + H x (b x), 
+    rw (H' x).map_add,
+    end,
+  map_mul := λ a b, funext $ λ x,begin 
+    show H x (a x * b x) = H x (a x) * H x (b x), 
+    rw (H' x).map_mul,
+    end,
+  map_one := funext $ λ x,begin 
+    show H x 1 = 1,
+    exact (H' x).map_one
+  end
+}
+
+end is_ring_hom 
 
 -- If A -> B -> C is isomorphic to A' -> B' -> C' and first sequence is exact then second is.
 -- But I don't ever use this now.
