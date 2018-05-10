@@ -79,9 +79,9 @@ by rw (add (H i))⟩
 
 instance equiv.Pi_congr_right {γ : Type u} {F : γ → Type u} {G : γ → Type u} [∀ i, add_group (F i)]
 [∀ i, add_group (G i)] (H : ∀ i : γ, F i ≃ G i) [∀ i, is_add_group_hom (H i)] :
- is_add_group_hom (equiv.Pi_congr_right H) := ⟨λ a b, funext $ λ i, 
- show H i ((a i) + (b i)) = H i (a i) + H i (b i),
-by rw (add (H i))⟩
+ is_add_group_hom (equiv.Pi_congr_right H) := 
+-- is_add_group_hom.Pi_lift H
+ is_add_group_hom.Pi_lift (λ i, H i)
 
 end is_add_group_hom
 
