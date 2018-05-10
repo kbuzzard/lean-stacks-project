@@ -380,12 +380,22 @@ begin
   
   let H4'' : (Π (j k : γ), loc Rr (powers (f j * f k))) ≃ Π (j k : γ),loc R (non_zero_on_U (Ui j ∩ Ui k)),
     exact equiv.Pi_congr_right H4',
+  
+  have Hcover' : ∀ (i : γ), Ui i ⊆ U := λ i, Hcover ▸ set.subset_Union Ui i,
 
-  have H4g : ∀ j k, is_add_group_hom (H4 j k) := by apply_instance,
-  have H4g' : ∀ j, is_add_group_hom (H4' j) := by apply_instance,
+  let ab' : loc R (non_zero_on_U U) → Π (i : γ), loc R (non_zero_on_U (Ui i)) := λ Fi i,
+    localization.localize_superset (nonzero_on_U_mono (Hcover' i)) Fi,
+  
+  let bc'₁ : (Π (i : γ), loc R (non_zero_on_U (Ui i))) → Π (j k : γ), loc R (non_zero_on_U (Ui j ∩ Ui k)) :=
+    λ Fi j k, localization.localize_superset (nonzero_on_U_mono $ set.inter_subset_left _ _) (Fi j),
 
---  have H4 : ∀ j k : γ, loc Rr (powers (f j * f k)) ≃ loc R (non_zero_on_U (Ui j ∩ Ui k)),
---    intros j k, exact (fcjk j k).to_equiv,
+  let bc'₂ : (Π (i : γ), loc R (non_zero_on_U (Ui i))) → Π (j k : γ), loc R (non_zero_on_U (Ui j ∩ Ui k)) :=
+    λ Fi j k, localization.localize_superset (nonzero_on_U_mono $ set.inter_subset_right _ _) (Fi k),
+
+  let bc' := λ x, bc'₁ x - bc'₂ x,
+
+  have Hbc'_add_group_hom : is_add_group_hom bc' := ⟨sorry⟩,
+
 
   have Hcanonical := fourexact_from_iso_to_fourexact 
    (tag00EJ.α f : Rr → (Π (i : γ), away (f i)))
@@ -399,8 +409,8 @@ begin
 --   (by exact H3')
    (H3' : ((Π (i : γ), loc Rr (powers (f i))) ≃ (Π (i : γ), loc R (non_zero_on_U (Ui i))))) -- fb
    (H4'' : (Π (j k : γ), loc Rr (powers (f j * f k))) ≃ Π (j k : γ),loc R (non_zero_on_U (Ui j ∩ Ui k))) -- fa : A ≃ A', fb fc
-    _ -- ab' -- map
-    _ -- bc' -- map 
+    ab' -- ab' -- map
+    bc' -- bc' -- map 
     _ _, -- H1 H2 -- diags commute
 
     -- modulo the six extra goals which just appeared, we're nearly done!
