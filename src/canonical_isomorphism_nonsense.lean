@@ -38,6 +38,12 @@ local attribute [instance] classical.prop_decidable
 
 universes u0 u v w
 
+definition Pi_lift_map₁ {γ : Type u} {F : γ → Type u} {G : γ → Type u} 
+  (H : ∀ i : γ, F i → G i) : (Π i, F i) → Π i, G i := λ Fi i, H i (Fi i)
+
+definition Pi_lift_map₂ {γ : Type u} {X : Type u} {G : γ → Type u} 
+  (H : ∀ i : γ, X → G i) : X → Π i, G i := λ x i, H i x
+
 def is_add_group_hom {α : Type u} {β : Type v} [add_group α] [add_group β] (f : α → β) : Prop :=
 @is_group_hom (multiplicative α) (multiplicative β) _ _ f
 
@@ -65,6 +71,18 @@ theorem neg (x) : f (-x) = -f x :=
 def ker : set α :=
 { x | f x = 0 }
 
+instance Pi_lift {γ : Type u} {F : γ → Type u} {G : γ → Type u} [∀ i, add_group (F i)]
+[∀ i, add_group (G i)] (H : ∀ i : γ, F i → G i) [∀ i, is_add_group_hom (H i)] :
+ is_add_group_hom (Pi_lift_map₁ H) := ⟨λ a b, funext $ λ i,
+show H i ((a i) + (b i)) = H i (a i) + H i (b i),
+by rw (add (H i))⟩
+
+instance equiv.Pi_congr_right {γ : Type u} {F : γ → Type u} {G : γ → Type u} [∀ i, add_group (F i)]
+[∀ i, add_group (G i)] (H : ∀ i : γ, F i ≃ G i) [∀ i, is_add_group_hom (H i)] :
+ is_add_group_hom (equiv.Pi_congr_right H) := ⟨λ a b, funext $ λ i, 
+ show H i ((a i) + (b i)) = H i (a i) + H i (b i),
+by rw (add (H i))⟩
+
 end is_add_group_hom
 
 namespace equiv
@@ -72,10 +90,12 @@ namespace equiv
 theorem to_fun.injective {α β : Type u} (e : α ≃ β) : function.injective e := 
 function.injective_of_has_left_inverse ⟨e.symm,e.inverse_apply_apply⟩
 
-theorem prod {γ : Type u} {F : γ → Type u} {G : γ → Type u} (H : ∀ i : γ, F i ≃ G i) :
-(Π i, F i) ≃ (Π i, G i) := ⟨λ Fi i,H i (Fi i),λ Gi i,(H i).symm (Gi i),
-λ Fi,begin funext i,simp [(H i).apply_inverse_apply] end,
-λ Gi, begin funext i, simp [(H i).inverse_apply_apply] end⟩
+--#print Pi_congr_right
+-- this is Pi_congr_right
+--definition prod {γ : Type u} {F : γ → Type u} {G : γ → Type u} (H : ∀ i : γ, F i ≃ G i) :
+--(Π i, F i) ≃ (Π i, G i) := ⟨λ Fi i,H i (Fi i),λ Gi i,(H i).symm (Gi i),
+--λ Fi,begin funext i,simp [(H i).apply_inverse_apply] end,
+--λ Gi, begin funext i, simp [(H i).inverse_apply_apply] end⟩
 
 end equiv
 
@@ -186,7 +206,6 @@ instance R_alg_equiv_coe_to_fun {R : Type u} {α : Type v} {β : Type w} [comm_r
 
 instance R_alg_equiv_is_ring_hom {R : Type u} {α : Type v} {β : Type w} [comm_ring R] [comm_ring α] [comm_ring β]
   (sα : R → α) (sβ : R → β) (H : R_alg_equiv sα sβ) : is_ring_hom H := H.is_ring_hom 
-
 
 namespace R_alg_equiv
 
