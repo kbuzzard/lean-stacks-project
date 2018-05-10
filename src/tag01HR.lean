@@ -397,45 +397,17 @@ begin
 --   H3'
 --   (H3' : ((Π (i : γ), loc Rr (powers (f i))) ≃ (Π (i : γ), loc R (non_zero_on_U (Ui i))))) -- fb
 --   (by exact H3')
-   (_ : ((Π (i : γ), loc Rr (powers (f i))) ≃ (Π (i : γ), loc R (non_zero_on_U (Ui i))))) -- fb
-   (_ : (Π (j k : γ), loc Rr (powers (f j * f k))) ≃ Π (j k : γ),loc R (non_zero_on_U (Ui j ∩ Ui k))) -- fa : A ≃ A', fb fc
+   (H3' : ((Π (i : γ), loc Rr (powers (f i))) ≃ (Π (i : γ), loc R (non_zero_on_U (Ui i))))) -- fb
+   (H4'' : (Π (j k : γ), loc Rr (powers (f j * f k))) ≃ Π (j k : γ),loc R (non_zero_on_U (Ui j ∩ Ui k))) -- fa : A ≃ A', fb fc
     _ -- ab' -- map
     _ -- bc' -- map 
     _ _, -- H1 H2 -- diags commute
 
-    -- modulo the ten extra goals which just appeared, we're nearly done!
-  show (Π (i : γ), loc Rr (powers (f i))) ≃ Π (i : γ), loc R (non_zero_on_U (Ui i)),
-    exact H3',  
-  show (Π (j k : γ), loc Rr (powers (f j * f k))) ≃ Π (j k : γ),loc R (non_zero_on_U (Ui j ∩ Ui k)),
-    exact H4'',
-
-  show is_add_group_hom H3',
-    exact is_add_group_hom.Pi_lift (λ i, fbi i),
-
---  let H4'' : (Π (j k : γ), loc Rr (powers (f j * f k))) ≃ Π (j k : γ),loc R (non_zero_on_U (Ui j ∩ Ui k)),
- --   have H4'' (j : γ) : is_group_hom (Π (k : γ),   
- --   exact is_add_group_hom.Pi_lift (λ j, _),--is_add_group_hom.Pi_lift (λ k,_)),
-  show is_add_group_hom ⇑H4'',
-  { have H4unravel : 
-      (H4'' : (Π (j k : γ), loc Rr (powers (f j * f k))) → Π (j k : γ),loc R (non_zero_on_U (Ui j ∩ Ui k)))
-           = (λ Fjk j k, fcjk j k (Fjk j k)),
-      refl,
-    show is_add_group_hom (λ Fjk j k, fcjk j k (Fjk j k) : (Π (j k : γ), loc Rr (powers (f j * f k))) → Π (j k : γ),loc R (non_zero_on_U (Ui j ∩ Ui k))),
-    sorry    
---    suffices : ∀ j, is_add_group_hom (
---      λ Fk k, fcjk j k (Fk k) : (Π k,loc Rr (powers (f j * f k))) → Π (k : γ),loc R (non_zero_on_U (Ui j ∩ Ui k))),
---      exact is_add_group_hom.Pi_lift (∀ j, (λ Fk k, fcjk j k (Fk k))),
-  },
-      -- : (Π k,loc Rr (powers (f j * f k))) → Π (k : γ),loc R (non_zero_on_U (Ui j ∩ Ui k)))),
+    -- modulo the six extra goals which just appeared, we're nearly done!
         
 
 repeat {sorry},
 end 
-#print ring_equiv
-#check equiv.Pi_congr_right
-
-#check @fourexact_from_iso_to_fourexact
-
 
 -- first let's check the sheaf axiom for finite covers, using the fact that 
 -- the intersection of two basis opens is a basic open (meaning we can use
