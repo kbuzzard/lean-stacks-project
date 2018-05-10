@@ -317,7 +317,7 @@ begin
     rw Hy
   }, 
 
-  have fa : R_alg_equiv 
+  let fa : R_alg_equiv 
               (of_comm_ring R (powers r)) 
               (of_comm_ring R (non_zero_on_U U)) := begin 
                 rw Hr,
@@ -326,7 +326,7 @@ begin
 
 --  have : is_add_group_hom fa.to_equiv := sorry, --fa.to_is_ring_hom.map_add,
 
-  have fbi : ∀ i : γ, R_alg_equiv
+  let fbi : ∀ i : γ, R_alg_equiv
                ((of_comm_ring Rr (powers (f i))) ∘ (of_comm_ring R (powers r)))
                (of_comm_ring R (non_zero_on_U (Ui i))) := begin
                  intro i,
@@ -341,7 +341,7 @@ begin
 
   end,
 
-  have fcjk : ∀ j k : γ, R_alg_equiv 
+  let fcjk : ∀ j k : γ, R_alg_equiv 
                 ((of_comm_ring Rr (powers (f j * f k))) ∘ (of_comm_ring R (powers r)))
                 (of_comm_ring R (non_zero_on_U (Ui j ∩ Ui k))) := begin
                   intros j k,
@@ -394,7 +394,7 @@ begin
 
   let bc' := λ x, bc'₁ x - bc'₂ x,
 
-  have Hbc'_add_group_hom : is_add_group_hom bc' := ⟨sorry⟩,
+  have Hbc'_add_group_hom : is_add_group_hom bc' := ⟨_⟩,
 
 
   have Hcanonical := fourexact_from_iso_to_fourexact 
@@ -414,7 +414,55 @@ begin
     _ _, -- H1 H2 -- diags commute
 
     -- modulo the six extra goals which just appeared, we're nearly done!
-        
+    show ∀ (a : Rr), (H3' ∘ (tag00EJ.α f)) a = ab' (((fa.to_ring_equiv).to_equiv) a),
+    -- map from Rr to B' = Π (i : γ), loc R (non_zero_on_U (Ui i))
+    suffices : H3' ∘ (tag00EJ.α f) = ab' ∘ fa.to_ring_equiv.to_equiv,
+      intro a,
+      rw this,
+    let F1 := H3' ∘ (tag00EJ.α f),
+    let F2 := ab' ∘ fa.to_ring_equiv.to_equiv,
+    -- the goal is to prove F1 = F2.
+    -- Let's first prove that they agree on R.
+    have HRalg : ∀ s : R, F1 (of_comm_ring R (powers r) s) = F2 (of_comm_ring R (powers r) s),
+      intro s,
+      funext i,
+      -- F1 (of_comm_ring R (powers r) s) i = F2 (of_comm_ring R (powers r) s) i
+      show (fbi i) (of_comm_ring Rr (powers (f i)) (of_comm_ring R (powers r) s)) =
+           localize_superset (nonzero_on_U_mono (Hcover' i)) (( fa.to_ring_equiv.to_equiv.to_fun ∘ (of_comm_ring R (powers r))) s),
+      show ((fbi i) ∘ (of_comm_ring Rr (powers (f i)))) (of_comm_ring R (powers r) s) = _,
+      show ((fbi i).to_ring_equiv.to_equiv.to_fun ∘ (of_comm_ring Rr (powers (f i))) ∘ (of_comm_ring R (powers r))) s = _,
+      rw ←fa.R_alg_hom,
+      rw ←(fbi i).R_alg_hom,
+      refine (localize_superset.is_algebra_hom _ s).symm,
+    -- Now some general nonsense says they agree.
+    have HH0 : is_ring_hom F1 := _,
+    refine (unique_R_alg_from_loc F2).is_unique F1 _,
+    funext s,
+    exact (HRalg s).symm,
+
+    have HRH1 : is_ring_hom (tag00EJ.α f) := {
+      map_add := λ a b,begin
+        funext j,
+        show of_comm_ring Rr _ (a + b) = of_comm_ring Rr _ a + of_comm_ring Rr _ b,
+        rw (localization.of_comm_ring_is_ring_hom Rr (powers (f j))).map_add,
+      end,
+      map_mul := λ a b, begin
+        funext j,
+        show of_comm_ring Rr _ (a * b) = of_comm_ring Rr _ a * of_comm_ring Rr _ b,
+        rw (localization.of_comm_ring_is_ring_hom Rr (powers (f j))).map_mul,
+      end,
+      map_one := begin 
+        funext j,
+        show of_comm_ring Rr _ 1 = 1,
+        rw (localization.of_comm_ring_is_ring_hom Rr (powers (f j))).map_one
+      end
+    },
+    
+    have HRH2 : is_ring_hom H3',
+      apply_instance,
+
+    show is_ring_hom F1,
+      apply_instance,
 
 repeat {sorry},
 end 
