@@ -97,6 +97,8 @@ noncomputable def tag00EJ.β {f : γ → R}
     loc R (powers (f j * f k)) :=
 localize_more_left (f j) (f k) (r j) - localize_more_right (f j) (f k) (r k)
 
+-- β not a ring hom but it's β₁ - β₂ with ring homs defined below.
+
 noncomputable def tag00EJ.β₁ {f : γ → R}
     (r : Π i, loc R (powers (f i))) (j k : γ) :
     loc R (powers (f j * f k)) :=
