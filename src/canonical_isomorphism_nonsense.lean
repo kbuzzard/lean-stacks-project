@@ -98,7 +98,7 @@ end equiv
 
 namespace is_ring_hom
 
-instance Pi_congr_right {γ : Type u} {F : γ → Type u} {G : γ → Type u} [∀ i, ring (F i)]
+instance Pi_lift_map₁ {γ : Type u} {F : γ → Type u} {G : γ → Type u} [∀ i, ring (F i)]
 [∀ i, ring (G i)] (H : ∀ i : γ, F i → G i) [H' : ∀ i, is_ring_hom (H i)] :
  is_ring_hom (Pi_lift_map₁ H) := 
 { map_add := λ a b, funext $ λ x,begin 
@@ -114,6 +114,10 @@ instance Pi_congr_right {γ : Type u} {F : γ → Type u} {G : γ → Type u} [�
     exact (H' x).map_one
   end
 }
+
+instance equiv.Pi_congr_right {γ : Type u} {F : γ → Type u} {G : γ → Type u} [∀ i, ring (F i)]
+[∀ i, ring (G i)] (H : ∀ i : γ, F i ≃ G i) [H' : ∀ i, is_ring_hom (H i)] :
+ is_ring_hom (equiv.Pi_congr_right H) := is_ring_hom.Pi_lift_map₁ (λ i, H i)
 
 end is_ring_hom 
 
