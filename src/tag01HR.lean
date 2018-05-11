@@ -194,8 +194,7 @@ end
 --    in Spec(R[1/f])
 -- 
 -- What makes is so hard is checking that all the diagrams commute.
-
-set_option class.instance_max_depth 100
+set_option class.instance_max_depth 72
 theorem zariski.sheaf_of_types_on_standard_basis_for_finite_covers (R : Type u) [comm_ring R] :
   ∀ (U : set (X R)) (BU : U ∈ (standard_basis R)) (γ : Type u) (Fγ : fintype γ)
   (Ui : γ → set (X R)) (BUi :  ∀ i : γ, (Ui i) ∈ (standard_basis R))
