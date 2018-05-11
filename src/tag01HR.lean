@@ -181,11 +181,21 @@ rw H2,
 simp,
 end 
 
+-- first let's check the sheaf axiom for finite covers, using the fact that 
+-- the intersection of two basis opens is a basic open (meaning we can use
+-- tag 009L instead of 009K).
 
---set_option pp.proofs true
+-- this should follow from 
+-- a) Chris' lemma [lemma_standard_covering₁ and ₂].
+-- b) the fact (proved by Kenny) that localization of R at mult set of functions non-vanishing
+--    on D(f) is isomorphic (as ring, but we will only need as ab group) to R[1/f]
+-- c) the fact (which is probably done somewhere but I'm not sure where) that
+--    D(f) is homeomorphic to Spec(R[1/f]) and this homeo identifies D(g) in D(f) with D(g)
+--    in Spec(R[1/f])
+-- 
+-- What makes is so hard is checking that all the diagrams commute.
+
 set_option class.instance_max_depth 100
--- THIS IS BEING MOVED TO CANONICAL_ISOMORPHISM_NONSENSE
--- THIS PROOF IS LONG AND CURRENTLY UNFINISHED
 theorem zariski.sheaf_of_types_on_standard_basis_for_finite_covers (R : Type u) [comm_ring R] :
   ∀ (U : set (X R)) (BU : U ∈ (standard_basis R)) (γ : Type u) (Fγ : fintype γ)
   (Ui : γ → set (X R)) (BUi :  ∀ i : γ, (Ui i) ∈ (standard_basis R))
@@ -519,6 +529,10 @@ begin
     show _ = localize_superset _ ((fbi j) (Fi j)),
     let F1₁ := (fcjk j k) ∘ (localize_more_left (f j) (f k)),
     let F2₁ := (localize_superset (nonzero_on_U_mono (set.inter_subset_left (Ui j) (Ui k)))) ∘ (fbi j),
+    have : is_ring_hom (fbi j) := by apply_instance,
+    have : is_ring_hom (localize_superset (nonzero_on_U_mono (set.inter_subset_left (Ui j) (Ui k)))) := by apply_instance,
+    have : is_ring_hom (F2₁) := by apply_instance,
+    have : is_ring_hom (of_comm_ring Rr (powers (f j))) := by apply_instance,
     show F1₁ (Fi j) = F2₁ (Fi j),
     suffices : F1₁ = F2₁,
       rw this,
@@ -547,103 +561,105 @@ begin
       -- with 
       -- of_comm_ring Rr (powers (f j * f k)) 
       -- rw ←(loc_more_left_universal_property (f j) (f k)).R_alg_hom, -- something like this should work.
-repeat {sorry},
+      unfold localize_more_left,
+      show (((fcjk j k).to_ring_equiv).to_equiv).to_fun ∘
+        (away.extend_map_of_im_unit (of_comm_ring Rr (powers (f j * f k))) _ ∘
+        of_comm_ring Rr (powers (f j))) ∘ of_comm_ring R (powers r) =
+        of_comm_ring R (non_zero_on_U (Ui j ∩ Ui k)),
+        rw ←(away_universal_property (f j) (of_comm_ring Rr (powers (f j * f k))) _).R_alg_hom,
+      rw ←(fcjk j k).R_alg_hom,
+      -- done :-)
+    have HRralg₁ : F1₁ ∘ of_comm_ring Rr (powers (f j)) = F2₁ ∘ of_comm_ring Rr (powers (f j)),
+      let Htemp := unique_R_alg_from_loc (F2₁ ∘ of_comm_ring Rr (powers (f j))),
+      rw (Htemp.is_unique (F1₁ ∘ of_comm_ring Rr (powers (f j)))),
+      exact HRalg₁.symm,
+    let Htemp' := unique_R_alg_from_loc (F1₁),
+    rwa Htemp'.is_unique (F2₁),
+
+      -- now do it again!
+
+    have Hb2 : ∀ (b : Π (i : γ), loc Rr (powers (f i))), H4'' (tag00EJ.β₂ b) = bc'₂ (H3' b),
+    -- let's try and focus on one component.
+    intro Fi,
+    funext j k,
+    show H4'' (tag00EJ.β₂ Fi) j k = bc'₂ (H3' Fi) j k,
+    -- Fi : Π (i : γ), loc Rr (powers (f i)),
+    -- and equality is between elements of 
+    -- loc R (non_zero_on_U (Ui j ∩ Ui k))
+    -- show H4'' = (fcjk j k) : Rr (powers (f j * f k)) -> R (non_zero_on_U (Ui j ∩ Ui k)))
+    -- β₁ : localize_more_left (f j) (f k)
+    -- now let's figure out what we actually have to prove.
+    -- H3' = (fbi i) : Rr[1/f i] -> R[1/non-zero_on_U (Ui i)]
+    -- bc'₁ localize_superset _ (Fi j) from 1/Ui i -> 1/(Ui j ∩ Ui k)
+    show (fcjk j k) (localize_more_right (f j) (f k) (Fi k)) = _,
+    show _ = localize_superset _ ((fbi k) (Fi k)),
+    let F1₂ := (fcjk j k) ∘ (localize_more_right (f j) (f k)),
+    let F2₂ := (localize_superset (nonzero_on_U_mono (set.inter_subset_right (Ui j) (Ui k)))) ∘ (fbi k),     have : is_ring_hom (fbi j) := by apply_instance,
+    have : is_ring_hom (localize_superset (nonzero_on_U_mono (set.inter_subset_right (Ui j) (Ui k)))) := by apply_instance,
+    have : is_ring_hom (F2₂) := by apply_instance,
+    have : is_ring_hom (of_comm_ring Rr (powers (f k))) := by apply_instance,
+    have : is_ring_hom (F2₂ ∘ of_comm_ring Rr (powers (f k))) := by apply_instance,
+    show F1₂ (Fi k) = F2₂ (Fi k),
+    suffices : F1₂ = F2₂,
+      rw this,
+    -- the strategy is to prove that they're both R-alg homs and then that there's only one.
+
+    have HRalg₂ : F1₂ ∘ (of_comm_ring Rr (powers (f k))) ∘ (of_comm_ring R (powers r))
+                        =  F2₂ ∘ (of_comm_ring Rr (powers (f k))) ∘ (of_comm_ring R (powers r)),
+      show (fcjk j k).to_ring_equiv.to_equiv.to_fun ∘ (localize_more_right (f j) (f k)) ∘ (of_comm_ring Rr (powers (f k))) ∘ (of_comm_ring R (powers r))
+        =  (localize_superset (nonzero_on_U_mono (set.inter_subset_right (Ui j) (Ui k)))) ∘ (fbi k).to_ring_equiv.to_equiv.to_fun ∘ (of_comm_ring Rr (powers (f k))) ∘ (of_comm_ring R (powers r)),
+      rw ←(fbi k).R_alg_hom,
+      -- rw ←(fcjk j k).R_alg_hom, -- (((fcjk j k).to_ring_equiv).to_equiv).to_fun ∘ of_comm_ring Rr (powers (f j * f k)) ∘ of_comm_ring R (powers r)
+      rw ←(superset_universal_property _ _ _).R_alg_hom,
+      -- what I now need is to replace
+      -- localize_more_left (f j) (f k) ∘ of_comm_ring Rr (powers (f j))
+      -- with 
+      -- of_comm_ring Rr (powers (f j * f k)) 
+      -- rw ←(loc_more_left_universal_property (f j) (f k)).R_alg_hom, -- something like this should work.
+      unfold localize_more_right,
+      show (((fcjk j k).to_ring_equiv).to_equiv).to_fun ∘
+        (away.extend_map_of_im_unit (of_comm_ring Rr (powers (f j * f k))) _ ∘
+        of_comm_ring Rr (powers (f k))) ∘ of_comm_ring R (powers r) =
+        of_comm_ring R (non_zero_on_U (Ui j ∩ Ui k)),
+        rw ←(away_universal_property (f k) (of_comm_ring Rr (powers (f j * f k))) _).R_alg_hom,
+      rw ←(fcjk j k).R_alg_hom,
+      -- done :-)
+    have HRralg₂ : F1₂ ∘ of_comm_ring Rr (powers (f k)) = F2₂ ∘ of_comm_ring Rr (powers (f k)),
+      let Htemp₂ := unique_R_alg_from_loc (F2₂ ∘ of_comm_ring Rr (powers (f k))),
+      rw (Htemp₂.is_unique (F1₂ ∘ of_comm_ring Rr (powers (f k)))),
+      exact HRalg₂.symm,
+    let Htemp'₂ := unique_R_alg_from_loc (F1₂),
+    rwa Htemp'₂.is_unique (F2₂),
+
+  show ∀ (s : Π (i : γ), loc Rr (powers (f i))), H4'' (tag00EJ.β s) = bc' (H3' s),
+  intro s,
+  show H4'' (tag00EJ.β₁ s - tag00EJ.β₂ s) = bc'₁ (H3' s) - bc'₂ (H3' s),
+  rw ←(Hb1 s),
+  rw ←(Hb2 s),
+  -- ⇑H4'' (tag00EJ.β₁ s - tag00EJ.β₂ s) = ⇑H4'' (tag00EJ.β₁ s) - ⇑H4'' (tag00EJ.β₂ s)
+  show H4'' (tag00EJ.β₁ s + -tag00EJ.β₂ s) = H4'' (tag00EJ.β₁ s) + -H4'' (tag00EJ.β₂ s),
+  rw ←is_add_group_hom.neg H4'',
+  rw is_add_group_hom.add H4'',
+  have H5 : bc' si = 0, -- follows from Hglue,
+  { show bc'₁ si - bc'₂ si = 0,
+      suffices this7 : bc'₁ si = bc'₂ si,
+      rw this7,simp,
+    funext j k,
+    exact Hglue j k
+  },
+  have H6 := Hcanonical si H5,
+  cases H6 with s Hs,
+  existsi s,
+  split,
+    intro i,
+    rw ←Hs.left,
+    refl,
+
+  intros y Hy,
+  apply Hs.2 y,
+  funext i,
+  rw ←(Hy i),
+  refl 
 end 
 
--- first let's check the sheaf axiom for finite covers, using the fact that 
--- the intersection of two basis opens is a basic open (meaning we can use
--- tag 009L instead of 009K).
 
--- this should follow from 
--- a) Chris' lemma [lemma_standard_covering₁ and ₂].
--- b) the fact (proved by Kenny) that localization of R at mult set of functions non-vanishing
---    on D(f) is isomorphic (as ring, but we will only need as ab group) to R[1/f]
--- c) the fact (which is probably done somewhere but I'm not sure where) that
---    D(f) is homeomorphic to Spec(R[1/f]) and this homeo identifies D(g) in D(f) with D(g)
---    in Spec(R[1/f]) [TODO -- check this is done!]
---
--- what we need for (a)
-/-
-#check @lemma_standard_covering₁
-
-∀ {R : Type u_1} {γ : Type u_2} [_inst_1 : comm_ring R] [_inst_2 : fintype γ] {f : γ → R},
-    1 ∈ span ↑(finset.image f finset.univ) → function.injective (α f)
-▹
--/
-/-
-#check @lemma_standard_covering₂
-
-  ∀ {R : Type u_1} {γ : Type u_2} [_inst_1 : comm_ring R] [_inst_2 : fintype γ] (f : γ → R),
-    1 ∈ span ↑(finset.image f finset.univ) →
-    ∀ (s : Π (i : γ), localization.loc R (powers (f i))), β s = 0 ↔ ∃ (r : R), α f r = s
--/
--- what we need for (b)
-
-/-
-#check zariski.structure_presheaf_on_standard_is_loc
-  Π (f : ?M_1), R_alg_equiv (of_comm_ring ?M_1 (non_zero_on_U (Spec.D' f))) (of_comm_ring ?M_1 (powers f))
--/
--- what we need for (c)
-/-
-#check lemma_standard_open 
-
-lemma_standard_open :
-  ∀ (R : Type) [_inst_1 : comm_ring R] (f : R),
-    let φ : X (localization.loc R (powers f)) → X R := Zariski.induced (localization.of_comm_ring R (powers f))
-    in topological_space.open_immersion φ ∧ φ '' set.univ = Spec.D' f
--/
-/-
-What remains for (c): Say D(g) is an open in D(f) (both opens in Spec(R)). We want to apply Chris' Lemma
-to D(g) considered as an open in Spec(R[1/f]). What can we deduce from lemma_standard_open? We know
-Spec(R[1/f]) is identified with D(f) and Spec(R[1/g]) is identified with D(g). We know there's a map
-R[1/f] -> R[1/g] (because of some lemma about f being invertible in R[1/g] as it doesn't vanish on D(g) -- what is this lemma?
-TODO chase this up) and that this is an R-algebra map. I guess we need to prove D(g) is a basic open in Spec(R[1/f])
-and this is the assertion that the pullback of D(g) to Spec(R[1/f]) equals Spec((R[1/f])[1/g-bar]) with g-bar the image of
-g in R[1/f]. So that's something that needs doing. And I guess actually that should be it. I'm not sure this is helpful
-but the pullback should be Spec R[1/f] tensor_R Spec R[1/g]. Hopefully we can get away without introducing tensor
-products at this point. Aah! If I can construct an R[1/f]-algebra isomorphism between R[1/g] and R[1/f][1/g-bar] I'll be done.
-This should all follow from the universal property.
--/
-
-/-
-#check lemma_standard_open_1c
-
-lemma_standard_open_1c :
-  Π (R : Type u_1) [_inst_1 : comm_ring R] (f g : R),
-    Spec.D' g ⊆ Spec.D' f → localization.away f → localization.away g
--/
-
-
-
-
-
-/-
--- below was initial attempt to formulate stuff
-
-theorem zariski.sheaf_of_types_on_standard_basis_for_finite_covers (R : Type u) [comm_ring R] :
-  ∀ (U : set (X R)) (BU : U ∈ (standard_basis R)) (γ : Type u) (Fγ : fintype γ)
-  (Ui : γ → set (X R)) (BUi :  ∀ i : γ, (Ui i) ∈ (standard_basis R))
-  (Hcover: (⋃ (i : γ), (Ui i)) = U),
-  sheaf_property (D_f_form_basis R) (zariski.structure_presheaf_of_types_on_basis_of_standard R)
-   (λ U V ⟨f,Hf⟩ ⟨g,Hg⟩,⟨f*g,Hf.symm ▸ Hg.symm ▸ (tag00E0.lemma15 _ f g).symm⟩) U BU γ Ui BUi Hcover :=
-begin
-admit
-end 
-
-
-
-theorem zariski.structure_sheaf_of_rings_on_basis_of_standard (R : Type u) [comm_ring R] : 
-is_sheaf_of_rings_on_basis (zariski.structure_presheaf_of_rings_on_basis_of_standard R) :=
-begin
-  intros U BU,  
-  -- follows from lemma_cofinal_systems_coverings_standard_case
-  -- applied to zariski.sheaf_of_types_on_standard_basis_for_finite_covers
-  admit,
-end
-
-
-
-
--- now prove it's a sheaf of rings on the full topology.
--- it's tag009N which should basically be done
--/
