@@ -22,6 +22,7 @@ import data.equiv
 import canonical_isomorphism_nonsense
 
 universes u v w uu
+--set_option profiler true
 
 open localization -- should have done this ages ago
 
@@ -499,7 +500,53 @@ begin
 
     -- I had better deduce the result from β₁ and β₂ commuting with bc'₁ and bc'₂.
 
+  have Hb1 : ∀ (b : Π (i : γ), loc Rr (powers (f i))), H4'' (tag00EJ.β₁ b) = bc'₁ (H3' b),
+  -- will also need
+  --have Hb2 : ∀ (b : Π (i : γ), loc Rr (powers (f i))), H4'' (tag00EJ.β₂ b) = bc'₂ (H3' b),
+  -- let's try and focus on one component.
+    intro Fi,
+    funext j k,
+    show H4'' (tag00EJ.β₁ Fi) j k = bc'₁ (H3' Fi) j k,
+    -- Fi : Π (i : γ), loc Rr (powers (f i)),
+    -- and equality is between elements of 
+    -- loc R (non_zero_on_U (Ui j ∩ Ui k))
+    -- show H4'' = (fcjk j k) : Rr (powers (f j * f k)) -> R (non_zero_on_U (Ui j ∩ Ui k)))
+    -- β₁ : localize_more_left (f j) (f k)
+    -- now let's figure out what we actually have to prove.
+    -- H3' = (fbi i) : Rr[1/f i] -> R[1/non-zero_on_U (Ui i)]
+    -- bc'₁ localize_superset _ (Fi j) from 1/Ui i -> 1/(Ui j ∩ Ui k)
+    show (fcjk j k) (localize_more_left (f j) (f k) (Fi j)) = _,
+    show _ = localize_superset _ ((fbi j) (Fi j)),
+    let F1₁ := (fcjk j k) ∘ (localize_more_left (f j) (f k)),
+    let F2₁ := (localize_superset (nonzero_on_U_mono (set.inter_subset_left (Ui j) (Ui k)))) ∘ (fbi j),
+    show F1₁ (Fi j) = F2₁ (Fi j),
+    suffices : F1₁ = F2₁,
+      rw this,
+    -- these are both ring homs from loc Rr (powers (f j)) to R[1/S(Ui j ∩ Ui k)]
+    -- the strategy is to prove that they're both R-alg homs and then that there's only one.
 
+    --    let F2₁ := bc'₁ ∘ H3',
+    --    suffices : F1₁ = F2₁,
+    --      show ∀ (b : Π (i : γ), loc Rr (powers (f i))), F1₁ b = F2₁ b,
+    --      rw this,
+    --      intro b,refl,
+    -- as before, the strat is to show they're R-alg homs 
+    -- proof should look like : 
+    --    rw ←fa.R_alg_hom,
+    --    rw ←(fbi i).R_alg_hom,
+    --    refine (localize_superset.is_algebra_hom _ s).symm,    
+    have HRalg₁ : F1₁ ∘ (of_comm_ring Rr (powers (f j))) ∘ (of_comm_ring R (powers r))
+                        =  F2₁ ∘ (of_comm_ring Rr (powers (f j))) ∘ (of_comm_ring R (powers r)),
+      show (fcjk j k).to_ring_equiv.to_equiv.to_fun ∘ (localize_more_left (f j) (f k)) ∘ (of_comm_ring Rr (powers (f j))) ∘ (of_comm_ring R (powers r))
+        =  (localize_superset (nonzero_on_U_mono (set.inter_subset_left (Ui j) (Ui k)))) ∘ (fbi j).to_ring_equiv.to_equiv.to_fun ∘ (of_comm_ring Rr (powers (f j))) ∘ (of_comm_ring R (powers r)),
+      rw ←(fbi j).R_alg_hom,
+      -- rw ←(fcjk j k).R_alg_hom, -- (((fcjk j k).to_ring_equiv).to_equiv).to_fun ∘ of_comm_ring Rr (powers (f j * f k)) ∘ of_comm_ring R (powers r)
+      rw ←(superset_universal_property _ _ _).R_alg_hom,
+      -- what I now need is to replace
+      -- localize_more_left (f j) (f k) ∘ of_comm_ring Rr (powers (f j))
+      -- with 
+      -- of_comm_ring Rr (powers (f j * f k)) 
+      -- rw ←(loc_more_left_universal_property (f j) (f k)).R_alg_hom, -- something like this should work.
 repeat {sorry},
 end 
 
