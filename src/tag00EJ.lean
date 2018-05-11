@@ -97,6 +97,16 @@ noncomputable def tag00EJ.β {f : γ → R}
     loc R (powers (f j * f k)) :=
 localize_more_left (f j) (f k) (r j) - localize_more_right (f j) (f k) (r k)
 
+noncomputable def tag00EJ.β₁ {f : γ → R}
+    (r : Π i, loc R (powers (f i))) (j k : γ) :
+    loc R (powers (f j * f k)) :=
+localize_more_left (f j) (f k) (r j)
+
+noncomputable def tag00EJ.β₂ {f : γ → R}
+    (r : Π i, loc R (powers (f i))) (j k : γ) :
+    loc R (powers (f j * f k)) :=
+localize_more_right (f j) (f k) (r k)
+
 open tag00EJ 
 
 lemma localize_more_left_eq (f g x : R) (n : ℕ) : 
