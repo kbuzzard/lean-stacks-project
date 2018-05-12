@@ -16,6 +16,7 @@ import tag01HS_statement
 import tag009I -- presheaf of types on a basis
 import tag00DY -- claim that D(f) form a basis
 import tag006N -- presheaves / sheaves of rings on a basis
+import tag00E8 -- standard basis on Spec(R) is quasi-compact 
 import tag009P -- presheaf of rings on a basis
 import tag009L -- sheaf for finite covers on basis -> sheaf for basis
 import data.equiv 
@@ -185,6 +186,12 @@ end
 -- the intersection of two basis opens is a basic open (meaning we can use
 -- tag 009L instead of 009K).
 
+lemma zariski.standard_basis_has_FIP (R : Type u) [comm_ring R] : ∀ (U V : set (X R)),
+  U ∈ (standard_basis R) → V ∈ (standard_basis R) → U ∩ V ∈ (standard_basis R) :=
+λ U V ⟨f,Hf⟩ ⟨g,Hg⟩,⟨f*g,Hf.symm ▸ Hg.symm ▸ (tag00E0.lemma15 _ f g).symm⟩
+
+#check basis_quasi_compact 
+
 -- this should follow from 
 -- a) Chris' lemma [lemma_standard_covering₁ and ₂].
 -- b) the fact (proved by Kenny) that localization of R at mult set of functions non-vanishing
@@ -200,7 +207,8 @@ theorem zariski.sheaf_of_types_on_standard_basis_for_finite_covers (R : Type u) 
   (Ui : γ → set (X R)) (BUi :  ∀ i : γ, (Ui i) ∈ (standard_basis R))
   (Hcover: (⋃ (i : γ), (Ui i)) = U),
   sheaf_property_for_standard_basis (D_f_form_basis R) (zariski.structure_presheaf_of_types_on_basis_of_standard R)
-   (λ U V ⟨f,Hf⟩ ⟨g,Hg⟩,⟨f*g,Hf.symm ▸ Hg.symm ▸ (tag00E0.lemma15 _ f g).symm⟩) U BU γ Ui BUi Hcover :=
+    (zariski.standard_basis_has_FIP R)
+    U BU γ Ui BUi Hcover :=
 begin
   intros U BU γ Hfγ Ui BUi Hcover si Hglue,
   -- from all this data our job is to find a global section
@@ -661,4 +669,23 @@ begin
   refl 
 end 
 
+#check zariski.sheaf_of_types_on_standard_basis_for_finite_covers 
+#check sheaf_for_standard_cofinal_system
 
+-- now tags 009Hff should get us home
+
+-- 009L apparently
+
+lemma zariski.sheaf_of_types_on_standard_basis (R : Type u) [comm_ring R] :
+  ∀ (U : set (X R)) (BU : U ∈ (standard_basis R)) (γ : Type u)
+  (Ui : γ → set (X R)) (BUi :  ∀ i : γ, (Ui i) ∈ (standard_basis R))
+  (Hcover: (⋃ (i : γ), (Ui i)) = U),
+  sheaf_property_for_standard_basis (D_f_form_basis R) (zariski.structure_presheaf_of_types_on_basis_of_standard R)
+   (standard_basis_has_FIP R) U BU γ Ui BUi Hcover :=
+lemma_cofinal_systems_coverings_standard_case (D_f_form_basis R)
+  (zariski.structure_presheaf_of_types_on_basis_of_standard R) 
+  (zariski.standard_basis_has_FIP R)
+  _ -- standard basis is compact
+  _-- (zariski.sheaf_of_types_on_standard_basis_for_finite_covers )
+#check basis_is_compact
+#check D_f_form_basis 
