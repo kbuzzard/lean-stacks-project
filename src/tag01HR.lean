@@ -12,7 +12,7 @@ import ring_theory.localization
 import Kenny_comm_alg.Zariski 
 import tag00E0 
 import tag00EJ
-import tag01HS_statement 
+import tag01HS
 import tag009I -- presheaf of types on a basis
 import tag00DY -- claim that D(f) form a basis
 import tag006N -- presheaves / sheaves of rings on a basis

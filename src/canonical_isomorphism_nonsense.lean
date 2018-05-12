@@ -24,7 +24,7 @@ import tag009L -- definition of basis_is_compact
 import ring_theory.localization 
 import Kenny_comm_alg.Zariski 
 --import tag00E0 
-import tag01HS_statement -- for "lemma_standard_open" giving map R[1/f] -> R[1/g] from D(g) ⊆ D(f) 
+import tag01HS -- for "lemma_standard_open" giving map R[1/f] -> R[1/g] from D(g) ⊆ D(f) 
 --import tag009I -- presheaf of types on a basis
 --import tag00DY -- claim that D(f) form a basis
 --import tag006N -- presheaves / sheaves of rings on a basis
