@@ -9,6 +9,7 @@ Proof. It suffices to prove that any covering of Spec(R) by standard opens can b
 -/
 
 import Kenny_comm_alg.Zariski algebra.module Kenny_comm_alg.maximal_ideal tag00DY tag00E0
+import tag009L -- standard basis for Spec(R)
 universe u
 
 local attribute [instance] classical.prop_decidable
@@ -187,3 +188,7 @@ begin
   cases (mH gG) with Hc,
   rw HU at Hc,exact Hc,
 end
+
+-- we need more than Spec(R) compact -- we need that the "basis is compact".
+
+lemma zariski.basis_is_compact (R : Type u) [comm_ring R] : basis_is_compact (D_f_form_basis R) := sorry
