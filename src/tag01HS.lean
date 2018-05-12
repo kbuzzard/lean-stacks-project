@@ -101,15 +101,14 @@ tensor_product.tprod_map
   is_linear_map.id
   (lemma_standard_open_1c.is_linear_map R f g H)
 
--- (KB) I commented the below parts of the lemma out; we might need them later on in some form.
--- [I am not 100% convinced that they are what we really need as they stand] 
-/-
 def lemma_standard_open_2 (R : Type u) [comm_ring R] (f : R) (α : Type v) 
   (cover : α → {U : set (X R) // topological_space.is_open (Zariski R) U ∧ U ⊆ Spec.D'(f)}) : 
   set.Union (λ a, (cover a).val) = Spec.D'(f) → ∃ n : ℕ, ∃ refine : fin n → α, ∃ g : fin n → R,
   (∀ m : fin n, Spec.D'(g m) ⊆ cover (refine m)) ∧ set.Union (λ m, Spec.D'(g m)) = Spec.D'(f)  
-   := sorry -- is this horrible?
+   := sorry 
+-- proof goes "it's compact"
 
+/-
 --def lemma_standard_open_3 (R : Type u) [comm_ring R] (f : R) (g : list R) :
 --  Spec.D'(f) ⊆ list.foldl (λ U r, set.union U (Spec.D'(r))) ∅ g ↔ "span of image of g in localization.of_comm_ring R (powers f) is whole ring" := sorry 
 -/
