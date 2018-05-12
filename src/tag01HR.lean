@@ -162,7 +162,7 @@ begin
   intros a b,
   funext,
   unfold tag00EJ.α,
-  have H := localization.of_comm_ring_is_ring_hom R (powers (f i)),
+  have H := localization.is_ring_hom R (powers (f i)),
   apply H.map_add,
 end 
 
@@ -190,8 +190,6 @@ end
 lemma zariski.standard_basis_has_FIP (R : Type u) [comm_ring R] : ∀ (U V : set (X R)),
   U ∈ (standard_basis R) → V ∈ (standard_basis R) → U ∩ V ∈ (standard_basis R) :=
 λ U V ⟨f,Hf⟩ ⟨g,Hg⟩,⟨f*g,Hf.symm ▸ Hg.symm ▸ (tag00E0.lemma15 _ f g).symm⟩
-
-#check basis_quasi_compact 
 
 -- this should follow from 
 -- a) Chris' lemma [lemma_standard_covering₁ and ₂].
@@ -368,7 +366,7 @@ begin
                   rw f_proof k,
                   rw ←tag00E0.lemma15,
                   have H : f j * f k = of_comm_ring R (powers r) (f0 j * f0 k),
-                    rw (localization.of_comm_ring_is_ring_hom R (powers r)).map_mul,
+                    rw (localization.is_ring_hom R (powers r)).map_mul,
                   rw H,
                   have H' : Spec.D' (f0 j * f0 k) ⊆ Spec.D' r,
                   { rw tag00E0.lemma15,
@@ -463,17 +461,17 @@ begin
     map_add := λ a b,begin
       funext j,
       show of_comm_ring Rr _ (a + b) = of_comm_ring Rr _ a + of_comm_ring Rr _ b,
-      rw (localization.of_comm_ring_is_ring_hom Rr (powers (f j))).map_add,
+      rw (localization.is_ring_hom Rr (powers (f j))).map_add,
     end,
     map_mul := λ a b, begin
       funext j,
       show of_comm_ring Rr _ (a * b) = of_comm_ring Rr _ a * of_comm_ring Rr _ b,
-      rw (localization.of_comm_ring_is_ring_hom Rr (powers (f j))).map_mul,
+      rw (localization.is_ring_hom Rr (powers (f j))).map_mul,
     end,
     map_one := begin 
       funext j,
       show of_comm_ring Rr _ 1 = 1,
-      rw (localization.of_comm_ring_is_ring_hom Rr (powers (f j))).map_one
+      rw (localization.is_ring_hom Rr (powers (f j))).map_one
     end
   },
     
@@ -670,23 +668,22 @@ begin
   refl 
 end 
 
-#check zariski.sheaf_of_types_on_standard_basis_for_finite_covers 
-#check sheaf_for_standard_cofinal_system
-
 -- now tags 009Hff should get us home
 
 -- 009L apparently
-
+#exit
 lemma zariski.sheaf_of_types_on_standard_basis (R : Type u) [comm_ring R] :
   ∀ (U : set (X R)) (BU : U ∈ (standard_basis R)) (γ : Type u)
   (Ui : γ → set (X R)) (BUi :  ∀ i : γ, (Ui i) ∈ (standard_basis R))
   (Hcover: (⋃ (i : γ), (Ui i)) = U),
   sheaf_property_for_standard_basis (D_f_form_basis R) (zariski.structure_presheaf_of_types_on_basis_of_standard R)
-   (standard_basis_has_FIP R) U BU γ Ui BUi Hcover :=
+   (zariski.standard_basis_has_FIP R) U BU γ Ui BUi Hcover :=
 lemma_cofinal_systems_coverings_standard_case (D_f_form_basis R)
   (zariski.structure_presheaf_of_types_on_basis_of_standard R) 
   (zariski.standard_basis_has_FIP R)
   _ -- standard basis is compact
   _-- (zariski.sheaf_of_types_on_standard_basis_for_finite_covers )
-#check basis_is_compact
-#check D_f_form_basis 
+
+I need to prove that every basis element is compact!
+--#check basis_is_compact
+--#check D_f_form_basis 
