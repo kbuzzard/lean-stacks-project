@@ -42,6 +42,8 @@ definition basis_is_compact
     ∃ f : γ → β, 
     (⋃ (j : γ), Ui (f j)) = U 
 
+lemma zariski.basis_is_compact (R : Type u) [comm_ring R] : basis_is_compact (D_f_form_basis R) := sorry
+
 definition sheaf_for_standard_cofinal_system  {X : Type u} [T : topological_space X] 
   {B : set (set X)} 
   (HB : topological_space.is_topological_basis B)
