@@ -671,6 +671,8 @@ end
 -- now tags 009Hff should get us home
 
 -- 009L apparently
+#check basis_is_compact
+
 #exit
 lemma zariski.sheaf_of_types_on_standard_basis (R : Type u) [comm_ring R] :
   ∀ (U : set (X R)) (BU : U ∈ (standard_basis R)) (γ : Type u)
@@ -687,3 +689,16 @@ lemma_cofinal_systems_coverings_standard_case (D_f_form_basis R)
 I need to prove that every basis element is compact!
 --#check basis_is_compact
 --#check D_f_form_basis 
+
+definition basis_is_compact 
+  {X : Type u} [T : topological_space X] 
+  {B : set (set X)} 
+  (HB : topological_space.is_topological_basis B) : Prop :=
+  ∀ U : set X, B U →
+    ∀ β : Type u, ∀ Ui : β → set X,
+    (∀ i : β, B (Ui i)) → 
+    (⋃ (i : β), Ui i) = U →
+    ∃ γ : Type u, ∃ Hfinite : fintype γ,
+    ∃ f : γ → β, 
+    (⋃ (j : γ), Ui (f j)) = U 
+
