@@ -23,8 +23,11 @@ The third statement follows directly from tag 00E0.
 
 import Kenny_comm_alg.Zariski localization_UMP
 import tensor_product 
+import tag00E2 
 import tag00E4
+import tag00E8 -- Spec(R) is compact
 import Kenny_comm_alg.avoid_powers algebra.module
+import mathlib_someday.topology
 
 universes u v
 
@@ -86,6 +89,7 @@ localization.away.extend_map_of_im_unit.is_ring_hom _ _
 
 local attribute [instance] is_ring_hom.to_module
 
+set_option eqn_compiler.zeta true
 def lemma_standard_open_1c.is_linear_map (R : Type u) [comm_ring R] (f : R) (g : R) (H : Spec.D'(g) ⊆ Spec.D'(f)) :
   is_linear_map (lemma_standard_open_1c R f g H) :=
 { add := λ x y, is_ring_hom.map_add _,
@@ -102,13 +106,71 @@ tensor_product.tprod_map
   (lemma_standard_open_1c.is_linear_map R f g H)
 
 def lemma_standard_open_2 (R : Type u) [comm_ring R] (f : R) (α : Type v) 
-  (cover : α → {U : set (X R) // topological_space.is_open (Zariski R) U ∧ U ⊆ Spec.D'(f)}) : 
-  set.Union (λ a, (cover a).val) = Spec.D'(f) → ∃ n : ℕ, ∃ refine : fin n → α, ∃ g : fin n → R,
-  (∀ m : fin n, Spec.D'(g m) ⊆ cover (refine m)) ∧ set.Union (λ m, Spec.D'(g m)) = Spec.D'(f)  
-   := sorry 
+  (cover : α → set (X R)) (Hcover : ∀ i : α, topological_space.is_open (Zariski R) (cover i)) : 
+  set.Union cover = Spec.D'(f) → ∃ γ : Type v, ∃ refine : γ → α, ∃ g : γ → R,
+  ∃ H : fintype γ, (∀ m : γ, Spec.D'(g m) ⊆ cover (refine m)) ∧ set.Union (λ m, Spec.D'(g m)) = Spec.D'(f)  
+   := 
+
+begin
+  intro cover_covers,
+  let Rf := localization.away f, -- R[1/f]
+  have H1 : compact (@set.univ (X Rf)) := lemma_quasi_compact,
+  let g := localization.of_comm_ring R (powers f),
+  let φ := Zariski.induced g,
+--   in
+--  topological_space.open_immersion φ ∧ φ '' set.univ = Spec.D'(f) :=
+  have H2 : compact (Spec.D' f),
+    rw (lemma_standard_open R f).2.symm,
+    exact compact_image H1 (Zariski.induced.continuous g),
+  -- now refine cover to be a cover by basis elements
+  -- first a bunch of axiom of choice nonsense
+  let basis_cover := λ (i : α), classical.some (topological_space.Union_basis_elements_of_open (D_f_form_basis R) (Hcover i)),
+  have basis_cover_proof : ∀ (i : α),
+    (∃ (f : (basis_cover i) → set (X R)), cover i = set.Union f ∧ ∀ (i : (basis_cover i)), f i ∈ standard_basis R)
+  := λ (i : α), classical.some_spec (topological_space.Union_basis_elements_of_open (D_f_form_basis R) (Hcover i)),
+  let β := Σ (i : α), basis_cover i,
+  let basis_cover_proof_function := λ i, classical.some (basis_cover_proof i),
+  have basis_cover_proof_proof : ∀ (i : α),
+  (cover i = set.Union (basis_cover_proof_function i)) ∧ (∀ (j : basis_cover i), (basis_cover_proof_function i) j ∈ standard_basis R)
+  := λ i, classical.some_spec (basis_cover_proof i),
+
+  let cover' : β → set (X R) := λ ⟨i,Hi⟩,basis_cover_proof_function i Hi, 
+  -- claim that cover' is a cover
+  have Hcover' : set.Union cover' = Spec.D' f,
+    rw set.subset.antisymm_iff,
+    split,
+    { intros b Hb,
+      cases Hb with V HV,cases HV with HV Hb,cases HV with j Hj,
+      have Htemp := (basis_cover_proof_proof j.1).1,
+      -- ready for proof now
+      rw ←cover_covers,
+      apply set.subset_Union cover j.fst,
+      rw Htemp,
+      apply set.subset_Union (basis_cover_proof_function j.1) j.2,
+      suffices : basis_cover_proof_function (j.fst) (j.snd) = cover' j,
+        rwa [this,←Hj],
+      -- gaargh
+      show basis_cover_proof_function (j.fst) (j.snd) = (λ ⟨i,Hi⟩,basis_cover_proof_function i Hi) j,
+      
+      
+      sorry
+    },
+    { sorry},
+  -- and we now need a lemma that says that any open is a union of basis elements
+  -- then we build beta as a sigma type
+  -- and beta has a map to alpha
+  -- and then compactness gives a finite subcover gamma
+  sorry  
+end 
+#check compact_image
+#check D_f_form_basis
+#print topological_space.is_topological_basis
+
 -- proof goes "it's compact"
 
 /-
 --def lemma_standard_open_3 (R : Type u) [comm_ring R] (f : R) (g : list R) :
 --  Spec.D'(f) ⊆ list.foldl (λ U r, set.union U (Spec.D'(r))) ∅ g ↔ "span of image of g in localization.of_comm_ring R (powers f) is whole ring" := sorry 
 -/
+
+#check embedding 
