@@ -47,21 +47,7 @@ definition presheaf_of_rings_pushforward
     FPR.res_is_ring_morphism (f ⁻¹' U) (f ⁻¹' V) (fcont U OU) (fcont V OV) (λ x Hx, H Hx),
   .. presheaf_of_types_pushforward f fcont FPR.to_presheaf_of_types }
 
-structure open_immersion
-  {α : Type*} [Tα : topological_space α]
-  {β : Type*} [Tβ : topological_space β]
-  (f : α → β) : Prop :=
-(fcont : continuous f)
-(finj : function.injective f)
-(fopens : ∀ U : set α, is_open U ↔ is_open (f '' U))
 
---set_option pp.notation false 
-
-lemma immersion_sends_opens_to_opens 
-  {α : Type*} [Tα : topological_space α]
-  {β : Type*} [Tβ : topological_space β]
-  (f : α → β) (H : open_immersion f) : 
-∀ U : set α, is_open U → is_open (f '' U) := λ U OU, (H.fopens U).1 OU
 
 definition presheaf_of_types_pullback_under_open_immersion
   {α : Type*} [Tα : topological_space α]
@@ -356,3 +342,4 @@ definition structure_sheaf (R : Type u) [comm_ring R] : {U : set (X R) // topolo
 
 
 -/
+lemma zariski.basis_is_compact (R : Type u) [comm_ring R] : basis_is_compact (D_f_form_basis R) := sorry
