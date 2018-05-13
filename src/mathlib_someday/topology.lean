@@ -66,3 +66,21 @@ begin
     exact g i
   }
 end
+
+/-
+lemma sUnion_basis_elements_of_open {α : Type u} [topological_space α]
+{B : set (set α)} (HB : is_topological_basis B) {U : set α} (HU : is_open U) :
+∃ (S : set (set α)), U = ⋃₀ S ∧ S ⊆ B :=
+⟨{b ∈ B | b ⊆ U}, set.ext (λ a,
+   ⟨λ ha, let ⟨b, hb, ab, bu⟩ := mem_basis_subset_of_mem_open HB _ ha HU in
+              ⟨b, ⟨hb, bu⟩, ab⟩,
+    λ ⟨b, ⟨hb, bu⟩, ab⟩, bu ab⟩),
+ λ b h, h.1⟩
+
+lemma Union_basis_elements_of_open {α : Type u} [topological_space α]
+{B : set (set α)} (HB : is_topological_basis B) {U : set α} (HU : is_open U) :
+∃ (β : Type u) (f : β → set α), U = (⋃ i, f i) ∧ ∀ i : β, f i ∈ B :=
+let ⟨S, su, sb⟩ := sUnion_basis_elemnts_of_open HB HU in
+⟨S, subtype.val, su.trans set.sUnion_eq_Union', λ ⟨b, h⟩, sb h⟩
+-/
+
