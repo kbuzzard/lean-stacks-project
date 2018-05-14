@@ -265,26 +265,7 @@ begin
     rw ←gproof,
     have jproof : cover' j = U.val := classical.some_spec (Hf (U.property)),
     rw ←jproof,
-  
-
- 
-
-    
+  rw set.sUnion_eq_Union',
+  show (⋃ (U : {k // k ∈ fcover}), U.val) = _,
+  rw funext H, -- many thanks Chris Hughes for that classy finish :-)
 end 
-#print set.sUnion
--- ⋃₀ fcover = 
-#check compact_image
-#check compact_elim_finite_subcover
-#check D_f_form_basis
-#print topological_space.is_topological_basis
-#check topological_space.generate_from
-#check topological_space.is_open_of_is_topological_basis
-#check classical.axiom_of_choice
--- proof goes "it's compact"
-
-/-
---def lemma_standard_open_3 (R : Type u) [comm_ring R] (f : R) (g : list R) :
---  Spec.D'(f) ⊆ list.foldl (λ U r, set.union U (Spec.D'(r))) ∅ g ↔ "span of image of g in localization.of_comm_ring R (powers f) is whole ring" := sorry 
--/
-
-#check embedding 
