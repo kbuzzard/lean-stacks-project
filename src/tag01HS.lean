@@ -269,3 +269,42 @@ begin
   show (⋃ (U : {k // k ∈ fcover}), U.val) = _,
   rw funext H, -- many thanks Chris Hughes for that classy finish :-)
 end 
+
+lemma zariski.basis_is_compact (R : Type u) [comm_ring R] : basis_is_compact (D_f_form_basis R) :=
+begin
+  intros U HU,
+  cases HU with f Hf,
+  intros α Ui HUi cover,
+  have H := lemma_standard_open_2 R f α Ui begin
+    intro i,
+    exact topological_space.is_open_of_is_topological_basis (D_f_form_basis R) (HUi i),
+  end
+  begin
+    rw ←Hf,
+    rw cover,
+  end,
+  cases H with γ Hγ,
+  existsi γ,
+  cases Hγ with f Hγ,
+  cases Hγ with g Hγ,
+  cases Hγ with Hfin Hγ,
+  existsi Hfin, 
+  existsi f,
+  refine set.subset.antisymm _ _,
+    refine set.Union_subset _,
+    rw ←cover,
+    intro j,
+    apply set.subset_Union,    
+  rw Hf,
+  rw ←Hγ.2,
+  intros x Hx,
+  cases Hx with V HV,
+  cases HV with HV Hx,
+  cases HV with j Hj,
+  change V = Spec.D' (g j) at Hj,
+  suffices :  ∃ (i : γ), x ∈ Ui (f i),
+    simpa using this,
+  existsi j,
+  apply Hγ.1 j,
+  rwa ←Hj,
+end
