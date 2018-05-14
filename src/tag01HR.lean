@@ -20,6 +20,7 @@ import tag006N -- presheaves / sheaves of rings on a basis
 import tag00E8 -- standard basis on Spec(R) is quasi-compact 
 import tag009P -- presheaf of rings on a basis
 import tag009L -- sheaf for finite covers on basis -> sheaf for basis
+import tag009N -- sheaf for basis -> sheaf 
 import data.equiv 
 import canonical_isomorphism_nonsense
 
@@ -669,9 +670,9 @@ begin
 end 
 -- now tags 009Hff should get us home
 
--- 009L apparently
+-- 009L should show we have a sheaf on a basis
+-- 009N gives us a sheaf of sets on the space
 
-#exit
 lemma zariski.sheaf_of_types_on_standard_basis (R : Type u) [comm_ring R] :
   ∀ (U : set (X R)) (BU : U ∈ (standard_basis R)) (γ : Type u)
   (Ui : γ → set (X R)) (BUi :  ∀ i : γ, (Ui i) ∈ (standard_basis R))
@@ -681,22 +682,21 @@ lemma zariski.sheaf_of_types_on_standard_basis (R : Type u) [comm_ring R] :
 lemma_cofinal_systems_coverings_standard_case (D_f_form_basis R)
   (zariski.structure_presheaf_of_types_on_basis_of_standard R) 
   (zariski.standard_basis_has_FIP R)
-  _ -- standard basis is compact
-  _-- (zariski.sheaf_of_types_on_standard_basis_for_finite_covers )
+  (zariski.basis_is_compact R) -- standard basis is compact
+  (zariski.sheaf_of_types_on_standard_basis_for_finite_covers R)-- (zariski.sheaf_of_types_on_standard_basis_for_finite_covers )
 
-I need to prove that every basis element is compact!
---#check basis_is_compact
---#check D_f_form_basis 
+--set_option pp.proofs true
+lemma zariski.sheaf_of_types_on_basis (R : Type u) [comm_ring R] :
+  is_sheaf_of_types_on_basis (zariski.structure_presheaf_of_types_on_basis_of_standard R) := 
+--zariski.sheaf_of_types_on_standard_basis R
+λ U BU γ Ui BUi Hcover β Hij Hijk Hcov2 si Hglue,
+begin
+  refine zariski.sheaf_of_types_on_standard_basis R U BU γ Ui BUi Hcover si _,
+  intros i j,
+  have H := zariski.sheaf_of_types_on_standard_basis R (Ui i ∩ Ui j)
+    (zariski.standard_basis_has_FIP R (Ui i) (Ui j) (BUi i) (BUi j))
+    (β i j) (Hij i j) (Hijk i j) (Hcov2 i j),
+  admit -- nearly there
+end
 
-definition basis_is_compact 
-  {X : Type u} [T : topological_space X] 
-  {B : set (set X)} 
-  (HB : topological_space.is_topological_basis B) : Prop :=
-  ∀ U : set X, B U →
-    ∀ β : Type u, ∀ Ui : β → set X,
-    (∀ i : β, B (Ui i)) → 
-    (⋃ (i : β), Ui i) = U →
-    ∃ γ : Type u, ∃ Hfinite : fintype γ,
-    ∃ f : γ → β, 
-    (⋃ (j : γ), Ui (f j)) = U 
-
+#print sheaf_property_for_standard_basis 
