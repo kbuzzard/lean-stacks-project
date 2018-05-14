@@ -461,7 +461,7 @@ begin
     map_add := λ a b,begin
       funext j,
       show of_comm_ring Rr _ (a + b) = of_comm_ring Rr _ a + of_comm_ring Rr _ b,
-      rw (localization.of_comm_ring_is_ring_hom Rr (powers (f j))).map_add,
+      rw (localization.is_ring_hom Rr (powers (f j))).map_add,
     end,
     map_mul := λ a b, begin
       funext j,
