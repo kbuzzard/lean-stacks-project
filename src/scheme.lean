@@ -342,4 +342,3 @@ definition structure_sheaf (R : Type u) [comm_ring R] : {U : set (X R) // topolo
 
 
 -/
-lemma zariski.basis_is_compact (R : Type u) [comm_ring R] : basis_is_compact (D_f_form_basis R) := sorry
