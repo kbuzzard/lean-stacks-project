@@ -461,7 +461,7 @@ begin
     map_add := λ a b,begin
       funext j,
       show of_comm_ring Rr _ (a + b) = of_comm_ring Rr _ a + of_comm_ring Rr _ b,
-      rw (localization.is_ring_hom Rr (powers (f j))).map_add,
+      rw (localization.of_comm_ring_is_ring_hom Rr (powers (f j))).map_add,
     end,
     map_mul := λ a b, begin
       funext j,
@@ -667,11 +667,9 @@ begin
   rw ←(Hy i),
   refl 
 end 
-
 -- now tags 009Hff should get us home
 
 -- 009L apparently
-#check basis_is_compact
 
 #exit
 lemma zariski.sheaf_of_types_on_standard_basis (R : Type u) [comm_ring R] :
