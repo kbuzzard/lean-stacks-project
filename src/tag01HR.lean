@@ -730,7 +730,6 @@ begin
     rw [←(zariski.structure_presheaf_of_types_on_basis_of_standard R).Hcomp],
 end
 
-#check extend_off_basis
 noncomputable definition zariski.structure_presheaf_of_types (R : Type) [comm_ring R] := 
   extend_off_basis (zariski.structure_presheaf_of_types_on_basis_of_standard R)
   (zariski.sheaf_of_types_on_basis R)
