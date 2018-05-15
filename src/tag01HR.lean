@@ -695,8 +695,39 @@ begin
   intros i j,
   have H := zariski.sheaf_of_types_on_standard_basis R (Ui i ∩ Ui j)
     (zariski.standard_basis_has_FIP R (Ui i) (Ui j) (BUi i) (BUi j))
-    (β i j) (Hij i j) (Hijk i j) (Hcov2 i j),
-  admit -- nearly there
+    (β i j) (Hij i j) (Hijk i j) (Hcov2 i j) (λ k,(zariski.structure_presheaf_of_types_on_basis_of_standard R).res (BUi i) (Hijk i j k)
+        (is_sheaf_of_types_on_basis._proof_1 Ui Hij Hcov2 i j k)
+        (si i)) _,
+    tactic.swap,
+    intros i' j',
+    let Fres := (zariski.structure_presheaf_of_types_on_basis_of_standard R).res,
+    show ((Fres _ _ _) ∘ (Fres _ _ _)) _ = ((Fres _ _ _) ∘ (Fres _ _ _)) _,
+    rw [←(zariski.structure_presheaf_of_types_on_basis_of_standard R).Hcomp],
+    rw [←(zariski.structure_presheaf_of_types_on_basis_of_standard R).Hcomp],
+  cases H with s Hs,
+  have H1 := Hs.2 ((zariski.structure_presheaf_of_types_on_basis_of_standard R).res (BUi i)
+      (sheaf_property_for_standard_basis._proof_2 (zariski.standard_basis_has_FIP R) γ (λ (i : γ), Ui i)
+         (λ (i : γ), BUi i)
+         i
+         j)
+      (sheaf_property_for_standard_basis._proof_3 γ (λ (i : γ), Ui i) i j)
+      (si i)),
+  have H2 := Hs.2 ((zariski.structure_presheaf_of_types_on_basis_of_standard R).res (BUi j)
+      (sheaf_property_for_standard_basis._proof_4 (zariski.standard_basis_has_FIP R) γ (λ (i : γ), Ui i)
+         (λ (i : γ), BUi i)
+         i
+         j)
+      (sheaf_property_for_standard_basis._proof_5 γ (λ (i : γ), Ui i) i j)
+      (si j)),
+  rw (H1 _),
+    rw (H2 _),
+    intro k,
+    let Fres := (zariski.structure_presheaf_of_types_on_basis_of_standard R).res,
+    show ((Fres _ _ _) ∘ (Fres _ _ _)) (si j) = (Fres _ _ _) (si i),
+    rw [←(zariski.structure_presheaf_of_types_on_basis_of_standard R).Hcomp],
+    exact (Hglue i j k).symm,
+  intro k,
+  let Fres := (zariski.structure_presheaf_of_types_on_basis_of_standard R).res,
+  show ((Fres _ _ _) ∘ (Fres _ _ _)) (si i) = (Fres _ _ _) (si i),
+    rw [←(zariski.structure_presheaf_of_types_on_basis_of_standard R).Hcomp],
 end
-
-#print sheaf_property_for_standard_basis 
