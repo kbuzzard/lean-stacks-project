@@ -685,10 +685,8 @@ lemma_cofinal_systems_coverings_standard_case (D_f_form_basis R)
   (zariski.basis_is_compact R) -- standard basis is compact
   (zariski.sheaf_of_types_on_standard_basis_for_finite_covers R)-- (zariski.sheaf_of_types_on_standard_basis_for_finite_covers )
 
---set_option pp.proofs true
 lemma zariski.sheaf_of_types_on_basis (R : Type u) [comm_ring R] :
   is_sheaf_of_types_on_basis (zariski.structure_presheaf_of_types_on_basis_of_standard R) := 
---zariski.sheaf_of_types_on_standard_basis R
 λ U BU γ Ui BUi Hcover β Hij Hijk Hcov2 si Hglue,
 begin
   refine zariski.sheaf_of_types_on_standard_basis R U BU γ Ui BUi Hcover si _,
@@ -731,3 +729,15 @@ begin
   show ((Fres _ _ _) ∘ (Fres _ _ _)) (si i) = (Fres _ _ _) (si i),
     rw [←(zariski.structure_presheaf_of_types_on_basis_of_standard R).Hcomp],
 end
+
+#check extend_off_basis
+noncomputable definition zariski.structure_presheaf_of_types (R : Type) [comm_ring R] := 
+  extend_off_basis (zariski.structure_presheaf_of_types_on_basis_of_standard R)
+  (zariski.sheaf_of_types_on_basis R)
+
+/-- structure sheaf on Spec(R) is indeed a sheaf -/
+theorem zariski.structure_sheaf_of_types (R : Type) [comm_ring R] :
+is_sheaf_of_types (zariski.structure_presheaf_of_types R)
+:= extension_is_sheaf 
+  (zariski.structure_presheaf_of_types_on_basis_of_standard R)
+  (zariski.sheaf_of_types_on_basis R)
