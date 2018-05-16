@@ -1,9 +1,32 @@
-Current goal: 01HR; this is the last tag in some
-sense. 
+Current goal : splurge everything into scheme.lean.
+
+I know that O_X is a sheaf of types. I want to check it's a sheaf of rings.
+To do this I just need to give O_X(U) a ring structure and check the
+morphisms are ring morphisms. The latter should be easy. The former -- how
+is O_X(U) defined? It's defined using
+
+extend_off_basis (zariski.structure_presheaf_of_types_on_basis_of_standard R)
+  (zariski.sheaf_of_types_on_basis R)
+
+-- i.e. we checked it was a sheaf on the basis and then used extend_off_basis
+which is in tag009N. This construction uses presheaf_on_basis_stalk FB x
+
+So the lemmas I need are
+
+1) if I have a presheaf of rings on a basis then
+presheaf_on_basis_stalk (associated presheaf of types on basis) x is a ring
+
+2) extend_off_basis (sheaf of rings on basis) is a sheaf of rings
+
+Is (1) equal to tag009Q or something aroudn there?
+Or is that (2)
 
 ****************
 
 OLDER STUFF
+
+Current goal: 01HR; this is the last tag in some
+sense. 
 
 Things I need:
 
