@@ -24,8 +24,8 @@ from λ z hz, H ▸ ⟨_, ⟨_, rfl⟩, hz⟩,
 set.subset.trans H1 (set.inter_subset_right _ _)
 
 -- This is the correct definition of sheaf of types on a basis, with no assumption that
--- intersection of two basis elements is a basis element. Do we ever need it?
--- I am going to try to avoid it. Note that I skipped tag 009K but did tag 009L
+-- intersection of two basis elements is a basis element. I prove it for O_X
+-- in tag01HR
 definition is_sheaf_of_types_on_basis {X : Type u} [T : topological_space X] 
   {B : set (set X)}
   {HB : topological_space.is_topological_basis B}
