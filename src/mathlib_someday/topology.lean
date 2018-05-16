@@ -67,6 +67,7 @@ begin
   }
 end
 
+-- here's Mario's better proof
 /-
 lemma sUnion_basis_elements_of_open {α : Type u} [topological_space α]
 {B : set (set α)} (HB : is_topological_basis B) {U : set α} (HU : is_open U) :
@@ -84,3 +85,11 @@ let ⟨S, su, sb⟩ := sUnion_basis_elemnts_of_open HB HU in
 ⟨S, subtype.val, su.trans set.sUnion_eq_Union', λ ⟨b, h⟩, sb h⟩
 -/
 
+-- this next lemma will go to mathlib one day. It's in tag00E8 currently
+
+/-
+lemma mem_subset_basis_of_mem_open {X : Type u} [T : topological_space X] {b : set (set X)}
+  (hb : topological_space.is_topological_basis b) {a:X} (u : set X) (au : a ∈ u)
+  (ou : _root_.is_open u) : ∃v ∈ b, a ∈ v ∧ v ⊆ u :=
+(topological_space.mem_nhds_of_is_topological_basis hb).1 $ mem_nhds_sets ou au
+-/
