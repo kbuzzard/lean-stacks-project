@@ -41,7 +41,7 @@ show topological_space.generate_open B U,
 refine topological_space.generate_open.basic U BU,
 end 
 
- definition restriction_of_presheaf_to_basis {X : Type*} [T : topological_space X]
+ definition restriction_of_presheaf_to_basis {X : Type u} [T : topological_space X]
  {B : set (set X)} {HB : topological_space.is_topological_basis B}
  (FP : presheaf_of_types X) : presheaf_of_types_on_basis HB :=
  { F := λ U BU, FP.F (basis_element_is_open HB BU),
@@ -51,7 +51,7 @@ end
    (basis_element_is_open HB BV) (basis_element_is_open HB BW)
  }
 
-definition extend_off_basis {X : Type*} [T : topological_space X] {B : set (set X)} 
+definition extend_off_basis {X : Type u} [T : topological_space X] {B : set (set X)} 
   {HB : topological_space.is_topological_basis B} (FB : presheaf_of_types_on_basis HB)
   (HF : is_sheaf_of_types_on_basis FB)
   : presheaf_of_types X := 

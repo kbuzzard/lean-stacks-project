@@ -4,10 +4,11 @@
 -- 
 
 import analysis.topology.topological_space
+universe u 
 
-structure presheaf_of_types_on_basis {X : Type*} [TX : topological_space X] {B : set (set X)}
+structure presheaf_of_types_on_basis {X : Type u} [TX : topological_space X] {B : set (set X)}
   (HB : topological_space.is_topological_basis B) := 
-(F : Π {U : set X}, U ∈ B → Type*)
+(F : Π {U : set X}, U ∈ B → Type u)
 (res : ∀ {U V : set X} (BU : U ∈ B) (BV : V ∈ B) (H : V ⊆ U), 
   (F BU) → (F BV))
 (Hid : ∀ (U : set X) (BU : U ∈ B), (res BU BU (set.subset.refl U)) = id)  
@@ -16,7 +17,7 @@ structure presheaf_of_types_on_basis {X : Type*} [TX : topological_space X] {B :
   (res BU BW (set.subset.trans HVW HUV)) = (res BV BW HVW) ∘ (res BU BV HUV) )
 
 
-structure morphism_of_presheaves_of_types_on_basis {X : Type*} [TX : topological_space X] 
+structure morphism_of_presheaves_of_types_on_basis {X : Type u} [TX : topological_space X] 
   {B : set (set X)} {HB : topological_space.is_topological_basis B}
   (FPT : presheaf_of_types_on_basis HB) 
   (GPT : presheaf_of_types_on_basis HB) 
@@ -26,7 +27,7 @@ structure morphism_of_presheaves_of_types_on_basis {X : Type*} [TX : topological
   (GPT.res HU HV Hsub) ∘ (morphism HU) = (morphism HV) ∘ (FPT.res HU HV Hsub))
 
 definition composition_of_morphism_of_presheaves_of_types_on_basis
-{X : Type*} [TX : topological_space X] 
+{X : Type u} [TX : topological_space X] 
   {B : set (set X)} {HB : topological_space.is_topological_basis B}
   {FPT : presheaf_of_types_on_basis HB} 
   {GPT : presheaf_of_types_on_basis HB} 
@@ -40,14 +41,14 @@ definition composition_of_morphism_of_presheaves_of_types_on_basis
   by rw [←function.comp.assoc,psi.commutes,function.comp.assoc,phi.commutes],
 }
 
-definition is_identity_morphism_of_presheaves_of_types_on_basis {X : Type*} [TX : topological_space X] 
+definition is_identity_morphism_of_presheaves_of_types_on_basis {X : Type u} [TX : topological_space X] 
   {B : set (set X)} {HB : topological_space.is_topological_basis B}
   {FPT : presheaf_of_types_on_basis HB} (phi : morphism_of_presheaves_of_types_on_basis FPT FPT)
   : Prop :=
   ∀ U : set X, ∀ HU : U ∈ B, phi.morphism HU = id 
 
 definition is_isomorphism_of_presheaves_of_types_on_basis 
-{X : Type*} [TX : topological_space X] 
+{X : Type u} [TX : topological_space X] 
   {B : set (set X)} {HB : topological_space.is_topological_basis B}
   {FPT : presheaf_of_types_on_basis HB}
   {GPT : presheaf_of_types_on_basis HB}

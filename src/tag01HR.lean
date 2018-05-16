@@ -24,7 +24,7 @@ import tag009N -- sheaf for basis -> sheaf
 import data.equiv 
 import canonical_isomorphism_nonsense
 
-universes u v w uu
+universe u
 --set_option profiler true
 
 open localization -- should have done this ages ago
@@ -730,13 +730,20 @@ begin
     rw [←(zariski.structure_presheaf_of_types_on_basis_of_standard R).Hcomp],
 end
 
-noncomputable definition zariski.structure_presheaf_of_types (R : Type) [comm_ring R] := 
+set_option pp.universes true 
+
+noncomputable definition zariski.structure_presheaf_of_types (R : Type u) [comm_ring R] :
+presheaf_of_types (X R) := 
   extend_off_basis (zariski.structure_presheaf_of_types_on_basis_of_standard R)
   (zariski.sheaf_of_types_on_basis R)
 
 /-- structure sheaf on Spec(R) is indeed a sheaf -/
-theorem zariski.structure_sheaf_of_types (R : Type) [comm_ring R] :
+theorem zariski.structure_sheaf_is_sheaf_of_types (R : Type u) [comm_ring R] :
 is_sheaf_of_types (zariski.structure_presheaf_of_types R)
 := extension_is_sheaf 
   (zariski.structure_presheaf_of_types_on_basis_of_standard R)
   (zariski.sheaf_of_types_on_basis R)
+
+-- still need that it's a sheaf of rings
+
+
