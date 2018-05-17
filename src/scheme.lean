@@ -74,6 +74,18 @@ definition presheaf_of_rings_pullback_under_open_immersion
     (set.image_subset f H2),
   .. presheaf_of_types_pullback_under_open_immersion PR.to_presheaf_of_types f H }
 
+-- This should probably be elsewhere.
+-- givesn a presheaf of rings on a basis I should prove the stalks are rings.
+
+#check extend_off_basis
+#check presheaf_on_basis_stalk
+#check presheaf_of_rings_on_basis
+
+
+#check @presheaf_on_basis_stalk --(structure_presheaf_of_types_on_basis_of_standard R) x
+instance presheaf_of_rings_stalk_is_ring {X : Type u} [topological_space X]
+
+
 -- use git to find out what this comment pertained to
 
 -- This is OK because exactness is same for sheaves of rings and sets-/
