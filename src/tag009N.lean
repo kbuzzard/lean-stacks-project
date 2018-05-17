@@ -29,8 +29,9 @@ argue as in the proof of Lemma \ref{lemma-sheafification-sheaf}.
 -- sheaf on a basis = sheaf on the whole space
 
 import analysis.topology.topological_space tag009J tag009H tag006E tag006T 
+universe u
 
-theorem basis_element_is_open {X : Type*} [T : topological_space X]
+theorem basis_element_is_open {X : Type u} [T : topological_space X]
  {B : set (set X)} (HB : topological_space.is_topological_basis B)
  {U : set X} (BU : B U) : T.is_open U := 
  begin
@@ -40,7 +41,7 @@ show topological_space.generate_open B U,
 refine topological_space.generate_open.basic U BU,
 end 
 
- definition restriction_of_presheaf_to_basis {X : Type*} [T : topological_space X]
+ definition restriction_of_presheaf_to_basis {X : Type u} [T : topological_space X]
  {B : set (set X)} {HB : topological_space.is_topological_basis B}
  (FP : presheaf_of_types X) : presheaf_of_types_on_basis HB :=
  { F := λ U BU, FP.F (basis_element_is_open HB BU),
@@ -50,7 +51,7 @@ end
    (basis_element_is_open HB BV) (basis_element_is_open HB BW)
  }
 
-definition extend_off_basis {X : Type*} [T : topological_space X] {B : set (set X)} 
+definition extend_off_basis {X : Type u} [T : topological_space X] {B : set (set X)} 
   {HB : topological_space.is_topological_basis B} (FB : presheaf_of_types_on_basis HB)
   (HF : is_sheaf_of_types_on_basis FB)
   : presheaf_of_types X := 
@@ -83,7 +84,7 @@ definition extend_off_basis {X : Type*} [T : topological_space X] {B : set (set 
 --set_option pp.notation false 
 -- set_option pp.proofs true 
 
-theorem extension_is_sheaf {X : Type*} [T : topological_space X] {B : set (set X)} 
+theorem extension_is_sheaf {X : Type u} [T : topological_space X] {B : set (set X)} 
   {HB : topological_space.is_topological_basis B} (FB : presheaf_of_types_on_basis HB)
   (HF : is_sheaf_of_types_on_basis FB)
   : is_sheaf_of_types (extend_off_basis FB HF) := begin
@@ -317,7 +318,9 @@ theorem extension_is_sheaf {X : Type*} [T : topological_space X] {B : set (set X
     refl,
     }
   }
-  end 
+end 
+
+#exit
 
 definition extend_off_basis_map {X : Type*} [T : topological_space X] {B : set (set X)} 
   {HB : topological_space.is_topological_basis B} (FB : presheaf_of_types_on_basis HB)

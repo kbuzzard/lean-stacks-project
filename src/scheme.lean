@@ -1,4 +1,3 @@
-#exit -- not ready yet
 import analysis.topology.topological_space data.set
 import analysis.topology.continuity 
 import Kenny_comm_alg.Zariski
@@ -13,12 +12,12 @@ import tag006N -- presheaf of rings
 import tag006T -- sheaves of types
 import tag0072 -- sheaves of rings
 import Kenny_comm_alg.temp
+import mathlib_someday.topology
+import tag01HR
 
 universes u v 
 
 local attribute [class] topological_space.is_open 
-
-
 
 definition presheaf_of_types_pushforward
   {α : Type*} [Tα : topological_space α]
@@ -47,28 +46,12 @@ definition presheaf_of_rings_pushforward
     FPR.res_is_ring_morphism (f ⁻¹' U) (f ⁻¹' V) (fcont U OU) (fcont V OV) (λ x Hx, H Hx),
   .. presheaf_of_types_pushforward f fcont FPR.to_presheaf_of_types }
 
-structure open_immersion
-  {α : Type*} [Tα : topological_space α]
-  {β : Type*} [Tβ : topological_space β]
-  (f : α → β) : Prop :=
-(fcont : continuous f)
-(finj : function.injective f)
-(fopens : ∀ U : set α, is_open U ↔ is_open (f '' U))
-
---set_option pp.notation false 
-
-lemma immersion_sends_opens_to_opens 
-  {α : Type*} [Tα : topological_space α]
-  {β : Type*} [Tβ : topological_space β]
-  (f : α → β) (H : open_immersion f) : 
-∀ U : set α, is_open U → is_open (f '' U) := λ U OU, (H.fopens U).1 OU
-
 definition presheaf_of_types_pullback_under_open_immersion
   {α : Type*} [Tα : topological_space α]
   {β : Type*} [Tβ : topological_space β]
   (PT : presheaf_of_types β)
   (f : α → β)
-  (H : open_immersion f) :
+  (H : topological_space.open_immersion' f) :
   presheaf_of_types α :=
 { F := λ U HU,PT.F ((H.fopens U).1 HU),
   res := λ U V OU OV H2,PT.res (f '' U) (f '' V) ((H.fopens U).1 OU) ((H.fopens V).1 OV)
@@ -82,19 +65,31 @@ definition presheaf_of_rings_pullback_under_open_immersion
   {β : Type*} [Tβ : topological_space β]
   (PR : presheaf_of_rings β)
   (f : α → β)
-  (H : open_immersion f) :
+  (H : topological_space.open_immersion' f) :
   presheaf_of_rings α := 
-{ Fring := λ U OU,PR.Fring (immersion_sends_opens_to_opens f H U OU),
+{ Fring := λ U OU,PR.Fring (topological_space.immersion_sends_opens_to_opens f H U OU),
   res_is_ring_morphism := λ U V OU OV H2,PR.res_is_ring_morphism (f '' U) (f '' V)
-    (immersion_sends_opens_to_opens f H U OU)
-    (immersion_sends_opens_to_opens f H V OV) 
+    (topological_space.immersion_sends_opens_to_opens f H U OU)
+    (topological_space.immersion_sends_opens_to_opens f H V OV) 
     (set.image_subset f H2),
   .. presheaf_of_types_pullback_under_open_immersion PR.to_presheaf_of_types f H }
 
-/-- This is OK because exactness is same for sheaves of rings and sets-/
+-- This should probably be elsewhere.
+-- givesn a presheaf of rings on a basis I should prove the stalks are rings.
+
+#check extend_off_basis
+#check presheaf_on_basis_stalk
+#check presheaf_of_rings_on_basis
 
 
---theorem D_f_are_a_basis {R : Type u} [comm_ring R] : ∀ U : set (X R), topological_space.is_open (Zariski R) U → ∃ α : Type v, ∃ f : α → R, U = set.Union (Spec.D' ∘ f) := sorry
+#check @presheaf_on_basis_stalk --(structure_presheaf_of_types_on_basis_of_standard R) x
+instance presheaf_of_rings_stalk_is_ring {X : Type u} [topological_space X]
+
+
+-- use git to find out what this comment pertained to
+
+-- This is OK because exactness is same for sheaves of rings and sets-/
+
 
 --definition structure_sheaf_on_union {R : Type u} [comm_ring R] {α : Type} (f : α → R) := 
 --  {x : (Π i : α, localization.loc R (powers $ f i)) // ∀ j k : α, localise_more_left (f j) (f k) (x j) = localise_more_right (f j) (f k) (x k) } 
@@ -113,6 +108,7 @@ definition presheaf_of_rings_pullback_under_open_immersion
 #check localization.away.extend_map_of_im_unit.is_ring_hom
 -/
 
+/-
 noncomputable definition canonical_map {R : Type*} [comm_ring R] (g : R) (u : X R) (H : u ∈ Spec.D' g) :
   localization.away g → @localization.at_prime R _ u.val u.property :=
 @localization.away.extend_map_of_im_unit _ _ _ _
@@ -157,7 +153,8 @@ local attribute [instance] localization.away.extend_map_of_im_unit.is_ring_hom
 -- property for finite covers, and then does a bunch of abstract nonsense to get
 -- both the definition of the presheaf on all opens and the proof that the sheaf
 -- axiom holds for all covers. See the linked issue above for more details.
-
+-/
+/-
 definition structure_presheaf_of_types_on_affine_scheme (R : Type*) [comm_ring R] : presheaf_of_types (X R) :=
 { F := λ U HU, { f : Π P : X R, P ∈ U → @localization.at_prime R _ P.val P.property // 
     ∀ u : X R, U u → ∃ g : R, u ∈ Spec.D' g ∧ Spec.D' g ⊆ U ∧ ∃ r : localization.away g, ∀ Q : X R, 
@@ -198,17 +195,29 @@ definition structure_presheaf_of_types_on_affine_scheme (R : Type*) [comm_ring R
   Hid := λ U OU, funext (λ f, subtype.eq (funext (λ P, rfl))),
   Hcomp := λ U V W OU OV OW HUV HVW, funext (λ f, subtype.eq (funext (λ P, rfl)))
 }
+-/
+namespace zariski
 
-definition structure_presheaf_value {R : Type*} [comm_ring R] (U : set (X R)) (HU : is_open U) :=
-(structure_presheaf_of_types_on_affine_scheme R).F HU
+definition structure_sheaf_value {R : Type u} [comm_ring R] {U : set (X R)} (HU : is_open U) 
+: Type u 
+:= (structure_presheaf_of_types R).F HU
 
-lemma structure_presheaf_value.ext {R : Type*} [comm_ring R] (U : set (X R)) (HU : is_open U)
-  (f g : structure_presheaf_value U HU) (h : ∀ u hu, f.1 u hu = g.1 u hu) : f = g :=
+/-
+lemma structure_presheaf_value.ext {R : Type*} [comm_ring R] {U : set (X R)} (HU : is_open U)
+  (f g : structure_sheaf_value HU) (h : ∀ u hu, f.1 u hu = g.1 u hu) : f = g :=
 subtype.eq $ funext $ λ _, funext $ h _
+-/
 
-instance structure_presheaf_value_has_add {R : Type*} [comm_ring R] (U : set (X R)) (HU : is_open U) :
-  has_add (structure_presheaf_value U HU) :=
-⟨λ f₁ f₂, ⟨λ P HP, f₁.val P HP + f₂.val P HP, λ u hu,
+-- I WANT THIS TO BE A RING presheaf_on_basis_stalk (structure_presheaf_of_types_on_basis_of_standard R) x
+#check @presheaf_on_basis_stalk
+
+instance structure_sheaf_value_has_add {R : Type*} [comm_ring R] (U : set (X R)) (HU : is_open U) :
+  has_add (structure_sheaf_value HU) :=
+⟨λ f₁ f₂,⟨λ x Hx,begin
+let z := f₁.val x Hx + f₂.val x Hx,
+end,_⟩⟩
+
+/- ⟨λ P HP, f₁.val P HP + f₂.val P HP, λ u hu,
  let ⟨g₁, h1, h2, r₁, h3⟩ := f₁.2 u hu in
  let ⟨g₂, h4, h5, r₂, h6⟩ := f₂.2 u hu in
  ⟨g₁ * g₂,
@@ -223,7 +232,7 @@ instance structure_presheaf_value_has_add {R : Type*} [comm_ring R] (U : set (X 
     rw [canonical_map.canonical_left, canonical_map.canonical_right],
     refl
   end⟩⟩⟩
-
+-/
 instance structure_presheaf_value_has_neg {R : Type*} [comm_ring R] (U : set (X R)) (HU : is_open U) :
   has_neg (structure_presheaf_value U HU) :=
 ⟨λ f₁, ⟨λ P HP, -(f₁.val P HP), λ u hu,

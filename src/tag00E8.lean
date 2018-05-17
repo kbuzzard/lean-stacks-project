@@ -189,6 +189,4 @@ begin
   rw HU at Hc,exact Hc,
 end
 
--- we need more than Spec(R) compact -- we need that the "basis is compact".
 
-lemma zariski.basis_is_compact (R : Type u) [comm_ring R] : basis_is_compact (D_f_form_basis R) := sorry

@@ -2,12 +2,12 @@
 -- but not in any definition etc
 
 import tag009I 
-
+universe u 
 -- definition after 6.30.1 and before 6.30.2
 
 section presheaf_on_basis_stalk 
 
-parameters {X : Type*} [TX : topological_space X] 
+parameters {X : Type u} [TX : topological_space X] 
   {B : set (set X)}
   {HB : topological_space.is_topological_basis B}
   (FPTB : presheaf_of_types_on_basis HB) (x : X)
@@ -45,7 +45,7 @@ instance presheaf_on_basis_stalk.setoid  :
       ... = FPTB.res BW BW3 _ u : (congr_fun h4 u).symm⟩⟩
 }
 
-definition presheaf_on_basis_stalk  : Type* :=
+definition presheaf_on_basis_stalk  : Type u :=
 quotient (presheaf_on_basis_stalk.setoid)
 -- 
 -- set Z is pairs (U,s) with U in B and x in U and s in FPTB.F(U)

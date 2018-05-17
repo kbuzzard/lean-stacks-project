@@ -20,10 +20,11 @@ import tag006N -- presheaves / sheaves of rings on a basis
 import tag00E8 -- standard basis on Spec(R) is quasi-compact 
 import tag009P -- presheaf of rings on a basis
 import tag009L -- sheaf for finite covers on basis -> sheaf for basis
+import tag009N -- sheaf for basis -> sheaf 
 import data.equiv 
 import canonical_isomorphism_nonsense
 
-universes u v w uu
+universe u
 --set_option profiler true
 
 open localization -- should have done this ages ago
@@ -667,11 +668,11 @@ begin
   rw ←(Hy i),
   refl 
 end 
-
 -- now tags 009Hff should get us home
 
--- 009L apparently
-#exit
+-- 009L should show we have a sheaf on a basis
+-- 009N gives us a sheaf of sets on the space
+
 lemma zariski.sheaf_of_types_on_standard_basis (R : Type u) [comm_ring R] :
   ∀ (U : set (X R)) (BU : U ∈ (standard_basis R)) (γ : Type u)
   (Ui : γ → set (X R)) (BUi :  ∀ i : γ, (Ui i) ∈ (standard_basis R))
@@ -681,9 +682,68 @@ lemma zariski.sheaf_of_types_on_standard_basis (R : Type u) [comm_ring R] :
 lemma_cofinal_systems_coverings_standard_case (D_f_form_basis R)
   (zariski.structure_presheaf_of_types_on_basis_of_standard R) 
   (zariski.standard_basis_has_FIP R)
-  _ -- standard basis is compact
-  _-- (zariski.sheaf_of_types_on_standard_basis_for_finite_covers )
+  (zariski.basis_is_compact R) -- standard basis is compact
+  (zariski.sheaf_of_types_on_standard_basis_for_finite_covers R)-- (zariski.sheaf_of_types_on_standard_basis_for_finite_covers )
 
-I need to prove that every basis element is compact!
---#check basis_is_compact
---#check D_f_form_basis 
+lemma zariski.sheaf_of_types_on_basis (R : Type u) [comm_ring R] :
+  is_sheaf_of_types_on_basis (zariski.structure_presheaf_of_types_on_basis_of_standard R) := 
+λ U BU γ Ui BUi Hcover β Hij Hijk Hcov2 si Hglue,
+begin
+  refine zariski.sheaf_of_types_on_standard_basis R U BU γ Ui BUi Hcover si _,
+  intros i j,
+  have H := zariski.sheaf_of_types_on_standard_basis R (Ui i ∩ Ui j)
+    (zariski.standard_basis_has_FIP R (Ui i) (Ui j) (BUi i) (BUi j))
+    (β i j) (Hij i j) (Hijk i j) (Hcov2 i j) (λ k,(zariski.structure_presheaf_of_types_on_basis_of_standard R).res (BUi i) (Hijk i j k)
+        (is_sheaf_of_types_on_basis._proof_1 Ui Hij Hcov2 i j k)
+        (si i)) _,
+    tactic.swap,
+    intros i' j',
+    let Fres := (zariski.structure_presheaf_of_types_on_basis_of_standard R).res,
+    show ((Fres _ _ _) ∘ (Fres _ _ _)) _ = ((Fres _ _ _) ∘ (Fres _ _ _)) _,
+    rw [←(zariski.structure_presheaf_of_types_on_basis_of_standard R).Hcomp],
+    rw [←(zariski.structure_presheaf_of_types_on_basis_of_standard R).Hcomp],
+  cases H with s Hs,
+  have H1 := Hs.2 ((zariski.structure_presheaf_of_types_on_basis_of_standard R).res (BUi i)
+      (sheaf_property_for_standard_basis._proof_2 (zariski.standard_basis_has_FIP R) γ (λ (i : γ), Ui i)
+         (λ (i : γ), BUi i)
+         i
+         j)
+      (sheaf_property_for_standard_basis._proof_3 γ (λ (i : γ), Ui i) i j)
+      (si i)),
+  have H2 := Hs.2 ((zariski.structure_presheaf_of_types_on_basis_of_standard R).res (BUi j)
+      (sheaf_property_for_standard_basis._proof_4 (zariski.standard_basis_has_FIP R) γ (λ (i : γ), Ui i)
+         (λ (i : γ), BUi i)
+         i
+         j)
+      (sheaf_property_for_standard_basis._proof_5 γ (λ (i : γ), Ui i) i j)
+      (si j)),
+  rw (H1 _),
+    rw (H2 _),
+    intro k,
+    let Fres := (zariski.structure_presheaf_of_types_on_basis_of_standard R).res,
+    show ((Fres _ _ _) ∘ (Fres _ _ _)) (si j) = (Fres _ _ _) (si i),
+    rw [←(zariski.structure_presheaf_of_types_on_basis_of_standard R).Hcomp],
+    exact (Hglue i j k).symm,
+  intro k,
+  let Fres := (zariski.structure_presheaf_of_types_on_basis_of_standard R).res,
+  show ((Fres _ _ _) ∘ (Fres _ _ _)) (si i) = (Fres _ _ _) (si i),
+    rw [←(zariski.structure_presheaf_of_types_on_basis_of_standard R).Hcomp],
+end
+
+set_option pp.universes true 
+
+noncomputable definition zariski.structure_presheaf_of_types (R : Type u) [comm_ring R] :
+presheaf_of_types (X R) := 
+  extend_off_basis (zariski.structure_presheaf_of_types_on_basis_of_standard R)
+  (zariski.sheaf_of_types_on_basis R)
+
+/-- structure sheaf on Spec(R) is indeed a sheaf -/
+theorem zariski.structure_sheaf_is_sheaf_of_types (R : Type u) [comm_ring R] :
+is_sheaf_of_types (zariski.structure_presheaf_of_types R)
+:= extension_is_sheaf 
+  (zariski.structure_presheaf_of_types_on_basis_of_standard R)
+  (zariski.sheaf_of_types_on_basis R)
+
+-- still need that it's a sheaf of rings
+
+

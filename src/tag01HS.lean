@@ -23,8 +23,11 @@ The third statement follows directly from tag 00E0.
 
 import Kenny_comm_alg.Zariski localization_UMP
 import tensor_product 
+import tag00E2 
 import tag00E4
+import tag00E8 -- Spec(R) is compact
 import Kenny_comm_alg.avoid_powers algebra.module
+import mathlib_someday.topology
 
 universes u v
 
@@ -86,6 +89,7 @@ localization.away.extend_map_of_im_unit.is_ring_hom _ _
 
 local attribute [instance] is_ring_hom.to_module
 
+set_option eqn_compiler.zeta true
 def lemma_standard_open_1c.is_linear_map (R : Type u) [comm_ring R] (f : R) (g : R) (H : Spec.D'(g) ⊆ Spec.D'(f)) :
   is_linear_map (lemma_standard_open_1c R f g H) :=
 { add := λ x y, is_ring_hom.map_add _,
@@ -101,15 +105,206 @@ tensor_product.tprod_map
   is_linear_map.id
   (lemma_standard_open_1c.is_linear_map R f g H)
 
--- (KB) I commented the below parts of the lemma out; we might need them later on in some form.
--- [I am not 100% convinced that they are what we really need as they stand] 
-/-
-def lemma_standard_open_2 (R : Type u) [comm_ring R] (f : R) (α : Type v) 
-  (cover : α → {U : set (X R) // topological_space.is_open (Zariski R) U ∧ U ⊆ Spec.D'(f)}) : 
-  set.Union (λ a, (cover a).val) = Spec.D'(f) → ∃ n : ℕ, ∃ refine : fin n → α, ∃ g : fin n → R,
-  (∀ m : fin n, Spec.D'(g m) ⊆ cover (refine m)) ∧ set.Union (λ m, Spec.D'(g m)) = Spec.D'(f)  
-   := sorry -- is this horrible?
+set_option pp.proofs true 
 
---def lemma_standard_open_3 (R : Type u) [comm_ring R] (f : R) (g : list R) :
---  Spec.D'(f) ⊆ list.foldl (λ U r, set.union U (Spec.D'(r))) ∅ g ↔ "span of image of g in localization.of_comm_ring R (powers f) is whole ring" := sorry 
--/
+def lemma_standard_open_2 (R : Type u) [comm_ring R] (f : R) (α : Type u) 
+  (cover : α → set (X R)) (Hcover : ∀ i : α, topological_space.is_open (Zariski R) (cover i)) : 
+  set.Union cover = Spec.D'(f) → ∃ γ : Type u, ∃ refine : γ → α, ∃ g : γ → R,
+  ∃ H : fintype γ, (∀ m : γ, Spec.D'(g m) ⊆ cover (refine m)) ∧ set.Union (λ m, Spec.D'(g m)) = Spec.D'(f)  
+   := 
+
+begin
+  intro cover_covers,
+  let Rf := localization.away f, -- R[1/f]
+  have H1 : compact (@set.univ (X Rf)) := lemma_quasi_compact,
+  let g := localization.of_comm_ring R (powers f),
+  let φ := Zariski.induced g,
+--   in
+--  topological_space.open_immersion φ ∧ φ '' set.univ = Spec.D'(f) :=
+  have H2 : compact (Spec.D' f),
+    rw (lemma_standard_open R f).2.symm,
+    exact compact_image H1 (Zariski.induced.continuous g),
+  -- now refine cover to be a cover by basis elements
+  -- first a bunch of axiom of choice nonsense
+  let basis_cover := λ (i : α), classical.some (topological_space.Union_basis_elements_of_open (D_f_form_basis R) (Hcover i)),
+  have basis_cover_proof : ∀ (i : α),
+    (∃ (f : (basis_cover i) → set (X R)), cover i = set.Union f ∧ ∀ (t : (basis_cover i)), f t ∈ standard_basis R)
+  := λ (i : α), classical.some_spec (topological_space.Union_basis_elements_of_open (D_f_form_basis R) (Hcover i)),
+  -- and we now need a lemma that says that any open is a union of basis elements
+  -- then we build beta as a sigma type
+  -- and beta has a map to alpha
+  let β := Σ (i : α), basis_cover i,
+  let basis_cover_proof_function := λ i, classical.some (basis_cover_proof i),
+  have basis_cover_proof_proof : ∀ (i : α),
+  (cover i = set.Union (basis_cover_proof_function i)) ∧ (∀ (j : basis_cover i), (basis_cover_proof_function i) j ∈ standard_basis R)
+  := λ i, classical.some_spec (basis_cover_proof i),
+
+  let cover' : β → set (X R) := λ j,basis_cover_proof_function j.1 j.2, 
+  -- claim that cover' is a cover
+  have Hcover' : set.Union cover' = Spec.D' f,
+    rw set.subset.antisymm_iff,
+    split,
+    { intros b Hb,
+      cases Hb with V HV,cases HV with HV Hb,cases HV with j Hj,
+      have Htemp := (basis_cover_proof_proof j.1).1,
+      -- ready for proof now
+      rw ←cover_covers,
+      apply set.subset_Union cover j.1,
+      rw Htemp,
+      apply set.subset_Union (basis_cover_proof_function j.1) j.2,
+      suffices : basis_cover_proof_function (j.1) (j.2) = cover' j,
+        rwa [this,←Hj],
+      refl,
+    },
+    { intro y,
+      rw ←cover_covers,
+      intro Hy,
+      cases Hy with V HV,
+      cases HV with HV Hy,
+      cases HV with i Hi,
+      rw Hi at Hy,
+      rw (basis_cover_proof_proof i).1 at Hy,
+      cases Hy with W HW,
+      cases HW with H HW,
+      cases H with i2 Hi2,
+      existsi W,
+      existsi _,assumption,
+      existsi (⟨i,i2⟩ : β),
+      exact Hi2,
+    },
+  have H := compact_elim_finite_subcover H2,
+    show set (set (X R)),
+    exact (set.range cover'),
+  have H' : (∀ (t : set (X R)), t ∈ set.range cover' → is_open t),
+    intros U HU,
+    cases HU with j Hj,
+    rw ←Hj,
+    apply topological_space.is_open_of_is_topological_basis (D_f_form_basis R),
+    exact (basis_cover_proof_proof j.1).2 j.2,
+  have H'' : Spec.D' f ⊆ ⋃₀ set.range cover',
+    rw ←Hcover',
+    rw ←set.Union_eq_sUnion_image,
+  have H3 := H H' H'',clear H H' H'',
+  -- I've morally deone it now.
+  -- I just need to interface my way to the results.
+  cases H3 with fcover H,
+  cases H with Hf Hc,
+  existsi {k // k ∈ fcover},
+  existsi _,tactic.swap,
+    intro kk,
+    have H : kk.1 ∈ set.range cover',
+      exact Hf kk.2,
+    let j := classical.some H,
+    have jproof : cover' j = kk.val := classical.some_spec H,
+    exact j.1,
+  existsi _,tactic.swap,
+    intro kk,
+    have H : kk.1 ∈ set.range cover',
+      exact Hf kk.2,
+    let j := classical.some H,
+    have j'proof : cover' j = kk.val := classical.some_spec H,
+    have H2 := (basis_cover_proof_proof j.1).2 j.2,
+    exact classical.some H2,
+  existsi _,tactic.swap,
+    exact set.finite.fintype Hc.1,
+  split,
+  { intros U x Hx,
+    let j := classical.some (Hf (U.property)),
+    show x ∈ cover (j.1),
+    let g := classical.some ((basis_cover_proof_proof (j.fst)).right (j.snd)),
+    have gproof : basis_cover_proof_function (j.fst) (j.snd) = Spec.D' (g) := classical.some_spec ((basis_cover_proof_proof (j.fst)).right (j.snd)),
+    change x ∈ Spec.D' g at Hx,
+    rw (basis_cover_proof_proof (j.fst)).1,
+    existsi cover' j,
+    existsi _,tactic.swap,
+      existsi j.2,
+      refl,
+    show x ∈ basis_cover_proof_function (j.fst) (j.snd),
+    rwa gproof,
+  },
+  show (⋃ (U : {k // k ∈ fcover}),
+       Spec.D'
+         (classical.some
+            ((basis_cover_proof_proof ((classical.some (Hf (U.property))).fst)).right
+               ((classical.some (Hf (U.property))).snd)))) =
+    Spec.D' f,
+  rw set.subset.antisymm_iff,
+  split,
+  { refine set.Union_subset _,
+    intro U,
+    let j := classical.some (Hf (U.property)),
+    let g := classical.some ((basis_cover_proof_proof (j.fst)).right (j.snd)),
+    have gproof : basis_cover_proof_function (j.fst) (j.snd) = Spec.D' (g) := classical.some_spec ((basis_cover_proof_proof (j.fst)).right (j.snd)),
+    show Spec.D' g ⊆ Spec.D' f,
+    rw ←gproof,
+    refine @set.subset.trans _ _ (cover j.fst) _ _ _,
+    { rw (basis_cover_proof_proof j.fst).1,
+      exact set.subset_Union _ _,
+    },
+  rw ←cover_covers,
+  apply set.subset_Union,
+  },
+  -- gamble
+  suffices : ⋃₀ fcover = ⋃ (U : {k // k ∈ fcover}),
+      Spec.D'
+        (classical.some
+           ((basis_cover_proof_proof ((classical.some (Hf (U.property))).fst)).right
+              ((classical.some (Hf (U.property))).snd))),
+    rw ←this,
+    exact Hc.2,
+  -- is this true?
+  have H : ∀ U : {k // k ∈ fcover}, U.1 = Spec.D'
+        (classical.some
+           ((basis_cover_proof_proof ((classical.some (Hf (U.property))).fst)).right
+              ((classical.some (Hf (U.property))).snd))),
+    intro U,
+    let j := classical.some (Hf (U.property)),
+    let g := classical.some ((basis_cover_proof_proof (j.fst)).right (j.snd)),
+    have gproof : basis_cover_proof_function (j.fst) (j.snd) = Spec.D' (g) := classical.some_spec ((basis_cover_proof_proof (j.fst)).right (j.snd)),
+    show U.val = Spec.D' g,
+    rw ←gproof,
+    have jproof : cover' j = U.val := classical.some_spec (Hf (U.property)),
+    rw ←jproof,
+  rw set.sUnion_eq_Union',
+  show (⋃ (U : {k // k ∈ fcover}), U.val) = _,
+  rw funext H, -- many thanks Chris Hughes for that classy finish :-)
+end 
+
+lemma zariski.basis_is_compact (R : Type u) [comm_ring R] : basis_is_compact (D_f_form_basis R) :=
+begin
+  intros U HU,
+  cases HU with f Hf,
+  intros α Ui HUi cover,
+  have H := lemma_standard_open_2 R f α Ui begin
+    intro i,
+    exact topological_space.is_open_of_is_topological_basis (D_f_form_basis R) (HUi i),
+  end
+  begin
+    rw ←Hf,
+    rw cover,
+  end,
+  cases H with γ Hγ,
+  existsi γ,
+  cases Hγ with f Hγ,
+  cases Hγ with g Hγ,
+  cases Hγ with Hfin Hγ,
+  existsi Hfin, 
+  existsi f,
+  refine set.subset.antisymm _ _,
+    refine set.Union_subset _,
+    rw ←cover,
+    intro j,
+    apply set.subset_Union,    
+  rw Hf,
+  rw ←Hγ.2,
+  intros x Hx,
+  cases Hx with V HV,
+  cases HV with HV Hx,
+  cases HV with j Hj,
+  change V = Spec.D' (g j) at Hj,
+  suffices :  ∃ (i : γ), x ∈ Ui (f i),
+    simpa using this,
+  existsi j,
+  apply Hγ.1 j,
+  rwa ←Hj,
+end
