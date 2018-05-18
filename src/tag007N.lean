@@ -16,17 +16,17 @@ def stalk.aux := presheaf_on_basis_stalk.aux (FPRB.to_presheaf_of_types_on_basis
 
 include Hstandard
 def add : stalk FPRB x → stalk FPRB x → stalk FPRB x :=
-quotient.lift
-  (by exact (λ ⟨U,BU,HUx,sU⟩,
-    quotient.lift 
-      (by exact λ ⟨V,BV,HVx,sV⟩,
-        ⟦⟨U ∩ V, --W
+quotient.lift (
+  by exact (
+    λ ⟨U,BU,HUx,sU⟩, quotient.lift (
+      by exact λ ⟨V,BV,HVx,sV⟩,⟦
+        ⟨U ∩ V, --W
         Hstandard U V BU BV, -- BW
         ⟨HUx,HVx⟩, -- HWx
         (presheaf_of_rings_on_basis.to_presheaf_of_types_on_basis FPRB).res 
-            BU _ (set.inter_subset_left _ _) sU +
+          BU _ (set.inter_subset_left _ _) sU +
         (presheaf_of_rings_on_basis.to_presheaf_of_types_on_basis FPRB).res 
-            BU _ (set.inter_subset_left _ _) sU
+          BV _ (set.inter_subset_right _ _) sV
           ,
         ⟩⟧
       ) 
@@ -137,3 +137,4 @@ noncomputable theorem basis_nhds_are_directed_set {X : Type u} [topological_spac
 end topological_space 
 -/
 -/
+end presheaf_on_basis_stalk
