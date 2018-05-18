@@ -20,21 +20,22 @@ quotient.lift (
   by exact (
     λ ⟨U,BU,HUx,sU⟩, quotient.lift (
       by exact λ ⟨V,BV,HVx,sV⟩,⟦
-        ⟨U ∩ V, --W
-        Hstandard U V BU BV, -- BW
-        ⟨HUx,HVx⟩, -- HWx
-        (presheaf_of_rings_on_basis.to_presheaf_of_types_on_basis FPRB).res 
-          BU _ (set.inter_subset_left _ _) sU +
-        (presheaf_of_rings_on_basis.to_presheaf_of_types_on_basis FPRB).res 
-          BV _ (set.inter_subset_right _ _) sV
-          ,
-        ⟩⟧
-      ) 
+        ⟨
+          U ∩ V, --W
+          Hstandard U V BU BV, -- BW
+          ⟨HUx,HVx⟩, -- HWx
+          (presheaf_of_rings_on_basis.to_presheaf_of_types_on_basis FPRB).res 
+            BU _ (set.inter_subset_left _ _) sU +
+          (presheaf_of_rings_on_basis.to_presheaf_of_types_on_basis FPRB).res 
+            BV _ (set.inter_subset_right _ _) sV
+        ⟩
+      ⟧
+    ) 
 --      (begin admit end) -- I can't replace the next line with this
-      (sorry) -- a proof -- I think! -- how to check?
-    )
-  ) 
-  sorry -- a proof 
+    (sorry) -- a proof -- I think! -- how to check?
+  )
+)
+(sorry) -- a proof 
 
 /-
 #exit 
