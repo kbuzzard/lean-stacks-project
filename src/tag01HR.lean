@@ -745,5 +745,3 @@ is_sheaf_of_types (zariski.structure_presheaf_of_types R)
   (zariski.sheaf_of_types_on_basis R)
 
 -- still need that it's a sheaf of rings
-
-
