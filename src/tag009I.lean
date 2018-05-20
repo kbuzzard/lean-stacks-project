@@ -16,6 +16,17 @@ structure presheaf_of_types_on_basis {X : Type u} [TX : topological_space X] {B 
   (HUV : V ⊆ U) (HVW : W ⊆ V),
   (res BU BW (set.subset.trans HVW HUV)) = (res BV BW HVW) ∘ (res BU BV HUV) )
 
+@[simp] lemma presheaf_of_types_on_basis.Hcomp' {X : Type u} [TX : topological_space X] {B : set (set X)}
+  {HB : topological_space.is_topological_basis B} (FPTB : presheaf_of_types_on_basis HB) :
+∀ {U V W : set X} (BU : U ∈ B) (BV : V ∈ B) (BW : W ∈ B)
+  (HUV : V ⊆ U) (HVW : W ⊆ V) (s : FPTB.F BU),
+  (FPTB.res BU BW (set.subset.trans HVW HUV)) s = 
+    (FPTB.res BV BW HVW) ((FPTB.res BU BV HUV) s) := begin
+    intros U V W BU BV BW HUV HVW s,
+      show _ = ((FPTB.res BV BW HVW) ∘ (FPTB.res BU BV HUV)) s,
+      rw FPTB.Hcomp,
+    end
+
 
 structure morphism_of_presheaves_of_types_on_basis {X : Type u} [TX : topological_space X] 
   {B : set (set X)} {HB : topological_space.is_topological_basis B}
