@@ -168,6 +168,21 @@ private def one : stalk FPRB x Hstandard :=
    1
    ⟩⟧
 
+--set_option pp.notation false 
+lemma r_of_eq : ∀ a b : (stalk.aux FPRB x Hstandard), a = b → a ≈ b := begin
+intros a b Hab,
+rw Hab,
+end 
+
+/-
+lemma eq_eta : ∀ sU tU sBU tBU sHx tHx ss ts,ss = ts → 
+  (⟨sU,sBU,sHx,ss⟩ : (stalk.aux FPRB x Hstandard)) = ⟨tU,tBU,tHx,ts⟩ :=
+  begin
+sorry 
+  end
+-/
+--set_option pp.proofs true
+--set_option pp.all true
 
 theorem stalks_of_presheaf_of_rings_on_basis_are_rings
 -- {X : Type u} [topological_space X] {B : set (set X)}
@@ -193,8 +208,48 @@ refine {
   right_distrib := _,
   mul_comm := _,
 },
+show ∀ (a b c : stalk FPRB x Hstandard), a + b + c = a + (b + c),
+{ intros a1 b1 c1,
+  refine quotient.induction_on₃ a1 b1 c1 _,
+  intros,
+  cases a with Ua BUa Hxa sa,
+  cases b with Ub BUb Hxb sb,
+  cases c with Uc BUc Hxc sc,
+  refine quotient.sound _,
+  dsimp,
+  rw (presheaf_of_rings_on_basis.res_is_ring_morphism FPRB _ _ _).map_add,
+  rw (presheaf_of_rings_on_basis.res_is_ring_morphism FPRB _ _ _).map_add,
+  rw ←presheaf_of_types_on_basis.Hcomp',
+  rw ←presheaf_of_types_on_basis.Hcomp',
+  rw ←presheaf_of_types_on_basis.Hcomp',
+  rw ←presheaf_of_types_on_basis.Hcomp',
+  rw ←add_assoc,
+  have H : Ua ∩ Ub ∩ Uc = Ua ∩ (Ub ∩ Uc),
+    finish,
+  refine eq.drec_on H _,
+  refine r_of_eq FPRB x Hstandard _ _ _,
+  apply eq.mpr presheaf_on_basis_stalk.aux.mk.inj_eq,
+  rw presheaf_on_basis_stalk.aux.mk.inj_eq,
+--  generalize : 
+--    (FPRB.to_presheaf_of_types_on_basis).res _ _ _ sa +
+--    ((FPRB.to_presheaf_of_types_on_basis).res _ _ _ sb + (FPRB.to_presheaf_of_types_on_basis).res _ _ _ sc)
+--    = ss,
+--  generalize : 
+--    (FPRB.to_presheaf_of_types_on_basis).res _ _ _ sa +
+--    ((FPRB.to_presheaf_of_types_on_basis).res _ _ _ sb + (FPRB.to_presheaf_of_types_on_basis).res _ _ _ sc)
+--    = ss,
+     
+--  subst H.symm,
+--  refine eq.drec_on,
+--  simp [H],
+
+--  refine eq.drec_on H _,
+  congr,
+},
 repeat {sorry}, 
 end
+
+#check @presheaf_on_basis_stalk.aux.mk.inj_eq X
 --{repeat {sorry}}
 
 #exit 
