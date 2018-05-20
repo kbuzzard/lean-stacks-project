@@ -7,19 +7,25 @@ namespace presheaf_of_rings_on_basis_stalk
 
 variables {X : Type u} [topological_space X] {B : set (set X)}
 {HB : topological_space.is_topological_basis B}
-(FPRB : presheaf_of_rings_on_basis HB)
-(x : X)
-(Hstandard : ∀ U V ∈ B, U ∩ V ∈ B) -- lazy, true in our case
 -- goal : comm_ring (presheaf_on_basis_stalk (FPRB.to_presheaf_of_types_on_basis) x) 
 
-include Hstandard 
-def stalk := presheaf_on_basis_stalk (FPRB.to_presheaf_of_types_on_basis) x
-def stalk.aux := presheaf_on_basis_stalk.aux (FPRB.to_presheaf_of_types_on_basis) x
+def stalk (FPRB : presheaf_of_rings_on_basis HB)
+(x : X)
+(Hstandard : ∀ U V ∈ B, U ∩ V ∈ B)
+:= presheaf_on_basis_stalk (FPRB.to_presheaf_of_types_on_basis) x
+def stalk.aux (FPRB : presheaf_of_rings_on_basis HB)
+(x : X)
+(Hstandard : ∀ U V ∈ B, U ∩ V ∈ B)
+:= presheaf_on_basis_stalk.aux (FPRB.to_presheaf_of_types_on_basis) x
 
 -- need this instance because a stalk.aux of a presheaf of types is a setoid
 -- but I have a presheaf of rings
 -- I guess I could have had presheaf of rings coe to presheaf of types?
-instance stalk_is_setoid : setoid (stalk.aux FPRB x Hstandard) := presheaf_on_basis_stalk.setoid FPRB.to_presheaf_of_types_on_basis x
+variables (FPRB : presheaf_of_rings_on_basis HB) (x : X) (Hstandard : ∀ U V ∈ B, U ∩ V ∈ B)
+include FPRB x Hstandard 
+
+instance stalk_is_setoid
+ : setoid (stalk.aux FPRB x Hstandard) := presheaf_on_basis_stalk.setoid FPRB.to_presheaf_of_types_on_basis x
 
 private def add_aux : stalk.aux FPRB x Hstandard → stalk.aux FPRB x Hstandard → stalk FPRB x Hstandard := 
 λ s t,⟦⟨s.U ∩ t.U,Hstandard s.U t.U s.BU t.BU,⟨s.Hx,t.Hx⟩,
@@ -135,6 +141,34 @@ instance ring_stalk_has_mul : has_mul (stalk FPRB x Hstandard) :=
     simp [H1',H2']
   end⟩)⟩
 
+lemma x_in_basis_elt : ∃ U ∈ B, x ∈ U :=
+begin
+have H1 := HB.2.1.symm,
+have H2 : x ∈ @set.univ X := trivial,
+rw H1 at H2,
+cases H2 with U HU,
+existsi U,
+existsi HU.fst,
+exact HU.snd
+end 
+
+private def zero : stalk FPRB x Hstandard := 
+⟦⟨classical.some (x_in_basis_elt FPRB x Hstandard),
+--  sorry,
+   (classical.some_spec (x_in_basis_elt FPRB x Hstandard)).fst,
+   (classical.some_spec (x_in_basis_elt FPRB x Hstandard)).snd,
+   0
+   ⟩⟧
+
+private def one : stalk FPRB x Hstandard := 
+⟦⟨classical.some (x_in_basis_elt FPRB x Hstandard),
+--  sorry,
+   (classical.some_spec (x_in_basis_elt FPRB x Hstandard)).fst,
+   (classical.some_spec (x_in_basis_elt FPRB x Hstandard)).snd,
+   1
+   ⟩⟧
+
+
 theorem stalks_of_presheaf_of_rings_on_basis_are_rings
 -- {X : Type u} [topological_space X] {B : set (set X)}
 --{HB : topological_space.is_topological_basis B} (FPRB : presheaf_of_rings_on_basis HB) (x : X) :
@@ -143,8 +177,8 @@ refine {
   add := has_add.add,
 --  add := (presheaf_of_rings_on_basis_stalk.ring_stalk_has_add FPRB x Hstandard).add,
   add_assoc := _,
-  zero := _,
-  zero_add := quotient.ind _,
+  zero := (zero FPRB x Hstandard),
+  zero_add := _,
   add_zero := _,
   neg := has_neg.neg,
   add_left_neg := _,
@@ -153,7 +187,7 @@ refine {
 --  mul := (presheaf_of_rings_on_basis_stalk.ring_stalk_has_mul FPRB x Hstandard).mul,
   mul_assoc := _,
   mul_one := _,
-  one := _,
+  one := (one FPRB x Hstandard),
   one_mul := _,
   left_distrib := _,
   right_distrib := _,
