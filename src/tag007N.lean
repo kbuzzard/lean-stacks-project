@@ -3,82 +3,169 @@ import tag009P -- presheaf of (commutative) rings on basis
 universe u 
 --#print presheaf_on_basis_stalk 
 --#print presheaf_on_basis_stalk.aux 
+namespace presheaf_of_rings_on_basis_stalk
 
-namespace presheaf_on_basis_stalk
 variables {X : Type u} [topological_space X] {B : set (set X)}
-{HB : topological_space.is_topological_basis B} (FPRB : presheaf_of_rings_on_basis HB) (x : X)
+{HB : topological_space.is_topological_basis B}
+(FPRB : presheaf_of_rings_on_basis HB)
+(x : X)
 (Hstandard : ∀ U V ∈ B, U ∩ V ∈ B) -- lazy, true in our case
 -- goal : comm_ring (presheaf_on_basis_stalk (FPRB.to_presheaf_of_types_on_basis) x) 
+
+include Hstandard 
 def stalk := presheaf_on_basis_stalk (FPRB.to_presheaf_of_types_on_basis) x
 def stalk.aux := presheaf_on_basis_stalk.aux (FPRB.to_presheaf_of_types_on_basis) x
 
---#check stalk 
+-- need this instance because a stalk.aux of a presheaf of types is a setoid
+-- but I have a presheaf of rings
+-- I guess I could have had presheaf of rings coe to presheaf of types?
+instance stalk_is_setoid : setoid (stalk.aux FPRB x Hstandard) := presheaf_on_basis_stalk.setoid FPRB.to_presheaf_of_types_on_basis x
 
-include Hstandard
-def add : stalk FPRB x → stalk FPRB x → stalk FPRB x :=
-quotient.lift (
-  by exact (
-    λ ⟨U,BU,HUx,sU⟩, quotient.lift (
-      by exact λ ⟨V,BV,HVx,sV⟩,⟦
-        ⟨
-          U ∩ V, --W
-          Hstandard U V BU BV, -- BW
-          ⟨HUx,HVx⟩, -- HWx
-          (presheaf_of_rings_on_basis.to_presheaf_of_types_on_basis FPRB).res 
-            BU _ (set.inter_subset_left _ _) sU +
-          (presheaf_of_rings_on_basis.to_presheaf_of_types_on_basis FPRB).res 
-            BV _ (set.inter_subset_right _ _) sV
-        ⟩
-      ⟧
-    ) 
---      (begin admit end) -- I can't replace the next line with this
-    (sorry) -- a proof -- I think! -- how to check?
-  )
-)
-(sorry) -- a proof 
+private def add_aux : stalk.aux FPRB x Hstandard → stalk.aux FPRB x Hstandard → stalk FPRB x Hstandard := 
+λ s t,⟦⟨s.U ∩ t.U,Hstandard s.U t.U s.BU t.BU,⟨s.Hx,t.Hx⟩,
+        FPRB.res s.BU _   (set.inter_subset_left _ _) s.s +
+        FPRB.res t.BU _   (set.inter_subset_right _ _) t.s
+      ⟩⟧ 
 
-/-
+instance ring_stalk_has_add : has_add (stalk FPRB x Hstandard) :=
+⟨quotient.lift₂ (add_aux FPRB x Hstandard) (λ a₁ a₂ b₁ b₂ H1 H2,
+  let U1 := classical.some H1 in
+  let U2 := classical.some H2 in
+  quotient.sound ⟨U1 ∩ U2,begin
+    have H1' := classical.some_spec H1,
+    cases H1' with Hx1 H1',
+    cases H1' with BU1 H1',
+    cases H1' with HUa₁ H1',
+    cases H1' with HUb₁ H1',
+    have H2' := classical.some_spec H2,
+    cases H2' with Hx2 H2',
+    cases H2' with BU2 H2',
+    cases H2' with HUa₂ H2',
+    cases H2' with HUb₂ H2',
+    existsi (⟨Hx1,Hx2⟩ : x ∈ U1 ∩ U2),
+    existsi Hstandard _ _ BU1 BU2,
+    existsi set.inter_subset_inter HUa₁ HUa₂,
+    existsi set.inter_subset_inter HUb₁ HUb₂,
+    rw (FPRB.res_is_ring_morphism _ _ _).map_add,
+    rw (FPRB.res_is_ring_morphism _ _ _).map_add,
+    show (FPRB.res _ _ _ ∘ FPRB.res _ _ _) (a₁.s) +
+         (FPRB.res _ _ _ ∘ FPRB.res _ _ _) (a₂.s) =
+         (FPRB.res _ _ _ ∘ FPRB.res _ _ _) (b₁.s) +
+         (FPRB.res _ _ _ ∘ FPRB.res _ _ _) (b₂.s),
+    rw ←FPRB.Hcomp,
+    rw ←FPRB.Hcomp,
+    rw ←FPRB.Hcomp,
+    rw ←FPRB.Hcomp,
+    suffices : (FPRB.res BU1 (Hstandard U1 U2 BU1 BU2) (set.inter_subset_left _ _) ∘ FPRB.res a₁.BU BU1 HUa₁) (a₁.s) +
+      (FPRB.res BU2 (Hstandard U1 U2 BU1 BU2) (set.inter_subset_right _ _) ∘ FPRB.res a₂.BU BU2 HUa₂) (a₂.s) =
+      (FPRB.res BU1 (Hstandard U1 U2 BU1 BU2) (set.inter_subset_left _ _) ∘ FPRB.res b₁.BU BU1 HUb₁) (b₁.s) +
+      (FPRB.res BU2 (Hstandard U1 U2 BU1 BU2) (set.inter_subset_right _ _) ∘ FPRB.res b₂.BU BU2 HUb₂) (b₂.s),
+    rwa [←FPRB.Hcomp,←FPRB.Hcomp,←FPRB.Hcomp,←FPRB.Hcomp] at this,
+    simp [H1',H2']
+  end⟩)⟩
+
+  --#check is_ring_hom
+
+private def neg_aux : stalk.aux FPRB x Hstandard → stalk FPRB x Hstandard := 
+λ s,⟦⟨s.U,s.BU,s.Hx,-s.s⟩⟧
+
+instance : has_neg (stalk FPRB x Hstandard) :=
+⟨quotient.lift (neg_aux FPRB x Hstandard) $ begin
+  intros a b H,
+  apply quotient.sound,
+  cases H with U H,
+  existsi U,
+  cases H with Hx H,
+  existsi Hx,
+  cases H with BW H,
+  existsi BW,
+  cases H with HWU H,
+  existsi HWU,
+  cases H with HWV H,
+  existsi HWV,
+  show FPRB.res _ _ _ (-a.s) = FPRB.res _ _ _ (-b.s),
+  have Ha : FPRB.res _ BW HWU (-a.s) = -(FPRB.res _ BW HWU a.s),
+    rw @is_ring_hom.map_neg _ _ _ _ _ (FPRB.res_is_ring_morphism _ _ _),
+  rw [Ha,H],
+  rw @is_ring_hom.map_neg _ _ _ _ _ (FPRB.res_is_ring_morphism _ _ _),
+end⟩
+
+--#check @is_ring_hom.map_neg 
+
+private def mul_aux : stalk.aux FPRB x Hstandard → stalk.aux FPRB x Hstandard → stalk FPRB x Hstandard := 
+λ s t,⟦⟨s.U ∩ t.U,Hstandard s.U t.U s.BU t.BU,⟨s.Hx,t.Hx⟩,
+        FPRB.res s.BU _   (set.inter_subset_left _ _) s.s *
+        FPRB.res t.BU _   (set.inter_subset_right _ _) t.s
+      ⟩⟧ 
+
+instance ring_stalk_has_mul : has_mul (stalk FPRB x Hstandard) :=
+⟨quotient.lift₂ (mul_aux FPRB x Hstandard) (λ a₁ a₂ b₁ b₂ H1 H2,
+  let U1 := classical.some H1 in
+  let U2 := classical.some H2 in
+  quotient.sound ⟨U1 ∩ U2,begin
+    have H1' := classical.some_spec H1,
+    cases H1' with Hx1 H1',
+    cases H1' with BU1 H1',
+    cases H1' with HUa₁ H1',
+    cases H1' with HUb₁ H1',
+    have H2' := classical.some_spec H2,
+    cases H2' with Hx2 H2',
+    cases H2' with BU2 H2',
+    cases H2' with HUa₂ H2',
+    cases H2' with HUb₂ H2',
+    existsi (⟨Hx1,Hx2⟩ : x ∈ U1 ∩ U2),
+    existsi Hstandard _ _ BU1 BU2,
+    existsi set.inter_subset_inter HUa₁ HUa₂,
+    existsi set.inter_subset_inter HUb₁ HUb₂,
+    rw (FPRB.res_is_ring_morphism _ _ _).map_mul,
+    rw (FPRB.res_is_ring_morphism _ _ _).map_mul,
+    show (FPRB.res _ _ _ ∘ FPRB.res _ _ _) (a₁.s) *
+         (FPRB.res _ _ _ ∘ FPRB.res _ _ _) (a₂.s) =
+         (FPRB.res _ _ _ ∘ FPRB.res _ _ _) (b₁.s) *
+         (FPRB.res _ _ _ ∘ FPRB.res _ _ _) (b₂.s),
+    rw ←FPRB.Hcomp,
+    rw ←FPRB.Hcomp,
+    rw ←FPRB.Hcomp,
+    rw ←FPRB.Hcomp,
+    suffices : (FPRB.res BU1 (Hstandard U1 U2 BU1 BU2) (set.inter_subset_left _ _) ∘ FPRB.res a₁.BU BU1 HUa₁) (a₁.s) *
+      (FPRB.res BU2 (Hstandard U1 U2 BU1 BU2) (set.inter_subset_right _ _) ∘ FPRB.res a₂.BU BU2 HUa₂) (a₂.s) =
+      (FPRB.res BU1 (Hstandard U1 U2 BU1 BU2) (set.inter_subset_left _ _) ∘ FPRB.res b₁.BU BU1 HUb₁) (b₁.s) *
+      (FPRB.res BU2 (Hstandard U1 U2 BU1 BU2) (set.inter_subset_right _ _) ∘ FPRB.res b₂.BU BU2 HUb₂) (b₂.s),
+    rwa [←FPRB.Hcomp,←FPRB.Hcomp,←FPRB.Hcomp,←FPRB.Hcomp] at this,
+    simp [H1',H2']
+  end⟩)⟩
+
+theorem stalks_of_presheaf_of_rings_on_basis_are_rings
+-- {X : Type u} [topological_space X] {B : set (set X)}
+--{HB : topological_space.is_topological_basis B} (FPRB : presheaf_of_rings_on_basis HB) (x : X) :
+: comm_ring (stalk FPRB x Hstandard) := begin
+refine {
+  add := has_add.add,
+--  add := (presheaf_of_rings_on_basis_stalk.ring_stalk_has_add FPRB x Hstandard).add,
+  add_assoc := _,
+  zero := _,
+  zero_add := quotient.ind _,
+  add_zero := _,
+  neg := has_neg.neg,
+  add_left_neg := _,
+  add_comm := _,
+  mul := has_mul.mul,
+--  mul := (presheaf_of_rings_on_basis_stalk.ring_stalk_has_mul FPRB x Hstandard).mul,
+  mul_assoc := _,
+  mul_one := _,
+  one := _,
+  one_mul := _,
+  left_distrib := _,
+  right_distrib := _,
+  mul_comm := _,
+},
+repeat {sorry}, 
+end
+--{repeat {sorry}}
+
 #exit 
 
-theorem stalks_of_presheaf_of_rings_on_basis_are_rings {X : Type u} [topological_space X] {B : set (set X)}
-{HB : topological_space.is_topological_basis B} (FPRB : presheaf_of_rings_on_basis HB) (x : X) :
-comm_ring (presheaf_on_basis_stalk (FPRB.to_presheaf_of_types_on_basis) x) := {
-  add := (let AAA := (presheaf_on_basis_stalk (FPRB.to_presheaf_of_types_on_basis) x) in
-          let BBB := (presheaf_on_basis_stalk.aux (FPRB.to_presheaf_of_types_on_basis) x) in
-  (
-    quotient.lift ((by exact λ ⟨U,BU,HUx,sU⟩,
-    ((quotient.lift (by exact λ ⟨V,BV,HVx,sV⟩,
-    (⟦⟨begin 
-       sorry 
-    end,sorry,sorry,sorry⟩⟧ : AAA)
-     : BBB → AAA) 
-     sorry -- a proof
-     ) : AAA → AAA)
-    ) : BBB → AAA → AAA) 
-    (sorry) -- a proof
-  
-   : AAA → AAA → AAA)),
---  (λ (a :           (presheaf_on_basis_stalk.aux (FPRB.to_presheaf_of_types_on_basis) x)),
---  (begin sorry end),
---  (b : presheaf_on_basis_stalk (FPRB.to_presheaf_of_types_on_basis) x),sorry) 
---(λ (⟨ Uaaa,BUaaa,Hxaaa,saaa⟩ : (presheaf_on_basis_stalk.aux (FPRB.to_presheaf_of_types_on_basis) x)),sorry)
---  sorry,
-  add_assoc := sorry,
-  zero := sorry,
-  zero_add := sorry,
-  add_zero := sorry,
-  neg := sorry,
-  add_left_neg := sorry,
-  add_comm := sorry,
-  mul := sorry,
-  mul_assoc := sorry,
-  mul_one := sorry,
-  one := sorry,
-  one_mul := sorry,
-  left_distrib := sorry,
-  right_distrib := sorry,
-  mul_comm := sorry
-}
+--;{repeat {sorry}}
 
 
 /-
@@ -126,7 +213,7 @@ lattice.has_sup (basis_nhds HB x) := {
 }
 -/
 
-
+#exit
 #check subtype
 
 noncomputable theorem basis_nhds_are_directed_set {X : Type u} [topological_space X] {B : set (set X)} (HB : topological_space.is_topological_basis B)
