@@ -181,9 +181,9 @@ lemma eq_eta : ∀ sU tU sBU tBU sHx tHx ss ts,ss = ts →
 sorry 
   end
 -/
+--set_option pp.universes true
 --set_option pp.proofs true
---set_option pp.all true
-
+set_option trace.app_builder true
 theorem stalks_of_presheaf_of_rings_on_basis_are_rings
 -- {X : Type u} [topological_space X] {B : set (set X)}
 --{HB : topological_space.is_topological_basis B} (FPRB : presheaf_of_rings_on_basis HB) (x : X) :
@@ -216,7 +216,10 @@ show ∀ (a b c : stalk FPRB x Hstandard), a + b + c = a + (b + c),
   cases b with Ub BUb Hxb sb,
   cases c with Uc BUc Hxc sc,
   refine quotient.sound _,
-  dsimp,
+  dsimp,refine r_of_eq FPRB x Hstandard _ _ _,
+  rw presheaf_on_basis_stalk.aux.mk.inj_eq,
+  split,
+    cc,
   rw (presheaf_of_rings_on_basis.res_is_ring_morphism FPRB _ _ _).map_add,
   rw (presheaf_of_rings_on_basis.res_is_ring_morphism FPRB _ _ _).map_add,
   rw ←presheaf_of_types_on_basis.Hcomp',
@@ -224,12 +227,48 @@ show ∀ (a b c : stalk FPRB x Hstandard), a + b + c = a + (b + c),
   rw ←presheaf_of_types_on_basis.Hcomp',
   rw ←presheaf_of_types_on_basis.Hcomp',
   rw ←add_assoc,
-  have H : Ua ∩ Ub ∩ Uc = Ua ∩ (Ub ∩ Uc),
-    finish,
-  refine eq.drec_on H _,
-  refine r_of_eq FPRB x Hstandard _ _ _,
-  apply eq.mpr presheaf_on_basis_stalk.aux.mk.inj_eq,
-  rw presheaf_on_basis_stalk.aux.mk.inj_eq,
+    
+  have Htemp1 : Ua ∩ Ub ∩ Uc ∈ B,
+    apply Hstandard,
+    apply Hstandard,
+    exact BUa,
+    exact BUb,
+    exact BUc,
+  have Htemp2 : Ua ∩ (Ub ∩ Uc) ∈ B,
+    apply Hstandard,
+    exact BUa,
+    apply Hstandard,
+    exact BUb,
+    exact BUc,
+  have Hinter : Ua ∩ Ub ∩ Uc = Ua ∩ (Ub ∩ Uc),
+    cc,
+  show (FPRB.to_presheaf_of_types_on_basis).res BUa Htemp1 _ sa + (FPRB.to_presheaf_of_types_on_basis).res BUb Htemp1 _ sb +
+      (FPRB.to_presheaf_of_types_on_basis).res BUc Htemp1 _ sc ==
+    (FPRB.to_presheaf_of_types_on_basis).res BUa Htemp2 _ sa + (FPRB.to_presheaf_of_types_on_basis).res BUb Htemp2 _ sb +
+      (FPRB.to_presheaf_of_types_on_basis).res BUc Htemp2 _ sc,
+  refine eq.drec_on Hinter _,
+  let UU := Ua ∩ Ub ∩ Uc,
+  have HI2 : UU = Ua ∩ (Ub ∩ Uc) := Hinter,
+  congr,
+  subst HI2,
+
+  /-
+  exact @eq.drec_on _ (Ua ∩ Ub ∩ Uc) (λ s h,
+    (FPRB.to_presheaf_of_types_on_basis).res BUa Htemp1 _ sa +
+        (FPRB.to_presheaf_of_types_on_basis).res BUb Htemp1 _ sb +
+      (FPRB.to_presheaf_of_types_on_basis).res BUc Htemp1 _ sc ==
+    (FPRB.to_presheaf_of_types_on_basis).res BUa (h ▸ Htemp1) _ sa +
+        (FPRB.to_presheaf_of_types_on_basis).res BUb (h ▸ Htemp1) _ sb +
+      (FPRB.to_presheaf_of_types_on_basis).res BUc (h ▸ Htemp1) _ sc
+  ) _ Hinter (heq.refl _),
+  -/
+  --congr,
+  --subst Hinter,
+  --rw Hinter at Htemp1,
+ 
+  --congr,
+  
+--  apply eq.mpr presheaf_on_basis_stalk.aux.mk.inj_eq,
 --  generalize : 
 --    (FPRB.to_presheaf_of_types_on_basis).res _ _ _ sa +
 --    ((FPRB.to_presheaf_of_types_on_basis).res _ _ _ sb + (FPRB.to_presheaf_of_types_on_basis).res _ _ _ sc)
@@ -244,11 +283,13 @@ show ∀ (a b c : stalk FPRB x Hstandard), a + b + c = a + (b + c),
 --  simp [H],
 
 --  refine eq.drec_on H _,
-  congr,
+  --congr,
 },
 repeat {sorry}, 
 end
 
+#print notation ==
+#print heq_iff_eq
 #check @presheaf_on_basis_stalk.aux.mk.inj_eq X
 --{repeat {sorry}}
 
