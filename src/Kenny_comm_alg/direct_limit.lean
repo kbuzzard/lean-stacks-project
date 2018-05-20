@@ -1,4 +1,4 @@
-import algebra.ring order.lattice
+import algebra.ring order.lattice canonical_isomorphism_nonsense 
 
 universes u v
 
@@ -7,26 +7,6 @@ theorem congr_arg₂ {α β γ : Type*} (f : α → β → γ) {x₁ x₂ : α} 
 eq.drec (eq.drec rfl Hy) Hx
 
 open lattice
-
-def is_add_group_hom {α : Type*} {β : Type*} [add_group α] [add_group β] (f : α → β) : Prop :=
-@is_group_hom (multiplicative α) (multiplicative β) _ _ f
-
-attribute [class] is_add_group_hom
-
-namespace is_add_group_hom
-
-variables {α : Type*} {β : Type*} [add_group α] [add_group β] (f : α → β) [hf : is_add_group_hom f]
-
-theorem add (x y) : f (x + y) = f x + f y :=
-@is_group_hom.mul (multiplicative α) (multiplicative β) _ _ f hf x y
-
-theorem zero : f 0 = 0 :=
-@is_group_hom.one (multiplicative α) (multiplicative β) _ _ f hf
-
-theorem neg (x) : f (-x) = -f x :=
-@is_group_hom.inv (multiplicative α) (multiplicative β) _ _ f hf x
-
-end is_add_group_hom
 
 instance is_ring_hom.to_is_add_group_hom {α : Type*} {β : Type*} [ring α] [ring β]
   (f : α → β) [is_ring_hom f] : is_add_group_hom f :=
