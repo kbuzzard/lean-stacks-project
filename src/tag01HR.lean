@@ -730,8 +730,6 @@ begin
     rw [←(zariski.structure_presheaf_of_types_on_basis_of_standard R).Hcomp],
 end
 
-set_option pp.universes true 
-
 noncomputable definition zariski.structure_presheaf_of_types (R : Type u) [comm_ring R] :
 presheaf_of_types (X R) := 
   extend_off_basis (zariski.structure_presheaf_of_types_on_basis_of_standard R)
