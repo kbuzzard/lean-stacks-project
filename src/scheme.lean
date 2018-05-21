@@ -14,6 +14,7 @@ import tag0072 -- sheaves of rings
 import Kenny_comm_alg.temp
 import mathlib_someday.topology
 import tag01HR
+import tag007N -- poor mans direct limit
 
 universes u v 
 
@@ -77,13 +78,96 @@ definition presheaf_of_rings_pullback_under_open_immersion
 -- This should probably be elsewhere.
 -- givesn a presheaf of rings on a basis I should prove the stalks are rings.
 
-#check extend_off_basis
-#check presheaf_on_basis_stalk
-#check presheaf_of_rings_on_basis
+--#check extend_off_basis
+--#check presheaf_on_basis_stalk
+--#check presheaf_of_rings_on_basis
+--#check zariski.structure_presheaf_of_types_on_basis_of_standard
+--#check zariski.structure_presheaf_of_rings_on_basis_of_standard
+
+lemma zariski.univ_is_basic (R : Type u) [comm_ring R] : is_zariski.standard_open (@set.univ (X R)) :=
+begin
+  existsi (1 : R),
+  apply eq.symm,
+  apply set.univ_subset_iff.1,
+  intros y HY,
+  letI : is_prime_ideal (y.1) := y.2,
+  exact is_prime_ideal.one_not_mem y.1,
+end
+
+--#check @presheaf_on_basis_stalk --(structure_presheaf_of_types_on_basis_of_standard R) x
+
+noncomputable instance zariski.structure_presheaf_of_rings_on_basis_stalk_is_ring (R : Type u) [comm_ring R] (x : X R) : 
+comm_ring (presheaf_on_basis_stalk (zariski.structure_presheaf_of_rings_on_basis_of_standard R).to_presheaf_of_types_on_basis x)
+:= 
+presheaf_of_rings_on_basis_stalk.stalks_of_presheaf_of_rings_on_basis_are_rings
+(zariski.structure_presheaf_of_rings_on_basis_of_standard R)
+x
+(zariski.standard_basis_has_FIP R)
+(zariski.univ_is_basic R)
+
+noncomputable instance zariski.structure_presheaf_of_types_on_basis_stalk_is_ring (R : Type u) [comm_ring R] (x : X R) : 
+comm_ring (presheaf_on_basis_stalk (zariski.structure_presheaf_of_types_on_basis_of_standard R) x)
+:= 
+presheaf_of_rings_on_basis_stalk.stalks_of_presheaf_of_rings_on_basis_are_rings
+(zariski.structure_presheaf_of_rings_on_basis_of_standard R)
+x
+(zariski.standard_basis_has_FIP R)
+(zariski.univ_is_basic R)
+
+-- w00t
+
+--#print zariski.structure_presheaf_of_types
+#print extend_off_basis
+
+noncomputable instance zariski.structure_sheaf_of_types_sections_has_add
+(R : Type u) [comm_ring R] (U : set (X R)) (OU : is_open U) : 
+has_add ((zariski.structure_presheaf_of_types R).F OU) := ⟨λ s t,⟨λ x HUx,s.1 x HUx + t.1 x HUx,begin
+  intros x HUx,
+  cases s.2 x HUx with Us Hs,
+  cases Hs with BUs Hs,
+  cases Hs with HxUs Hs,
+  cases Hs with sigmas Hs,
+  cases t.2 x HUx with Ut Ht,
+  cases Ht with BUt Ht,
+  cases Ht with HxUt Ht,
+  cases Ht with sigmat Ht,
+  existsi (Us ∩ Ut),
+  -- optimistic!
+end
+⟩⟩
+
+instance zariski.structure_sheaf_of_types_sections_has_zero
+(R : Type u) [comm_ring R] (U : set (X R)) (OU : is_open U) : 
+has_zero ((zariski.structure_presheaf_of_types R).F OU) := ⟨sorry⟩
 
 
-#check @presheaf_on_basis_stalk --(structure_presheaf_of_types_on_basis_of_standard R) x
-instance presheaf_of_rings_stalk_is_ring {X : Type u} [topological_space X]
+noncomputable instance zariski.structure_sheaf_of_types_sections_are_rings (R : Type u) [comm_ring R]
+(U : set (X R)) (OU : is_open U) : 
+comm_ring ((zariski.structure_presheaf_of_types R).F OU) := {
+add := has_add.add,
+add_assoc := sorry,
+zero := has_zero.zero,
+}
+
+noncomputable definition zariski.structure_sheaf_of_types_is_presheaf_of_rings (R : Type u) [comm_ring R] : 
+presheaf_of_rings (X R) := {
+res_is_ring_morphism := sorry,
+..zariski.structure_presheaf_of_types R,
+
+}
+ 
+
+ --(zariski.structure_presheaf_of_types R)
+ 
+-- (zariski.standard_basis_has_FIP R)
+--(zariski.univ_is_basic)
+
+--instance stalks_of_presheaf_of_rings_on_basis_are_rings
+-- {X : Type u} [topological_space X] {B : set (set X)}
+--{HB : topological_space.is_topological_basis B} (FPRB : presheaf_of_rings_on_basis HB) (x : X) :
+--: comm_ring (stalk FPRB x Hstandard Hall)
+
+#exit
 
 
 -- use git to find out what this comment pertained to
