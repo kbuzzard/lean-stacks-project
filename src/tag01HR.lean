@@ -52,6 +52,11 @@ noncomputable definition zariski.structure_presheaf_of_rings_on_basis_of_standar
   ..zariski.structure_presheaf_of_types_on_basis_of_standard R,
 }
 
+instance zariski.structure_presheaf_of_types_on_basis_of_standard_sections_is_ring 
+  (R : Type u) [comm_ring R] (U : set (X R)) (BU : U ∈ standard_basis R) :
+comm_ring ((zariski.structure_presheaf_of_types_on_basis_of_standard R).F BU) := 
+zariski.structure_presheaf_on_standard.comm_ring U BU 
+
 -- computation of stalk: I already did this for R I think.
 
 /-
