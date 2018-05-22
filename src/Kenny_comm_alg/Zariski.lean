@@ -46,8 +46,6 @@ end generate
 class t0_space (α : Type u) [topological_space α] :=
 (t0 : ∀ x y, x ≠ y → ∃ U:set α, is_open U ∧ (xor (x ∈ U) (y ∈ U)))
 
-
-
 section Zariski
 
 parameters (α : Type u) [comm_ring α]
