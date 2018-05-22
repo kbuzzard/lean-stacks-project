@@ -15,12 +15,16 @@ end tactic
 open topological_space
 
 structure topological_space.open_immersion
-  {α : Type*} [Tα : topological_space α]
-  {β : Type*} [Tβ : topological_space β]
+  {α : Type u} [Tα : topological_space α]
+  {β : Type u} [Tβ : topological_space β]
   (f : α → β) : Prop :=
 (fcont : continuous f)
 (finj : function.injective f)
 (fopens : ∀ U : set α, is_open U ↔ is_open (f '' U))
+
+theorem topological_space.open_immersion_id
+  (α : Type u) [Tα : topological_space α] : topological_space.open_immersion (@id α) := 
+⟨continuous_id,function.injective_id,λ _,by rw set.image_id⟩
 
 lemma topological_space.open_of_open_immersion_open 
   {α : Type*} [Tα : topological_space α]
