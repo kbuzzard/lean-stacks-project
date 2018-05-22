@@ -52,7 +52,7 @@ definition presheaf_of_types_pullback_under_open_immersion
   {β : Type u} [Tβ : topological_space β]
   (PT : presheaf_of_types β)
   (f : α → β)
-  (H : topological_space.open_immersion' f) :
+  (H : topological_space.open_immersion f) :
   presheaf_of_types α :=
 { F := λ U HU,PT.F ((H.fopens U).1 HU),
   res := λ U V OU OV H2,PT.res (f '' U) (f '' V) ((H.fopens U).1 OU) ((H.fopens V).1 OV)
@@ -66,14 +66,52 @@ definition presheaf_of_rings_pullback_under_open_immersion
   {β : Type u} [Tβ : topological_space β]
   (PR : presheaf_of_rings β)
   (f : α → β)
-  (H : topological_space.open_immersion' f) :
+  (H : topological_space.open_immersion f) :
   presheaf_of_rings α := 
-{ Fring := λ U OU,PR.Fring (topological_space.immersion_sends_opens_to_opens f H U OU),
+{ Fring := λ U OU,PR.Fring (topological_space.open_of_open_immersion_open f H U OU),
   res_is_ring_morphism := λ U V OU OV H2,PR.res_is_ring_morphism (f '' U) (f '' V)
-    (topological_space.immersion_sends_opens_to_opens f H U OU)
-    (topological_space.immersion_sends_opens_to_opens f H V OV) 
+    (topological_space.open_of_open_immersion_open f H U OU)
+    (topological_space.open_of_open_immersion_open f H V OV) 
     (set.image_subset f H2),
   .. presheaf_of_types_pullback_under_open_immersion PR.to_presheaf_of_types f H }
+
+theorem pullback_id {α : Type u} [Tα : topological_space α] (PR : presheaf_of_rings α) :
+presheaf_of_rings_pullback_under_open_immersion PR id (topological_space.open_immersion_id α) = PR := 
+begin
+  cases PR with PT CR RH,
+  unfold presheaf_of_rings_pullback_under_open_immersion,
+  dsimp,
+--  unfold presheaf_of_types_pullback_under_open_immersion, -- fails!
+  congr,
+  { cases PT with F res Hid Hcomp,
+    dsimp,
+    congr,
+    { unfold presheaf_of_types_pullback_under_open_immersion,
+      dsimp,
+      funext,
+      congr,
+      rw set.image_id,
+    },
+    { dsimp,
+      
+      
+      unfold presheaf_of_types_pullback_under_open_immersion,
+       
+    },
+    {
+      sorry 
+    },
+    {
+      sorry 
+    }
+  },
+  {sorry
+
+  },
+  sorry,
+end 
+#check presheaf_of_types_pullback_under_open_immersion
+
 
 -- This should probably be elsewhere.
 -- givesn a presheaf of rings on a basis I should prove the stalks are rings.
@@ -210,7 +248,6 @@ has_neg ((zariski.structure_presheaf_of_types R).F OU) :=
 end
 ⟩⟩
 
-
 noncomputable instance zariski.structure_sheaf_of_types_sections_has_mul
 (R : Type u) [comm_ring R] (U : set (X R)) (OU : is_open U) : 
 has_mul ((zariski.structure_presheaf_of_types R).F OU) := 
@@ -319,7 +356,7 @@ zariski.structure_sheaf_is_sheaf_of_types R
 
 /- already appewared above
 definition presheaf_of_rings_pullback_under_open_immersion
-  {α : Type*} [Tα : topological_space α]
+  {α : Type u} [Tα : topological_space α]
   (U : set α) (OU : is_open U)
   (FPT : presheaf_of_types α)
   (FPR : presheaf_of_rings (FPT))
@@ -335,35 +372,73 @@ structure scheme :=
 (O_X_sheaf : is_sheaf_of_rings O_X)
 (locally_affine : ∃ β : Type u, ∃ cov : β → {U : set α // T.is_open U}, 
   set.Union (λ b, (cov b).val) = set.univ ∧
-  ∀ b : β, ∃ R : Type*, ∃ RR : comm_ring R, ∃ fR : (X R) → α, 
+  ∀ b : β, ∃ R : Type u, ∃ RR : comm_ring R, ∃ fR : (X R) → α, 
     fR '' set.univ = (cov b).val ∧ -- thanks Johan Commelin!!
     open_immersion fR ∧ Π H : open_immersion fR, 
     are_isomorphic_presheaves_of_rings 
       (presheaf_of_rings_pullback_under_open_immersion O_X fR H)
-      (structure_presheaf_of_rings_on_affine_scheme R)
+      (zariski.structure_presheaf_of_rings R)
 )
 
+set_option pp.proofs true 
+noncomputable definition scheme_of_affine_scheme (R : Type u) [comm_ring R] : scheme :=
+{ α := X R,
+  T := by apply_instance,
+  O_X := zariski.structure_presheaf_of_rings R,
+  O_X_sheaf := zariski.structure_presheaf_is_sheaf_of_rings R,
+  locally_affine := begin
+    existsi (punit : Type u),
+    existsi (λ _,(⟨set.univ,is_open_univ⟩ : {U // is_open zariski.open U})),
+    split,
+    { rw ←set.univ_subset_iff,
+      intros x _,
+      suffices : ∃ (i : punit), true,
+        simpa using this,
+      existsi (punit.star : punit),
+      trivial
+    },
+    intro _,
+    existsi R,
+    existsi _,tactic.swap,apply_instance,
+    existsi id,
+    split,
+    { suffices : set.range (λ (a : X R), a) = set.univ,
+        simpa using this,
+      rw ←set.univ_subset_iff,
+      intros x _,
+      existsi x,
+      refl
+    },
+    split,exact topological_space.open_immersion_id _,
+    intro _,
+    -- are_isomorphic_presheaves_of_rings
+    -- (presheaf_of_rings_pullback_under_open_immersion (zariski.structure_presheaf_of_rings R) id H)
+    -- (zariski.structure_presheaf_of_rings R)
+    
+    -- WAIT A MINUTE ISN'T THIS OBVIOUS
+    constructor,
+    { existsi _,tactic.swap,
+      { constructor,tactic.swap,
+        { constructor,tactic.swap,
+          { intros U HU s,
+            unfold presheaf_of_rings_pullback_under_open_immersion,
+            dsimp,
+            unfold presheaf_of_types_pullback_under_open_immersion,
+            dsimp,
+            exact s,
+          },
+          sorry 
 
+        },
+        sorry,
 
--- now back to stuff not stolen from Patrick
-/-
-universes u v
+      },
+      sorry 
 
-theorem D_f_are_a_basis {R : Type u} [comm_ring R] : ∀ U : set (X R), topological_space.is_open (Zariski R) U → ∃ α : Type v, ∃ f : α → R, U = set.Union (Spec.D' ∘ f) := sorry
+    },
+    sorry 
+  end 
+}
 
-definition structure_sheaf_on_union {R : Type u} [comm_ring R] {α : Type} (f : α → R) := 
-  {x : (Π i : α, localization.loc R (powers $ f i)) // ∀ j k : α, localise_more_left (f j) (f k) (x j) = localise_more_right (f j) (f k) (x k) } 
-
--- a theorem says that this is a subring.
-
-definition structure_sheaf (R : Type u) [comm_ring R] : {U : set (X R) // topological_space.is_open (Zariski R) U} → Type u :=
-λ ⟨U,HU⟩, let exf := D_f_are_a_basis U HU in let fH := classical.some_spec exf in structure_sheaf_on_union (classical.some fH)
-
--- the pair consisting of Spec(R) and its structure sheaf are an affine scheme, although it is currently not even clear
--- from the definition that everything is well-defined (I choose a cover; I still didn't do the work to check that
--- the resulting ring is independent of choices (or even that it is a ring!)
-
--- Just begun to think about general schemes below.
-
-
--/
+#check are_isomorphic_presheaves_of_rings
+#check presheaf_of_rings_pullback_under_open_immersion
