@@ -16,7 +16,7 @@ variables (f : α → β) [is_ring_hom f]
 def Zariski.induced : X β → X α :=
 λ p, ⟨f ⁻¹' p.1, @@is_prime_ideal.hom_preimage _ _ f _ p.1 p.2⟩
 
-instance que := Zariski α
+instance zariski.open := Zariski α
 
 theorem Zariski.induced.continuous : continuous (Zariski.induced f) :=
 λ A ⟨E, ha⟩, ⟨f '' E, set.ext $ λ z,
