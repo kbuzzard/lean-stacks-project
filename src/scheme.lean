@@ -16,13 +16,13 @@ import mathlib_someday.topology
 import tag01HR
 import tag007N -- poor mans direct limit
 
-universes u v 
+universes u 
 
 local attribute [class] topological_space.is_open 
 
 definition presheaf_of_types_pushforward
-  {α : Type*} [Tα : topological_space α]
-  {β : Type*} [Tβ : topological_space β]
+  {α : Type u} [Tα : topological_space α]
+  {β : Type u} [Tβ : topological_space β]
   (f : α → β)
   (fcont: continuous f)
   (FPT : presheaf_of_types α) :
@@ -36,8 +36,8 @@ definition presheaf_of_types_pushforward
     (λ x Hx, HUV Hx) (λ x Hx, HVW Hx) }
 
 definition presheaf_of_rings_pushforward
-  {α : Type*} [Tα : topological_space α]
-  {β : Type*} [Tβ : topological_space β]
+  {α : Type u} [Tα : topological_space α]
+  {β : Type u} [Tβ : topological_space β]
   (f : α → β)
   (fcont: continuous f)
   (FPR : presheaf_of_rings α) :
@@ -48,8 +48,8 @@ definition presheaf_of_rings_pushforward
   .. presheaf_of_types_pushforward f fcont FPR.to_presheaf_of_types }
 
 definition presheaf_of_types_pullback_under_open_immersion
-  {α : Type*} [Tα : topological_space α]
-  {β : Type*} [Tβ : topological_space β]
+  {α : Type u} [Tα : topological_space α]
+  {β : Type u} [Tβ : topological_space β]
   (PT : presheaf_of_types β)
   (f : α → β)
   (H : topological_space.open_immersion' f) :
@@ -62,8 +62,8 @@ definition presheaf_of_types_pullback_under_open_immersion
     PT.Hcomp _ _ _ _ _ _ (set.image_subset f HUV) (set.image_subset f HVW) } 
 
 definition presheaf_of_rings_pullback_under_open_immersion
-  {α : Type*} [Tα : topological_space α]
-  {β : Type*} [Tβ : topological_space β]
+  {α : Type u} [Tα : topological_space α]
+  {β : Type u} [Tβ : topological_space β]
   (PR : presheaf_of_rings β)
   (f : α → β)
   (H : topological_space.open_immersion' f) :
@@ -317,12 +317,23 @@ zariski.structure_sheaf_is_sheaf_of_types R
 
 -- This is OK because exactness is same for sheaves of rings and sets-/
 
+/- already appewared above
+definition presheaf_of_rings_pullback_under_open_immersion
+  {α : Type*} [Tα : topological_space α]
+  (U : set α) (OU : is_open U)
+  (FPT : presheaf_of_types α)
+  (FPR : presheaf_of_rings (FPT))
+  : presheaf_of_rings (presheaf_of_types_pullback_under_open_immersion U OU FPT) := sorry 
+-/
+
+open topological_space 
+
 structure scheme :=
 (α : Type u)
 (T : topological_space α)
 (O_X : presheaf_of_rings α)
 (O_X_sheaf : is_sheaf_of_rings O_X)
-(locally_affine : ∃ β : Type v, ∃ cov : β → {U : set α // T.is_open U}, 
+(locally_affine : ∃ β : Type u, ∃ cov : β → {U : set α // T.is_open U}, 
   set.Union (λ b, (cov b).val) = set.univ ∧
   ∀ b : β, ∃ R : Type*, ∃ RR : comm_ring R, ∃ fR : (X R) → α, 
     fR '' set.univ = (cov b).val ∧ -- thanks Johan Commelin!!
@@ -332,14 +343,7 @@ structure scheme :=
       (structure_presheaf_of_rings_on_affine_scheme R)
 )
 
-/-
-definition presheaf_of_rings_pullback_under_open_immersion
-  {α : Type*} [Tα : topological_space α]
-  (U : set α) (OU : is_open U)
-  (FPT : presheaf_of_types α)
-  (FPR : presheaf_of_rings (FPT))
-  : presheaf_of_rings (presheaf_of_types_pullback_under_open_immersion U OU FPT) := sorry 
--/
+
 
 -- now back to stuff not stolen from Patrick
 /-
