@@ -114,6 +114,11 @@ x
 (zariski.standard_basis_has_FIP R)
 (zariski.univ_is_basic R)
 
+--instance zariski.structure_presheaf_of_types_on_basis_sections_is_ring 
+--comm_ring ((zariski.structure_presheaf_of_types_on_basis_of_standard R).F BU)
+
+#check zariski.structure_presheaf_of_rings_on_basis_of_standard
+
 -- w00t
 
 --#print zariski.structure_presheaf_of_types
@@ -121,20 +126,70 @@ x
 
 noncomputable instance zariski.structure_sheaf_of_types_sections_has_add
 (R : Type u) [comm_ring R] (U : set (X R)) (OU : is_open U) : 
-has_add ((zariski.structure_presheaf_of_types R).F OU) := ⟨λ s t,⟨λ x HUx,s.1 x HUx + t.1 x HUx,begin
+has_add ((zariski.structure_presheaf_of_types R).F OU) := 
+⟨λ s t,⟨λ x HUx,s.1 x HUx + t.1 x HUx,begin
   intros x HUx,
-  cases s.2 x HUx with Us Hs,
-  cases Hs with BUs Hs,
+  cases s.2 x HUx with Us Hs, -- kenny says use rcases
+  cases Hs with BUs Hs, -- rcases s.2 x HUx with \<Us, BUs, HxUs, sigmas\>
   cases Hs with HxUs Hs,
   cases Hs with sigmas Hs,
   cases t.2 x HUx with Ut Ht,
   cases Ht with BUt Ht,
   cases Ht with HxUt Ht,
   cases Ht with sigmat Ht,
-  existsi (Us ∩ Ut),
-  -- optimistic!
+  let Ust := Us ∩ Ut,
+  existsi Ust,
+  let BUst := zariski.standard_basis_has_FIP R _ _ BUs BUt,
+  existsi BUst,
+  existsi (⟨HxUs,HxUt⟩ : x ∈ Us ∩ Ut),
+  let sigma := 
+  ((zariski.structure_presheaf_of_types_on_basis_of_standard R).res 
+      BUs BUst (set.inter_subset_left Us Ut) sigmas) +
+  ((zariski.structure_presheaf_of_types_on_basis_of_standard R).res 
+      BUt BUst (set.inter_subset_right Us Ut) sigmat),
+  existsi sigma,
+  intros y Hy,
+  funext HyU,
+  have Hsy := Hs y ⟨HyU,Hy.2.1⟩,
+  have Hty := Ht y ⟨HyU,Hy.2.2⟩,
+  rw [Hsy,Hty],
+  apply quotient.sound,
+  existsi Ust,
+  existsi Hy.2,
+  existsi BUst,
+  existsi (set.subset.refl _: Ust ⊆ Us ∩ Ut),
+  existsi (set.subset.refl _: Ust ⊆ Ust),
+  dsimp,
+  rw (presheaf_of_rings_on_basis.res_is_ring_morphism
+    (zariski.structure_presheaf_of_rings_on_basis_of_standard R)
+    _ _ _).map_add,
+  rw ←(presheaf_of_rings_on_basis.to_presheaf_of_types_on_basis 
+          (zariski.structure_presheaf_of_rings_on_basis_of_standard R)).Hcomp',
+    rw ←(presheaf_of_rings_on_basis.to_presheaf_of_types_on_basis 
+          (zariski.structure_presheaf_of_rings_on_basis_of_standard R)).Hcomp',
+    rw (presheaf_of_rings_on_basis.res_is_ring_morphism
+    (zariski.structure_presheaf_of_rings_on_basis_of_standard R)
+    _ _ _).map_add,
+--    rw ←(zariski.structure_presheaf_of_types_on_basis_of_standard R).Hcomp',
+    --      rw ←(presheaf_of_rings_on_basis.to_presheaf_of_types_on_basis 
+      --    (zariski.structure_presheaf_of_rings_on_basis_of_standard R)).Hcomp',
+  generalize : ((zariski.structure_presheaf_of_rings_on_basis_of_standard R).to_presheaf_of_types_on_basis).res = ZZZ,
+rw ←(presheaf_of_rings_on_basis.to_presheaf_of_types_on_basis 
+          (zariski.structure_presheaf_of_rings_on_basis_of_standard R)).Hcomp',
+          --gaargh
 end
 ⟩⟩
+#check zariski.structure_presheaf_of_rings_on_basis_of_standard
+#check zariski.structure_presheaf_of_types
+#check presheaf_of_types
+
+#print notation ↔
+#print iff 
+#check mt 
+
+
+#check quotient.lift 
+#print zariski.structure_presheaf_of_types_on_basis_of_standard
 
 instance zariski.structure_sheaf_of_types_sections_has_zero
 (R : Type u) [comm_ring R] (U : set (X R)) (OU : is_open U) : 
