@@ -48,7 +48,7 @@ lemma topological_space.Union_basis_elements_of_open {α : Type u} [topological_
 begin
   let β := {x : α // x ∈ U},
   existsi β,
-  have f0 := λ i : β, (mem_basis_subset_of_mem_open HB U i.property HU),
+  have f0 := λ i : β, (mem_basis_subset_of_mem_open HB i.property HU),
   let f := λ i, classical.some (f0 i),
   have f1 : ∀ (i : β), ∃ (H : (f i) ∈ B), (i.val ∈ (f i) ∧ (f i) ⊆ U) := λ i, classical.some_spec (f0 i),
   let g := λ i, classical.some (f1 i),

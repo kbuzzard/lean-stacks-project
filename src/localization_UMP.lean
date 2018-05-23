@@ -181,21 +181,26 @@ begin
 end
 
 -- localization to a bigger multiplicative set
-noncomputable definition localize_superset {R : Type u} [comm_ring R] {S T : set R} [is_submonoid S] [is_submonoid T] (H : S ⊆ T) :
-loc R S → loc R T := extend_map_of_im_unit (of_comm_ring R T) (λ s Hs, unit_of_in_S (H Hs))
+definition localize_superset {R : Type u} [comm_ring R] {S T : set R} [is_submonoid S] [is_submonoid T] (H : S ⊆ T) :
+loc R S → loc R T := quotient.lift (λ (x : R × S), ⟦(x.1, (⟨x.2.1, H x.2.2⟩ : T))⟧) $
+λ ⟨r₁, s₁, hs₁⟩ ⟨r₂, s₂, hs₂⟩ ⟨t, hts, ht⟩, quotient.sound $ ⟨t, H hts, ht⟩
 
 -- localization to a bigger multiplicative set is a ring hom
 instance localize_superset.is_ring_hom {R : Type u} [comm_ring R] {S T : set R} [is_submonoid S] [is_submonoid T] (H : S ⊆ T) :
-  is_ring_hom (localize_superset H) := extend_map_of_im_unit.is_ring_hom _ _ 
+  is_ring_hom (localize_superset H) :=
+{ map_add := λ x y, quotient.induction_on₂ x y $ λ ⟨r₁, s₁, hs₁⟩ ⟨r₂, s₂, hs₂⟩, rfl,
+  map_mul := λ x y, quotient.induction_on₂ x y $ λ ⟨r₁, s₁, hs₁⟩ ⟨r₂, s₂, hs₂⟩, rfl,
+  map_one := rfl }
 
 -- localization to a bigger multiplicative set is an R-algebra hom
-theorem localize_superset.is_algebra_hom {R : Type u} [comm_ring R] {S T : set R} [is_submonoid S] [is_submonoid T] (H : S ⊆ T) :
-∀ (r : R), localize_superset H (of_comm_ring _ _ r) = of_comm_ring _ _ r := extend_map_extends _ _
+theorem localize_superset.is_algebra_hom {R : Type u} [comm_ring R] {S T : set R} [is_submonoid S] [is_submonoid T] (H : S ⊆ T) (r : R) :
+localize_superset H (of_comm_ring _ _ r) = of_comm_ring _ _ r := rfl
 
 -- localization to a bigger multiplicative set is the unique R-algebra map from R[1/S] to R[1/T]
 theorem localize_superset.unique_algebra_hom {R : Type u} [comm_ring R] {S T : set R} [is_submonoid S] [is_submonoid T] (H : S ⊆ T)
 (g : loc R S → loc R T) [is_ring_hom g] (R_alg_hom : ∀ (r : R), g (of_comm_ring _ _ r) = of_comm_ring _ _ r) : 
-g = localize_superset H := extend_map_unique _ _ _ R_alg_hom
+g = localize_superset H := (extend_map_unique _ (λ s Hs, unit_of_in_S (H Hs)) _ R_alg_hom).trans $ eq.symm $
+extend_map_unique _ (λ s Hs, unit_of_in_S (H Hs)) _ $ λ _, rfl
 
 
 -- Here is the way KMB wants to package all these things together.

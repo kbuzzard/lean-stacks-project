@@ -135,7 +135,7 @@ end
 
 --#check @presheaf_on_basis_stalk --(structure_presheaf_of_types_on_basis_of_standard R) x
 
-noncomputable instance zariski.structure_presheaf_of_rings_on_basis_stalk_is_ring (R : Type u) [comm_ring R] (x : X R) : 
+instance zariski.structure_presheaf_of_rings_on_basis_stalk_is_ring (R : Type u) [comm_ring R] (x : X R) : 
 comm_ring (presheaf_on_basis_stalk (zariski.structure_presheaf_of_rings_on_basis_of_standard R).to_presheaf_of_types_on_basis x)
 := 
 presheaf_of_rings_on_basis_stalk.stalks_of_presheaf_of_rings_on_basis_are_rings
@@ -144,7 +144,7 @@ x
 (zariski.standard_basis_has_FIP R)
 (zariski.univ_is_basic R)
 
-noncomputable instance zariski.structure_presheaf_of_types_on_basis_stalk_is_ring (R : Type u) [comm_ring R] (x : X R) : 
+instance zariski.structure_presheaf_of_types_on_basis_stalk_is_ring (R : Type u) [comm_ring R] (x : X R) : 
 comm_ring (presheaf_on_basis_stalk (zariski.structure_presheaf_of_types_on_basis_of_standard R) x)
 := 
 presheaf_of_rings_on_basis_stalk.stalks_of_presheaf_of_rings_on_basis_are_rings
@@ -161,7 +161,7 @@ x
 --#print zariski.structure_presheaf_of_types
 --#print extend_off_basis
 
-noncomputable instance zariski.structure_sheaf_of_types_sections_has_add
+instance zariski.structure_sheaf_of_types_sections_has_add
 (R : Type u) [comm_ring R] (U : set (X R)) (OU : is_open U) : 
 has_add ((zariski.structure_presheaf_of_types R).F OU) := 
 ⟨λ s t,⟨λ x HUx,s.1 x HUx + t.1 x HUx,begin
@@ -217,7 +217,7 @@ has_add ((zariski.structure_presheaf_of_types R).F OU) :=
 end
 ⟩⟩
 
-noncomputable instance zariski.structure_sheaf_of_types_sections_has_zero
+instance zariski.structure_sheaf_of_types_sections_has_zero
 (R : Type u) [comm_ring R] (U : set (X R)) (OU : is_open U) : 
 has_zero ((zariski.structure_presheaf_of_types R).F OU) := ⟨⟨λ x Hx,0,
 begin
@@ -234,7 +234,7 @@ begin
 end⟩⟩
 
 
-noncomputable instance zariski.structure_sheaf_of_types_sections_has_neg
+instance zariski.structure_sheaf_of_types_sections_has_neg
 (R : Type u) [comm_ring R] (U : set (X R)) (OU : is_open U) : 
 has_neg ((zariski.structure_presheaf_of_types R).F OU) := 
 ⟨λ s,⟨λ x HUx,-(s.1 x HUx),begin
@@ -249,7 +249,7 @@ has_neg ((zariski.structure_presheaf_of_types R).F OU) :=
 end
 ⟩⟩
 
-noncomputable instance zariski.structure_sheaf_of_types_sections_has_mul
+instance zariski.structure_sheaf_of_types_sections_has_mul
 (R : Type u) [comm_ring R] (U : set (X R)) (OU : is_open U) : 
 has_mul ((zariski.structure_presheaf_of_types R).F OU) := 
 ⟨λ s t,⟨λ x HUx,s.1 x HUx * t.1 x HUx,begin
@@ -299,7 +299,7 @@ has_mul ((zariski.structure_presheaf_of_types R).F OU) :=
 end
 ⟩⟩
 
-noncomputable instance zariski.structure_sheaf_of_types_sections_has_one
+instance zariski.structure_sheaf_of_types_sections_has_one
 (R : Type u) [comm_ring R] (U : set (X R)) (OU : is_open U) : 
 has_one ((zariski.structure_presheaf_of_types R).F OU) := ⟨⟨λ x Hx,1,
 begin
@@ -315,7 +315,7 @@ begin
   refl,
 end⟩⟩
 
-noncomputable instance zariski.structure_sheaf_of_types_sections_are_rings (R : Type u) [comm_ring R]
+instance zariski.structure_sheaf_of_types_sections_are_rings (R : Type u) [comm_ring R]
 (U : set (X R)) (OU : is_open U) : 
 comm_ring ((zariski.structure_presheaf_of_types R).F OU) := begin refine {
 add := has_add.add,
@@ -337,7 +337,7 @@ mul_comm := λ _ _,subtype.eq $ by funext;exact mul_comm _ _,
 },
 end
 
-noncomputable definition zariski.structure_presheaf_of_rings (R : Type u) [comm_ring R] : 
+definition zariski.structure_presheaf_of_rings (R : Type u) [comm_ring R] : 
 presheaf_of_rings (X R) := begin refine {
 res_is_ring_morphism := _,
 ..zariski.structure_presheaf_of_types R},
@@ -382,7 +382,7 @@ structure scheme :=
 )
 
 --set_option pp.proofs true 
-noncomputable definition scheme_of_affine_scheme (R : Type u) [comm_ring R] : scheme :=
+definition scheme_of_affine_scheme (R : Type u) [comm_ring R] : scheme :=
 { α := X R,
   T := by apply_instance,
   O_X := zariski.structure_presheaf_of_rings R,
