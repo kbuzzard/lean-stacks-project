@@ -34,7 +34,7 @@ open localization -- should have done this ages ago
 -- just under Definition 25.5.2
 
 -- Definition of presheaf-of-sets on basis
-noncomputable definition zariski.structure_presheaf_of_types_on_basis_of_standard (R : Type u) [comm_ring R]
+definition zariski.structure_presheaf_of_types_on_basis_of_standard (R : Type u) [comm_ring R]
 : presheaf_of_types_on_basis (D_f_form_basis R) := 
 { F := zariski.structure_presheaf_on_standard,
   res := λ _ _ _ _ H,localization.localize_superset (nonzero_on_U_mono H),
@@ -45,12 +45,17 @@ noncomputable definition zariski.structure_presheaf_of_types_on_basis_of_standar
 }
 
 -- now let's make it a presheaf of rings on the basis
-noncomputable definition zariski.structure_presheaf_of_rings_on_basis_of_standard (R : Type u) [comm_ring R]
+definition zariski.structure_presheaf_of_rings_on_basis_of_standard (R : Type u) [comm_ring R]
 : presheaf_of_rings_on_basis (D_f_form_basis R) :=
 { Fring := zariski.structure_presheaf_on_standard.comm_ring,
   res_is_ring_morphism := λ _ _ _ _ _,localization.localize_superset.is_ring_hom _,
   ..zariski.structure_presheaf_of_types_on_basis_of_standard R,
 }
+
+instance zariski.structure_presheaf_of_types_on_basis_of_standard_sections_is_ring 
+  (R : Type u) [comm_ring R] (U : set (X R)) (BU : U ∈ standard_basis R) :
+comm_ring ((zariski.structure_presheaf_of_types_on_basis_of_standard R).F BU) := 
+zariski.structure_presheaf_on_standard.comm_ring U BU 
 
 -- computation of stalk: I already did this for R I think.
 
@@ -730,9 +735,7 @@ begin
     rw [←(zariski.structure_presheaf_of_types_on_basis_of_standard R).Hcomp],
 end
 
-set_option pp.universes true 
-
-noncomputable definition zariski.structure_presheaf_of_types (R : Type u) [comm_ring R] :
+definition zariski.structure_presheaf_of_types (R : Type u) [comm_ring R] :
 presheaf_of_types (X R) := 
   extend_off_basis (zariski.structure_presheaf_of_types_on_basis_of_standard R)
   (zariski.sheaf_of_types_on_basis R)
@@ -745,5 +748,3 @@ is_sheaf_of_types (zariski.structure_presheaf_of_types R)
   (zariski.sheaf_of_types_on_basis R)
 
 -- still need that it's a sheaf of rings
-
-

@@ -8,19 +8,16 @@ Proof. This is a special case of Lemma 10.16.5 (=tag 00E3)
 
 import analysis.topology.topological_space analysis.topology.continuity tag00E2 localization
 import Kenny_comm_alg.Zariski
+import mathlib_someday.topology 
+
 universes u
 
 /-- tag 00E4 -/
 -- note: this should be in mathlib as a structure
 
-def topological_space.open_immersion {X Y : Type u} [tX : topological_space X] [tY : topological_space Y] (φ : X → Y) := 
-  continuous φ ∧ 
-  function.injective φ ∧ 
-  ∀ U : set X, tX.is_open U → tY.is_open (set.image φ U)
-
 lemma lemma_standard_open (R : Type u) [comm_ring R] (f : R) : 
   let φ := Zariski.induced $ localization.of_comm_ring R (powers f) in
-  topological_space.open_immersion φ ∧ φ '' set.univ = Spec.D'(f) :=
+  topological_space.open_immersion' φ ∧ φ '' set.univ = Spec.D'(f) :=
 ⟨⟨Zariski.induced.continuous _,
   λ x y hxy, subtype.eq $ set.ext $ λ z,
     quotient.induction_on z $ λ ⟨r, s, hs⟩,

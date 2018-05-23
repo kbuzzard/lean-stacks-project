@@ -14,19 +14,28 @@ end tactic
 
 open topological_space
 
-structure topological_space.open_immersion'
-  {α : Type*} [Tα : topological_space α]
-  {β : Type*} [Tβ : topological_space β]
+structure topological_space.open_immersion
+  {α : Type u} [Tα : topological_space α]
+  {β : Type u} [Tβ : topological_space β]
   (f : α → β) : Prop :=
 (fcont : continuous f)
 (finj : function.injective f)
 (fopens : ∀ U : set α, is_open U ↔ is_open (f '' U))
 
-lemma topological_space.immersion_sends_opens_to_opens 
+theorem topological_space.open_immersion_id
+  (α : Type u) [Tα : topological_space α] : topological_space.open_immersion (@id α) := 
+⟨continuous_id,function.injective_id,λ _,by rw set.image_id⟩
+
+lemma topological_space.open_of_open_immersion_open 
   {α : Type*} [Tα : topological_space α]
   {β : Type*} [Tβ : topological_space β]
-  (f : α → β) (H : topological_space.open_immersion' f) : 
+  (f : α → β) (H : topological_space.open_immersion f) : 
 ∀ U : set α, is_open U → is_open (f '' U) := λ U OU, (H.fopens U).1 OU
+
+def topological_space.open_immersion' {X Y : Type u} [tX : topological_space X] [tY : topological_space Y] (φ : X → Y) :=
+  continuous φ ∧
+  function.injective φ ∧
+  ∀ U : set X, tX.is_open U → tY.is_open (set.image φ U)
 
 --#check compact
 -- note compact_elim_finite_subcover and compact_of_finite_subcover
@@ -39,7 +48,7 @@ lemma topological_space.Union_basis_elements_of_open {α : Type u} [topological_
 begin
   let β := {x : α // x ∈ U},
   existsi β,
-  have f0 := λ i : β, (mem_basis_subset_of_mem_open HB U i.property HU),
+  have f0 := λ i : β, (mem_basis_subset_of_mem_open HB i.property HU),
   let f := λ i, classical.some (f0 i),
   have f1 : ∀ (i : β), ∃ (H : (f i) ∈ B), (i.val ∈ (f i) ∧ (f i) ⊆ U) := λ i, classical.some_spec (f0 i),
   let g := λ i, classical.some (f1 i),

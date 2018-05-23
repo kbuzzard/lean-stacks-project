@@ -8,6 +8,23 @@ structure presheaf_of_rings_on_basis {X : Type u} [TX : topological_space X]
   is_ring_hom (res BU BV H))
 
 attribute [instance] presheaf_of_rings_on_basis.Fring
+attribute [instance] presheaf_of_rings_on_basis.res_is_ring_morphism
+
+/-
+instance F_is_comm_ring {X : Type u} [TX : topological_space X] 
+  {B : set (set X)} (HB : topological_space.is_topological_basis B)
+(FPRB : presheaf_of_rings_on_basis HB)
+  (U : set X) (BU : U ∈ B) :
+ comm_ring ((FPRB.to_presheaf_of_types_on_basis).F BU) := by apply_instance
+-/
+
+/-
+instance res_is_ring_morphism_instance {X : Type u} [TX : topological_space X] 
+  {B : set (set X)} (HB : topological_space.is_topological_basis B)
+(FPRB : presheaf_of_rings_on_basis HB)
+  (U V : set X) (BU : U ∈ B) (BV : V ∈ B) (HUV : V ⊆ U) :
+ is_ring_hom ((FPRB.to_presheaf_of_types_on_basis).res BU BV HUV) := by apply_instance
+-/
 
 structure morphism_of_presheaves_of_rings_on_basis {X : Type u} [TX : topological_space X]
 {B : set (set X)} {HB : topological_space.is_topological_basis B}
