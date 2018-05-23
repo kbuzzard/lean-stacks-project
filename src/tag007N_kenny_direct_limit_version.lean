@@ -2,7 +2,7 @@
 -- and to try and glue everything together.
 -- This is not really tag007N at all and it imports some much later tags.
 -- It's the proof that the stalks of the structure sheaf on the basis are sheaves of rings.
-
+#exit
 import Kenny_comm_alg.direct_limit
 import analysis.topology.topological_space
 import Kenny_comm_alg.Zariski
