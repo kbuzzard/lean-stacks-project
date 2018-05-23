@@ -8,6 +8,7 @@ definition sheaf_on_basis.canonical_map {X : Type*} [T : topological_space X] {B
   (HF : is_sheaf_of_types_on_basis FB) {U : set X} (BU : U ∈ B) : 
   FB.F BU → Π x : X, x ∈ U → presheaf_on_basis_stalk FB x := λ s x Hx,⟦{U := U, BU := BU, Hx := Hx, s := s}⟧
 
+#exit
 theorem lemma_condition_star_sections {X : Type*} [T : topological_space X] {B : set (set X)} 
   {HB : topological_space.is_topological_basis B} (FB : presheaf_of_types_on_basis HB)
   (HF : is_sheaf_of_types_on_basis FB) {U : set X} (BU : U ∈ B) 
