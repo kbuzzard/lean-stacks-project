@@ -75,6 +75,7 @@ definition presheaf_of_rings_pullback_under_open_immersion
     (set.image_subset f H2),
   .. presheaf_of_types_pullback_under_open_immersion PR.to_presheaf_of_types f H }
 
+/- may not be true
 theorem pullback_id {α : Type u} [Tα : topological_space α] (PR : presheaf_of_rings α) :
 presheaf_of_rings_pullback_under_open_immersion PR id (topological_space.open_immersion_id α) = PR := 
 begin
@@ -111,7 +112,7 @@ begin
   sorry,
 end 
 #check presheaf_of_types_pullback_under_open_immersion
-
+-/
 
 -- This should probably be elsewhere.
 -- givesn a presheaf of rings on a basis I should prove the stalks are rings.
@@ -380,7 +381,7 @@ structure scheme :=
       (zariski.structure_presheaf_of_rings R)
 )
 
-set_option pp.proofs true 
+--set_option pp.proofs true 
 noncomputable definition scheme_of_affine_scheme (R : Type u) [comm_ring R] : scheme :=
 { α := X R,
   T := by apply_instance,
@@ -416,29 +417,69 @@ noncomputable definition scheme_of_affine_scheme (R : Type u) [comm_ring R] : sc
     -- (zariski.structure_presheaf_of_rings R)
     
     -- WAIT A MINUTE ISN'T THIS OBVIOUS
-    constructor,
+    constructor,tactic.swap,
+    { constructor,tactic.swap,
+      { constructor,tactic.swap,
+          { intros U HU, -- should I use res again??
+            refine (zariski.structure_presheaf_of_rings R).res _ _ _ _ _,
+              rwa set.image_id,
+              rwa set.image_id,
+          },
+          intros U V HU HV Hsub,
+          refl,
+        },
+        intros,constructor,
+        {intros x y,refl,
+        },
+        { intros x y,refl,
+        },
+        { refl
+        },
+      },
     { existsi _,tactic.swap,
       { constructor,tactic.swap,
         { constructor,tactic.swap,
-          { intros U HU s,
-            unfold presheaf_of_rings_pullback_under_open_immersion,
-            dsimp,
-            unfold presheaf_of_types_pullback_under_open_immersion,
-            dsimp,
-            exact s,
+          { intros U HU, -- should I use res again??
+            refine (zariski.structure_presheaf_of_rings R).res _ _ _ _ _,
+              rwa set.image_id,
+              rwa set.image_id,
           },
-          sorry 
-
+          intros U V HU HV Hsub,
+          refl,
         },
-        sorry,
-
+        intros,constructor,
+        {intros x y,refl,
+        },
+        { intros x y,refl,
+        },
+        { refl
+        }
       },
-      sorry 
-
+    constructor,
+    {
+      unfold is_identity_morphism_of_presheaves_of_types,
+      intros,
+      funext,
+      unfold composition_of_morphisms_of_presheaves_of_types,
+      dsimp,
+      show (zariski.structure_presheaf_of_types R).res U (id '' U) OU _ _
+      ((zariski.structure_presheaf_of_types R).res (id '' U) U _ OU _ x) =
+    x,
+      rw ←presheaf_of_types.Hcomp',
+      simp,
     },
-    sorry 
+    { unfold is_identity_morphism_of_presheaves_of_types,
+      intros,
+      funext,
+      unfold composition_of_morphisms_of_presheaves_of_types,
+      dsimp,
+      show (zariski.structure_presheaf_of_types R).res (id '' U) U _ OU _
+      ((zariski.structure_presheaf_of_types R).res U (id '' U) OU _ _ x) =
+    x,
+      rw ←presheaf_of_types.Hcomp',
+      simp,
+       
+    },
+  }
   end 
 }
-
-#check are_isomorphic_presheaves_of_rings
-#check presheaf_of_rings_pullback_under_open_immersion
