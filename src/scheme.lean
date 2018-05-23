@@ -317,25 +317,24 @@ end⟩⟩
 
 instance zariski.structure_sheaf_of_types_sections_are_rings (R : Type u) [comm_ring R]
 (U : set (X R)) (OU : is_open U) : 
-comm_ring ((zariski.structure_presheaf_of_types R).F OU) := begin refine {
-add := has_add.add,
-add_assoc := λ _ _ _,subtype.eq $ by funext;exact add_assoc _ _ _,
-zero := has_zero.zero _,
-zero_add := λ _, subtype.eq $ by funext;exact zero_add _,
-add_zero := λ _, subtype.eq $ by funext;exact add_zero _,
-neg := has_neg.neg,
-add_left_neg := λ _, subtype.eq $ by funext;exact add_left_neg _,
-add_comm := λ _ _, subtype.eq $ by funext;exact add_comm _ _,
-mul := has_mul.mul,
-mul_assoc := λ _ _ _,subtype.eq $ by funext;exact mul_assoc _ _ _,
-one := has_one.one _,
-one_mul := λ _, subtype.eq $ by funext;exact one_mul _,
-mul_one := λ _, subtype.eq $ by funext;exact mul_one _,
-left_distrib := λ _ _ _,subtype.eq $ by funext;exact left_distrib _ _ _,
-right_distrib := λ _ _ _,subtype.eq $ by funext;exact right_distrib _ _ _,
-mul_comm := λ _ _,subtype.eq $ by funext;exact mul_comm _ _,
-},
-end
+comm_ring ((zariski.structure_presheaf_of_types R).F OU) :=
+by refine
+{ add := has_add.add,
+  add_assoc := λ _ _ _, subtype.eq $ by funext;exact add_assoc _ _ _,
+  zero := has_zero.zero _,
+  zero_add := λ _, subtype.eq $ by funext;exact zero_add _,
+  add_zero := λ _, subtype.eq $ by funext;exact add_zero _,
+  neg := has_neg.neg,
+  add_left_neg := λ _, subtype.eq $ by funext;exact add_left_neg _,
+  add_comm := λ _ _, subtype.eq $ by funext;exact add_comm _ _,
+  mul := has_mul.mul,
+  mul_assoc := λ _ _ _,subtype.eq $ by funext;exact mul_assoc _ _ _,
+  one := has_one.one _,
+  one_mul := λ _, subtype.eq $ by funext;exact one_mul _,
+  mul_one := λ _, subtype.eq $ by funext;exact mul_one _,
+  left_distrib := λ _ _ _,subtype.eq $ by funext;exact left_distrib _ _ _,
+  right_distrib := λ _ _ _,subtype.eq $ by funext;exact right_distrib _ _ _,
+  mul_comm := λ _ _,subtype.eq $ by funext;exact mul_comm _ _ }
 
 definition zariski.structure_presheaf_of_rings (R : Type u) [comm_ring R] : 
 presheaf_of_rings (X R) := begin refine {
@@ -364,18 +363,18 @@ definition presheaf_of_rings_pullback_under_open_immersion
   : presheaf_of_rings (presheaf_of_types_pullback_under_open_immersion U OU FPT) := sorry 
 -/
 
-open topological_space 
-
 structure scheme :=
 (α : Type u)
 (T : topological_space α)
 (O_X : presheaf_of_rings α)
 (O_X_sheaf : is_sheaf_of_rings O_X)
-(locally_affine : ∃ β : Type u, ∃ cov : β → {U : set α // T.is_open U}, 
-  set.Union (λ b, (cov b).val) = set.univ ∧
+(locally_affine : ∃ β : Type u,
+  ∃ cov : β → set α,
+  ∃ cov_open : ∀ b, T.is_open $ cov b, 
+  (∀ x, ∃ b, x ∈ cov b) ∧
   ∀ b : β, ∃ R : Type u, ∃ RR : comm_ring R, ∃ fR : (X R) → α, 
-    fR '' set.univ = (cov b).val ∧ -- thanks Johan Commelin!!
-    open_immersion fR ∧ Π H : open_immersion fR, 
+    set.range fR = cov b ∧ -- thanks Johan Commelin!!
+    ∃ H : topological_space.open_immersion fR, 
     are_isomorphic_presheaves_of_rings 
       (presheaf_of_rings_pullback_under_open_immersion O_X fR H)
       (zariski.structure_presheaf_of_rings R)
@@ -389,29 +388,20 @@ definition scheme_of_affine_scheme (R : Type u) [comm_ring R] : scheme :=
   O_X_sheaf := zariski.structure_presheaf_is_sheaf_of_rings R,
   locally_affine := begin
     existsi (punit : Type u),
-    existsi (λ _,(⟨set.univ,is_open_univ⟩ : {U // is_open zariski.open U})),
+    existsi (λ _, set.univ),
+    existsi (λ _, is_open_univ),
     split,
-    { rw ←set.univ_subset_iff,
-      intros x _,
-      suffices : ∃ (i : punit), true,
-        simpa using this,
-      existsi (punit.star : punit),
-      trivial
-    },
+    { intro x,
+      existsi punit.star,
+      trivial },
     intro _,
     existsi R,
     existsi _,tactic.swap,apply_instance,
     existsi id,
     split,
-    { suffices : set.range (λ (a : X R), a) = set.univ,
-        simpa using this,
-      rw ←set.univ_subset_iff,
-      intros x _,
-      existsi x,
-      refl
-    },
-    split,exact topological_space.open_immersion_id _,
-    intro _,
+    { apply set.eq_univ_of_forall,
+      intro x, existsi x, refl },
+    existsi topological_space.open_immersion_id _,
     -- are_isomorphic_presheaves_of_rings
     -- (presheaf_of_rings_pullback_under_open_immersion (zariski.structure_presheaf_of_rings R) id H)
     -- (zariski.structure_presheaf_of_rings R)
