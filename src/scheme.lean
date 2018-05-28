@@ -410,7 +410,7 @@ definition scheme_of_affine_scheme (R : Type u) [comm_ring R] : scheme :=
     constructor,tactic.swap,
     { constructor,tactic.swap,
       { constructor,tactic.swap,
-          { intros U HU, -- should I use res again??
+          { intros U HU, -- good idea -- use res not id.
             refine (zariski.structure_presheaf_of_rings R).res _ _ _ _ _,
               rwa set.image_id,
               rwa set.image_id,
@@ -473,3 +473,112 @@ definition scheme_of_affine_scheme (R : Type u) [comm_ring R] : scheme :=
   }
   end 
 }
+
+-- OFFICIAL SCHEMES FINISHES HERE
+
+set_option pp.proofs true 
+
+theorem presheaves_iso (R : Type) [comm_ring R] : 
+are_isomorphic_presheaves_of_rings
+    (presheaf_of_rings_pullback_under_open_immersion (zariski.structure_presheaf_of_rings R) id 
+      (topological_space.open_immersion_id _))
+    (zariski.structure_presheaf_of_rings R)
+:= 
+begin 
+  constructor,tactic.swap,
+  { constructor,tactic.swap,
+    { constructor,tactic.swap,
+        { intros U HU, 
+          intro x,
+          unfold presheaf_of_rings_pullback_under_open_immersion at x,
+          dsimp at x,
+          let y := (presheaf_of_types_pullback_under_open_immersion ((zariski.structure_presheaf_of_rings R).to_presheaf_of_types) id
+     (topological_space.open_immersion_id (X R))).F HU,
+          sorry,
+        },
+    sorry,
+    },
+    sorry,
+  },
+  sorry 
+  end
+
+#print prefix presheaf_of_types_pullback_under_open_immersion 
+
+#print presheaf_of_types_pullback_under_open_immersion
+#exit
+
+          -- should I use res or id?
+          change ((presheaf_of_rings_pullback_under_open_immersion (zariski.structure_presheaf_of_rings R) id
+    _).to_presheaf_of_types).F HU at x,
+        }
+    }
+  }
+  
+
+
+/- RES ATTEMPT IS HERE
+            refine (zariski.structure_presheaf_of_rings R).res _ _ _ _ _,
+              rwa set.image_id,
+              rwa set.image_id,
+          },
+          intros U V HU HV Hsub,
+          refl,
+        },
+        intros,constructor,
+        {intros x y,refl,
+        },
+        { intros x y,refl,
+        },
+        { refl
+        },
+      },
+    { existsi _,tactic.swap,
+      { constructor,tactic.swap,
+        { constructor,tactic.swap,
+          { intros U HU, -- should I use res again??
+            refine (zariski.structure_presheaf_of_rings R).res _ _ _ _ _,
+              rwa set.image_id,
+              rwa set.image_id,
+          },
+          intros U V HU HV Hsub,
+          refl,
+        },
+        intros,constructor,
+        {intros x y,refl,
+        },
+        { intros x y,refl,
+        },
+        { refl
+        }
+      },
+    constructor,
+    {
+      unfold is_identity_morphism_of_presheaves_of_types,
+      intros,
+      funext,
+      unfold composition_of_morphisms_of_presheaves_of_types,
+      dsimp,
+      show (zariski.structure_presheaf_of_types R).res U (id '' U) OU _ _
+      ((zariski.structure_presheaf_of_types R).res (id '' U) U _ OU _ x) =
+    x,
+      rw ←presheaf_of_types.Hcomp',
+      simp,
+    },
+    { unfold is_identity_morphism_of_presheaves_of_types,
+      intros,
+      funext,
+      unfold composition_of_morphisms_of_presheaves_of_types,
+      dsimp,
+      show (zariski.structure_presheaf_of_types R).res (id '' U) U _ OU _
+      ((zariski.structure_presheaf_of_types R).res U (id '' U) OU _ _ x) =
+    x,
+      rw ←presheaf_of_types.Hcomp',
+      simp,
+       
+    },
+  }
+  end 
+
+
+-/
