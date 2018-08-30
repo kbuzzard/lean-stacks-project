@@ -21,7 +21,7 @@ import tag00E8 -- standard basis on Spec(R) is quasi-compact
 import tag009P -- presheaf of rings on a basis
 import tag009L -- sheaf for finite covers on basis -> sheaf for basis
 import tag009N -- sheaf for basis -> sheaf 
-import data.equiv 
+import data.equiv.basic
 import canonical_isomorphism_nonsense
 
 universe u
@@ -180,10 +180,10 @@ intros a b,
 funext,
 show _ = (tag00EJ.β a j k) + (tag00EJ.β b j k),
 unfold tag00EJ.β,
-have H1 : localize_more_left (f j) (f k) ((a * b) j) = localize_more_left (f j) (f k) (a j)
-+ localize_more_left (f j) (f k) (b j) := is_add_group_hom.add _ (a j) (b j),
+have H1 : localize_more_left (f j) (f k) ((a + b) j) = localize_more_left (f j) (f k) (a j)
++ localize_more_left (f j) (f k) (b j) := is_add_group_hom.add (localize_more_left (f j) (f k)) (a j) (b j),
 rw H1,
-have H2 : localize_more_right (f j) (f k) ((a * b) k) = localize_more_right (f j) (f k) (a k)
+have H2 : localize_more_right (f j) (f k) ((a + b) k) = localize_more_right (f j) (f k) (a k)
 + localize_more_right (f j) (f k) (b k) := is_add_group_hom.add _ (a k) (b k),
 rw H2,
 simp,
@@ -240,7 +240,7 @@ begin
   let F : set Rr := set.range f,
   have H2 : ⋃₀ (Spec.D' '' (set.range f)) = set.univ,
     rw [←Hcoverr,←set.image_univ,←set.image_comp],
-    simp [set.Union_eq_sUnion_image],
+    simp [set.Union_eq_sUnion_range],
   rw [tag00E0.lemma16] at H2,
   have H3 : Spec.V (set.range f) = ∅,
     rw [←set.compl_univ,←H2,set.compl_compl],

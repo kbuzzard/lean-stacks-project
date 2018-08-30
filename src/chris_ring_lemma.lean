@@ -5,16 +5,6 @@ variable {α : Type*}
 
 local notation f ` ∑ ` : 90 n : 90  := finset.sum (finset.range n) f
 
-lemma sum_range_succ [add_comm_monoid α] (f : ℕ → α) (n : ℕ) : f ∑ succ n = f n + f ∑ n :=
-have h : n ∉ finset.range n := by rw finset.mem_range; exact lt_irrefl _,
-by rw [finset.range_succ, finset.sum_insert h]
-
-lemma sum_range_succ' [add_comm_monoid α] (f : ℕ → α) : 
-    ∀ n : ℕ, f ∑ succ n = (λ m, f (succ m)) ∑ n + f 0
-| 0        := by simp
-| (succ n) := by rw [sum_range_succ (λ m, f (succ m)), add_assoc, ← sum_range_succ'];
-                 exact sum_range_succ _ _
-
 theorem add_pow [comm_semiring α] (x y : α) : ∀ n : ℕ,
     (x + y)^n = (λ m, x^m * y^(n - m) * choose n m) ∑ succ n
 | 0        := by simp

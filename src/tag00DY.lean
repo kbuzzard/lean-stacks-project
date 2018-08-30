@@ -34,7 +34,7 @@ begin
     cases H with U1 H,
     have H2 : U = -Spec.V U1,
     { rw [H, set.compl_compl] },
-    rw set.set_eq_def at H2,
+    rw set.ext_iff at H2,
     have H3 := H2 x,
     rw iff_true_left H1 at H3,
     simp [Spec.V, has_subset.subset, set.subset] at H3,

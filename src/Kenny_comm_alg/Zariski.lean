@@ -141,7 +141,7 @@ begin
   { intro h,
     apply hxy,
     exact subtype.eq h },
-  rw set.set_eq_def at h1,
+  rw set.ext_iff at h1,
   rw not_forall at h1,
   cases h1 with z hz,
   existsi -(V {z}),

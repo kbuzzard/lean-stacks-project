@@ -21,7 +21,7 @@ instance : lattice.complete_lattice {S : set α // is_ideal S} :=
   le_top := λ x z hz, set.mem_univ z,
 
   bot := ⟨{0}, is_ideal.single_zero⟩,
-  bot_le := λ x z hz, by simp at hz; rw hz; simp [@@zero _ x.1 x.2],
+  bot_le := λ x z hz, by simp at hz; rw hz; simp [@@is_ideal.zero _ x.1 x.2],
 
   Sup := λ SS, ⟨span {x | ∃ S:{S // is_ideal S}, S ∈ SS ∧ x ∈ S.val}, is_ideal_span⟩,
   le_Sup := λ SS x hx, subset_span_of_subset $ λ z hz, ⟨x, hx, hz⟩,

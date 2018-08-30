@@ -183,7 +183,7 @@ begin
     exact (basis_cover_proof_proof j.1).2 j.2,
   have H'' : Spec.D' f ⊆ ⋃₀ set.range cover',
     rw ←Hcover',
-    rw ←set.Union_eq_sUnion_image,
+    rw ←set.Union_eq_sUnion_range,
   have H3 := H H' H'',clear H H' H'',
   -- I've morally deone it now.
   -- I just need to interface my way to the results.
@@ -265,7 +265,7 @@ begin
     rw ←gproof,
     have jproof : cover' j = U.val := classical.some_spec (Hf (U.property)),
     rw ←jproof,
-  rw set.sUnion_eq_Union',
+  rw set.sUnion_eq_Union,
   show (⋃ (U : {k // k ∈ fcover}), U.val) = _,
   rw funext H, -- many thanks Chris Hughes for that classy finish :-)
 end 

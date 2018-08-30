@@ -41,7 +41,7 @@ theorem avoid_powers.avoid_powers : ∀ n : ℕ, f^n ∉ avoid_powers :=
 
 def avoid_powers.is_prime_ideal : is_prime_ideal avoid_powers :=
 { ne_univ := λ h,
-    have h1 : (1:α) ∈ (set.univ:set α), from trivial,
+    have h1 : (1:α) ∈ (set.univ:set α), from show true, by trivial,
     have h2 : (1:α) ∈ avoid_powers, by rwa h,
     avoid_powers.avoid_powers 0 h2,
   mem_or_mem_of_mul_mem := λ x y hxy,

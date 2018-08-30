@@ -277,10 +277,10 @@ set.ext $ λ x,
  λ hx S ⟨I, his, hi⟩, hi ▸ λ f hfi, hx ⟨I, his, hfi⟩⟩
 
 lemma lemma11a (f : R) : Spec.D' f ∪ Spec.V' f = set.univ :=
-by finish [set.set_eq_def]
+by finish [set.ext_iff]
 
 lemma lemma11b (f : R) : Spec.D' f ∩ Spec.V' f = ∅ :=
-by finish [set.set_eq_def]
+by finish [set.ext_iff]
 
 lemma lemma12 (f : R) : Spec.D' f = ∅ ↔ ∃ n : ℕ, f^n = 0 :=
 ⟨λ h, classical.by_contradiction $ λ hf,

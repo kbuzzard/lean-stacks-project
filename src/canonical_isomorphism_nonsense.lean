@@ -14,7 +14,7 @@
    The issue is that there are a lot of diagrams which commute, but this needs checking.
 
 -/
-import algebra.group data.set data.equiv -- for comm diag stuff
+import algebra.group data.set data.equiv.basic -- for comm diag stuff
 import tag00DY -- definition of standard basis on Spec(R) plus proof it's a basis
 import tag00E0
 import tag00EJ -- finite cover by basic opens sheaf axiom
@@ -30,7 +30,6 @@ import tag01HS -- for "lemma_standard_open" giving map R[1/f] -> R[1/g] from D(g
 --import tag006N -- presheaves / sheaves of rings on a basis
 --import tag009P -- presheaf of rings on a basis
 --import tag009L -- sheaf for finite covers on basis -> sheaf for basis
-import data.equiv 
 import tag00EJ 
 import linear_algebra -- for span 
 
@@ -44,29 +43,12 @@ definition Pi_lift_map₁ {γ : Type u} {F : γ → Type u} {G : γ → Type u}
 definition Pi_lift_map₂ {γ : Type u} {X : Type u} {G : γ → Type u} 
   (H : ∀ i : γ, X → G i) : X → Π i, G i := λ x i, H i x
 
-def is_add_group_hom {α : Type u} {β : Type v} [add_group α] [add_group β] (f : α → β) : Prop :=
-@is_group_hom (multiplicative α) (multiplicative β) _ _ f
-
-attribute [class] is_add_group_hom
-
 namespace is_add_group_hom
 
 variables {α : Type*} {β : Type*} [add_group α] [add_group β] (f : α → β) [hf : is_add_group_hom f]
 
-theorem mk (H : ∀ x y, f (x + y) = f x + f y) : is_add_group_hom f :=
-⟨H⟩
-
-theorem add (x y) : f (x + y) = f x + f y :=
-@is_group_hom.mul (multiplicative α) (multiplicative β) _ _ f hf x y
-
 instance ring_hom_is_add_group_hom {α β : Type u} [ring α] [ring β] (f : α → β) [is_ring_hom f] : is_add_group_hom f :=
 ⟨λ _ _, is_ring_hom.map_add f⟩
-
-theorem zero : f 0 = 0 :=
-@is_group_hom.one (multiplicative α) (multiplicative β) _ _ f hf
-
-theorem neg (x) : f (-x) = -f x :=
-@is_group_hom.inv (multiplicative α) (multiplicative β) _ _ f hf x
 
 def ker : set α :=
 { x | f x = 0 }

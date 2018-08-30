@@ -16,12 +16,7 @@ namespace is_ideal
 variables {α : Type u} [comm_ring α]
 variables (S : set α) [is_ideal S] (x y : α)
 
-lemma zero : (0:α) ∈ S := @is_submodule.zero _ _ _ _ S _
-
 variables {S x y}
-
-lemma add : x ∈ S → y ∈ S → x + y ∈ S :=
-λ hx hy, is_submodule.add hx hy
 
 lemma neg : x ∈ S → -x ∈ S :=
 λ hx, is_submodule.neg hx
@@ -29,32 +24,20 @@ lemma neg : x ∈ S → -x ∈ S :=
 lemma of_neg : -x ∈ S → x ∈ S :=
 λ hx, set.mem_of_eq_of_mem (neg_neg x).symm (is_submodule.neg hx)
 
-lemma sub : x ∈ S → y ∈ S → x - y ∈ S :=
-λ hx hy, is_submodule.sub hx hy
-
-lemma mul_left : y ∈ S → x * y ∈ S :=
-λ hy, is_submodule.smul x hy
-
-lemma mul_right : x ∈ S → x * y ∈ S :=
-λ hx, set.mem_of_eq_of_mem (mul_comm x y) (is_submodule.smul y hx)
-
 lemma of_add_left : x + y ∈ S → x ∈ S → y ∈ S :=
-λ hxy hx, set.mem_of_eq_of_mem (add_sub_cancel' x y).symm (sub hxy hx)
+λ hxy hx, set.mem_of_eq_of_mem (add_sub_cancel' x y).symm (is_submodule.sub hxy hx)
 
 lemma of_add_right : x + y ∈ S → y ∈ S → x ∈ S :=
-λ hxy hy, set.mem_of_eq_of_mem (add_sub_cancel x y).symm (sub hxy hy)
+λ hxy hy, set.mem_of_eq_of_mem (add_sub_cancel x y).symm (is_submodule.sub hxy hy)
 
 lemma of_sub_left : x - y ∈ S → x ∈ S → y ∈ S :=
-λ hxy hx, set.mem_of_eq_of_mem (sub_sub_cancel x y).symm (sub hx hxy)
+λ hxy hx, set.mem_of_eq_of_mem (sub_sub_cancel x y).symm (is_submodule.sub hx hxy)
 
 lemma of_sub_right : x - y ∈ S → y ∈ S → x ∈ S :=
-λ hxy hy, set.mem_of_eq_of_mem (sub_add_cancel x y).symm (add hxy hy)
+λ hxy hy, set.mem_of_eq_of_mem (sub_add_cancel x y).symm (is_submodule.add hxy hy)
 
 instance single_zero : is_ideal ({0}:set α) :=
 { ..is_submodule.single_zero }
-
-instance univ : is_ideal (set.univ:set α) :=
-{ ..is_submodule.univ }
 
 end is_ideal
 
@@ -79,9 +62,6 @@ theorem is_proper_ideal.not_mem_of_mul_left_one {α : Type u} [comm_ring α] {S 
   {u v : α} (huv : u * v = 1) : v ∉ S :=
 λ hv, have h : (1:α) ∈ S, from huv ▸ is_ideal.mul_left hv,
 is_proper_ideal.one_not_mem h
-
-theorem not_unit_of_mem_proper_ideal {α : Type u} [comm_ring α] (S : set α) [is_proper_ideal S] : S ⊆ nonunits α :=
-λ x hx ⟨y, hxy⟩, is_proper_ideal.ne_univ S $ is_submodule.eq_univ_of_contains_unit S x y hx hxy
 
 local infix ^ := monoid.pow
 
@@ -108,7 +88,7 @@ instance is_maximal_ideal.to_is_prime_ideal {α : Type u} [comm_ring α] {S : se
   from is_maximal_ideal.eq_or_univ_of_subset _ hsy,
   begin
     rw span_insert at hsx hsx2 hsy hsy2,
-    rw [set.set_eq_def, set.set_eq_def] at hsx2 hsy2,
+    rw [set.ext_iff, set.ext_iff] at hsx2 hsy2,
     cases hsx2 with hx hx,
     { left,
       rw ← hx x,

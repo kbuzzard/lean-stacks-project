@@ -74,7 +74,7 @@ begin
     simp only [mul_assoc, smul_eq_mul, mul_pow, mul_left_comm _ (sum s _ ^ (sum s n + 1))],
     have : span ↑(image (λ a, f a ^ n a) s) ⊆ span ↑(image (λ a, f a ^ n a) (insert a s)) := 
       span_minimal is_submodule_span (set.subset.trans 
-        (by rw [image_insert, coe_subseteq_coe]; exact subset_insert _ _) subset_span),
+        (by rw [image_insert,coe_subset]; exact subset_insert _ _) subset_span),
     exact is_submodule.smul' _ (this hi), }
 end
 
@@ -172,7 +172,7 @@ begin
   refine finset.sum_congr rfl (λ i _, _),
   rw [smul_eq_mul, mul_assoc, he, mul_zero],
 end
- 
+
 lemma lemma_standard_covering₂ (f : γ → R) 
     (H : (1:R) ∈ span (↑(univ.image f) : set R)) (s : Π i, loc R (powers (f i))) :
     β s = 0 ↔ ∃ r : R, α f r = s := 
@@ -202,7 +202,7 @@ have hn : ∀ i j, (f i ^ r i * (t j).1 -
     ring,
 let N := finset.sum (univ : finset (_ × _)) (λ ij, n ij.1 ij.2) in
 have Nlt : ∀ i j, n i j ≤ N := λ i j, 
-  @single_le_sum _ _ _ _ (λ h : γ × γ, n h.1 h.2)
+  @single_le_sum _ _ _ (λ h : γ × γ, n h.1 h.2) _
   _ (λ _ _, nat.zero_le _) _ (mem_univ (i, j)),
 have hN : ∀ i j, (f i ^ r i * (t j).1 - 
     f j ^ r j * (t i).1) * (f i * f j) ^ N = 0 := λ i j, 
