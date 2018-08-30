@@ -17,8 +17,8 @@ include hi hp hip
 
 private theorem find_minimal_prime_ideal_aux :
   ∃ (M : {S // I ⊆ S ∧ S ⊆ P ∧ is_prime_ideal S}), ∀ x, x ≤ M → x = M :=
-@@zorn.zorn' {S // I ⊆ S ∧ S ⊆ P ∧ is_prime_ideal S}
-subrel.partial_order.dual
+@@zorn.zorn' (order_dual {S // I ⊆ S ∧ S ⊆ P ∧ is_prime_ideal S})
+_
 ⟨⟨P, hip, set.subset.refl P, hp⟩⟩ $
 λ c x hxc hc, ⟨⟨{y | ∀ S : {S // I ⊆ S ∧ S ⊆ P ∧ is_prime_ideal S}, S ∈ c → y ∈ S.val},
   λ z hz S hsc, S.2.1 hz,
@@ -73,8 +73,8 @@ classical.some_spec
 
 private theorem find_minimal_prime_ideal_aux' :
   ∃ (M : {S // I ⊆ S ∧ is_prime_ideal S}), ∀ x, x ≤ M → x = M :=
-@@zorn.zorn' {S // I ⊆ S ∧ is_prime_ideal S}
-subrel.partial_order.dual
+@@zorn.zorn' (order_dual {S // I ⊆ S ∧ is_prime_ideal S})
+_
 ⟨⟨P, hip, hp⟩⟩ $
 λ c x hxc hc, ⟨⟨{y | ∀ S : {S // I ⊆ S ∧ is_prime_ideal S}, S ∈ c → y ∈ S.val},
   λ z hz S hsc, S.2.1 hz,
