@@ -1,7 +1,6 @@
 import analysis.topology.topological_space data.set
 import analysis.topology.continuity 
 import Kenny_comm_alg.Zariski
-import Kenny_comm_alg.temp
 import tag00EJ
 import localization
 import localization_UMP
@@ -75,91 +74,25 @@ definition presheaf_of_rings_pullback_under_open_immersion
     (set.image_subset f H2),
   .. presheaf_of_types_pullback_under_open_immersion PR.to_presheaf_of_types f H }
 
-/- may not be true
-theorem pullback_id {α : Type u} [Tα : topological_space α] (PR : presheaf_of_rings α) :
-presheaf_of_rings_pullback_under_open_immersion PR id (topological_space.open_immersion_id α) = PR := 
-begin
-  cases PR with PT CR RH,
-  unfold presheaf_of_rings_pullback_under_open_immersion,
-  dsimp,
---  unfold presheaf_of_types_pullback_under_open_immersion, -- fails!
-  congr,
-  { cases PT with F res Hid Hcomp,
-    dsimp,
-    congr,
-    { unfold presheaf_of_types_pullback_under_open_immersion,
-      dsimp,
-      funext,
-      congr,
-      rw set.image_id,
-    },
-    { dsimp,
-      
-      
-      unfold presheaf_of_types_pullback_under_open_immersion,
-       
-    },
-    {
-      sorry 
-    },
-    {
-      sorry 
-    }
-  },
-  {sorry
-
-  },
-  sorry,
-end 
-#check presheaf_of_types_pullback_under_open_immersion
--/
-
--- This should probably be elsewhere.
--- givesn a presheaf of rings on a basis I should prove the stalks are rings.
-
---#check extend_off_basis
---#check presheaf_on_basis_stalk
---#check presheaf_of_rings_on_basis
---#check zariski.structure_presheaf_of_types_on_basis_of_standard
---#check zariski.structure_presheaf_of_rings_on_basis_of_standard
 
 lemma zariski.univ_is_basic (R : Type u) [comm_ring R] : is_zariski.standard_open (@set.univ (X R)) :=
-begin
-  existsi (1 : R),
-  apply eq.symm,
-  apply set.univ_subset_iff.1,
-  intros y HY,
-  letI : is_prime_ideal (y.1) := y.2,
-  exact is_prime_ideal.one_not_mem y.1,
-end
+⟨(1 : R),eq.symm $ set.univ_subset_iff.1 $ λ ⟨P,HP⟩ _,@@is_prime_ideal.one_not_mem _ P HP⟩
 
---#check @presheaf_on_basis_stalk --(structure_presheaf_of_types_on_basis_of_standard R) x
-
-instance zariski.structure_presheaf_of_rings_on_basis_stalk_is_ring (R : Type u) [comm_ring R] (x : X R) : 
-comm_ring (presheaf_on_basis_stalk (zariski.structure_presheaf_of_rings_on_basis_of_standard R).to_presheaf_of_types_on_basis x)
-:= 
+instance zariski.structure_presheaf_of_rings_on_basis_stalk_is_ring (R : Type u) [comm_ring R] (x : X R) :
+comm_ring (presheaf_on_basis_stalk
+  (zariski.structure_presheaf_of_rings_on_basis_of_standard R).to_presheaf_of_types_on_basis x) :=
 presheaf_of_rings_on_basis_stalk.stalks_of_presheaf_of_rings_on_basis_are_rings
-(zariski.structure_presheaf_of_rings_on_basis_of_standard R)
-x
-(zariski.standard_basis_has_FIP R)
-(zariski.univ_is_basic R)
+  (zariski.structure_presheaf_of_rings_on_basis_of_standard R) x
+  (zariski.standard_basis_has_FIP R)
+  (zariski.univ_is_basic R)
 
 instance zariski.structure_presheaf_of_types_on_basis_stalk_is_ring (R : Type u) [comm_ring R] (x : X R) : 
 comm_ring (presheaf_on_basis_stalk (zariski.structure_presheaf_of_types_on_basis_of_standard R) x)
 := 
 presheaf_of_rings_on_basis_stalk.stalks_of_presheaf_of_rings_on_basis_are_rings
-(zariski.structure_presheaf_of_rings_on_basis_of_standard R)
-x
-(zariski.standard_basis_has_FIP R)
-(zariski.univ_is_basic R)
-
---instance zariski.structure_presheaf_of_types_on_basis_sections_is_ring 
---comm_ring ((zariski.structure_presheaf_of_types_on_basis_of_standard R).F BU)
-
--- w00t
-
---#print zariski.structure_presheaf_of_types
---#print extend_off_basis
+  (zariski.structure_presheaf_of_rings_on_basis_of_standard R) x
+  (zariski.standard_basis_has_FIP R)
+  (zariski.univ_is_basic R)
 
 instance zariski.structure_sheaf_of_types_sections_has_add
 (R : Type u) [comm_ring R] (U : set (X R)) (OU : is_open U) : 
@@ -348,21 +281,6 @@ theorem zariski.structure_presheaf_is_sheaf_of_rings (R : Type u) [comm_ring R] 
 is_sheaf_of_rings (zariski.structure_presheaf_of_rings R) := 
 zariski.structure_sheaf_is_sheaf_of_types R 
 
--- w00t 
-
--- use git to find out what this comment pertained to
-
--- This is OK because exactness is same for sheaves of rings and sets-/
-
-/- already appewared above
-definition presheaf_of_rings_pullback_under_open_immersion
-  {α : Type u} [Tα : topological_space α]
-  (U : set α) (OU : is_open U)
-  (FPT : presheaf_of_types α)
-  (FPR : presheaf_of_rings (FPT))
-  : presheaf_of_rings (presheaf_of_types_pullback_under_open_immersion U OU FPT) := sorry 
--/
-
 structure scheme :=
 (α : Type u)
 (T : topological_space α)
@@ -380,7 +298,6 @@ structure scheme :=
       (zariski.structure_presheaf_of_rings R)
 )
 
---set_option pp.proofs true 
 definition scheme_of_affine_scheme (R : Type u) [comm_ring R] : scheme :=
 { α := X R,
   T := by apply_instance,
@@ -402,11 +319,6 @@ definition scheme_of_affine_scheme (R : Type u) [comm_ring R] : scheme :=
     { apply set.eq_univ_of_forall,
       intro x, existsi x, refl },
     existsi topological_space.open_immersion_id _,
-    -- are_isomorphic_presheaves_of_rings
-    -- (presheaf_of_rings_pullback_under_open_immersion (zariski.structure_presheaf_of_rings R) id H)
-    -- (zariski.structure_presheaf_of_rings R)
-    
-    -- WAIT A MINUTE ISN'T THIS OBVIOUS
     constructor,tactic.swap,
     { constructor,tactic.swap,
       { constructor,tactic.swap,
@@ -468,7 +380,6 @@ definition scheme_of_affine_scheme (R : Type u) [comm_ring R] : scheme :=
     x,
       rw ←presheaf_of_types.Hcomp',
       simp,
-       
     },
   }
   end 

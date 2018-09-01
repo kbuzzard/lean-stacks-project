@@ -1,4 +1,7 @@
--- storing intersections of definitions in different file temporarily
+/- bits and bobs, many of which should probably be in mathlib 
+
+by Kenny Lau
+-/
 
 import algebra.module linear_algebra.quotient_module
 import tactic.ring analysis.topology.topological_space
@@ -165,22 +168,6 @@ definition inv_fun_is_ring_hom (f : α ≃ᵣ β) : _root_.is_ring_hom f.inv_fun
 
 protected def symm (f : α ≃ᵣ β) : β ≃ᵣ α :=
 { is_ring_hom := inv_fun_is_ring_hom f,
-/-
-    { map_add := λ x y, calc
-              f.inv_fun (x + y)
-            = f.inv_fun (f.to_fun (f.inv_fun x) + f.to_fun (f.inv_fun y)) : by rw [f.right_inv, f.right_inv]
-        ... = f.inv_fun (f.to_fun (f.inv_fun x + f.inv_fun y)) : by simp [f.is_ring_hom.map_add]
-        ... = f.inv_fun x + f.inv_fun y : f.left_inv _,
-      map_mul := λ x y, calc
-              f.inv_fun (x * y)
-            = f.inv_fun (f.to_fun (f.inv_fun x) * f.to_fun (f.inv_fun y)) : by rw [f.right_inv, f.right_inv]
-        ... = f.inv_fun (f.to_fun (f.inv_fun x * f.inv_fun y)) : by simp [f.is_ring_hom.map_mul]
-        ... = f.inv_fun x * f.inv_fun y : f.left_inv _,
-      map_one := calc
-              f.inv_fun 1
-            = f.inv_fun (f.to_fun 1) : by simp [f.is_ring_hom.map_one]
-        ... = 1 : f.left_inv 1 },
-        -/
   .. equiv.symm f.to_equiv }
 
 protected def trans (f : α ≃ᵣ β) (g : β ≃ᵣ γ) : α ≃ᵣ γ :=
@@ -236,11 +223,11 @@ by refine
 
 def mk' : α → α /ᵣ S := @quotient.mk _ (is_submodule.quotient_rel S)
 
-instance god : add_comm_group (α /ᵣ S) := ring.to_add_comm_group (α /ᵣ S)
-instance why : add_group (α /ᵣ S) := by apply_instance
-instance plz : has_add (α /ᵣ S) := by apply_instance
-instance help : comm_ring (α /ᵣ S) := by apply_instance
-instance me : has_mul (α /ᵣ S) := by apply_instance
+instance : add_comm_group (α /ᵣ S) := ring.to_add_comm_group (α /ᵣ S)
+instance : add_group (α /ᵣ S) := by apply_instance
+instance : has_add (α /ᵣ S) := by apply_instance
+instance : comm_ring (α /ᵣ S) := by apply_instance
+instance : has_mul (α /ᵣ S) := by apply_instance
 
 def to_quotient : is_ring_hom (mk' α S) :=
 by refine {..}; intros; refl

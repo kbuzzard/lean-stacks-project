@@ -222,27 +222,11 @@ lemma unique_R_alg_from_R {R : Type u} {α : Type v} [comm_ring R] [comm_ring α
   is_unique := λ g Hg H, by simp [H]
 }
 
--- I couldn't prove this here
-/-
+/- What I want is
 lemma id_unique_R_alg_from_loc {R : Type u} [comm_ring R] (S : set R) [is_submonoid S] :
-is_unique_R_alg_hom (of_comm_ring R S) (of_comm_ring R S) id :=
-{ R_alg_hom := rfl,
-  is_unique := λ g Hg Hid2,begin
-    letI := Hg,
-    have H : ∀ s ∈ S, ∃ t, of_comm_ring R S s * t = 1 := λ s, unit_of_in_S,
-    have H1 : g = extend_map_of_im_unit (g ∘ of_comm_ring R S) _ := extend_map_unique (g ∘ of_comm_ring R S) (Hid2 ▸ H) g (λ r, rfl),
-    have H2 : @id (loc R S) = extend_map_of_im_unit (of_comm_ring R S) _ := extend_map_unique (of_comm_ring R S) H id (λ r, rfl),
-    rw H1,
-    rw H2,
---    simp [Hid2],
---  cases Hid,
---  exact (Hid ▸ λ _, rfl : ∀ h, extend_map_of_im_unit (g ∘ of_comm_ring R S) _ = extend_map_of_im_unit (of_comm_ring R S) H) _,
---  exact eq.drec_on Hid2 rfl, -- errors on lemma statement
-  end
-}
+is_unique_R_alg_hom (of_comm_ring R S) (of_comm_ring R S) id
+but I prove something a bit more general first
 -/
-
--- I could prove this more general statement
 lemma unique_R_alg_from_loc {R : Type u} [comm_ring R] {S : set R} [is_submonoid S]
 {β : Type v} [comm_ring β] (φ : loc R S → β) [Hphir : is_ring_hom φ] : 
 is_unique_R_alg_hom (of_comm_ring R S) (φ ∘ of_comm_ring R S) φ := {
@@ -270,7 +254,6 @@ is_unique_R_alg_hom (of_comm_ring R S) (φ ∘ of_comm_ring R S) φ := {
   end
 }
 
--- and now I can deduce what I couldn't prove before.
 lemma id_unique_R_alg_from_loc {R : Type u} [comm_ring R] (S : set R) [is_submonoid S] :
 is_unique_R_alg_hom (of_comm_ring R S) (of_comm_ring R S) id :=
 unique_R_alg_from_loc id 
@@ -339,11 +322,6 @@ is_unique_R_alg_hom (of_comm_ring R (powers g)) (of_comm_ring R (powers (f * g))
   (away.extend_map_of_im_unit (of_comm_ring R (powers (f * g))) $ unit_of_loc_more_right f g) :=
 away_universal_property g (of_comm_ring R (powers (f * g))) (unit_of_loc_more_right f g)
 
-  -- other uses can be added later if necessary. For example one day we can do this one
-
--- localize_more_left is now (or was) somethinmg like
---(away.extend_map_of_im_unit (of_comm_ring R (powers (f * g))) $ unit_of_loc_more f g)
--- 
 -- recall that Kenny proved that the maps R -> R[1/f] -> R[1/fg] and R -> R[1/g] -> R[1/fg] coincided. 
 -- But this is an immediate consequence of the definition above and comp_unique.
 

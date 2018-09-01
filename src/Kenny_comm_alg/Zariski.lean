@@ -1,3 +1,7 @@
+/- Zariski topology, by Kenny Lau.
+
+-/
+
 import analysis.topology.topological_space Kenny_comm_alg.temp
 noncomputable theory
 

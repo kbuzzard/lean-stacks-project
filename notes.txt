@@ -1,3 +1,19 @@
+Notes for paper:
+
+localization.UMP contains proof of R -> R[1/f] -> R[1/fg] = R -> R[1/g] -> R[1/fg]
+
+-- Here is the way KMB wants to package all these things together.
+structure is_unique_R_alg_hom {R : Type u} {α : Type v} {β : Type w} [comm_ring R] [comm_ring α] [comm_ring β] 
+(sα : R → α) (sβ : R → β) (f : α → β) [is_ring_hom sα] [is_ring_hom sβ] [is_ring_hom f] : Prop :=
+(R_alg_hom : sβ = f ∘ sα)
+(is_unique : ∀ (g : α → β) [is_ring_hom g], sβ = g ∘ sα → g = f)
+
+
+
+******************************
+
+
+
 Should I now just put everything into scheme.lean?
 
 I know that O_X is a sheaf of types. I want to check it's a sheaf of rings.
