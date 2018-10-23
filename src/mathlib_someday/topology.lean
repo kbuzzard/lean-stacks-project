@@ -6,6 +6,9 @@ namespace interactive
 
 open interactive interactive.types
 
+/-
+https://leanprover.zulipchat.com/#narrow/stream/113488-general/subject/cases.20eliminating.20into.20type/near/125695647
+-/
 meta def ccases (e : parse cases_arg_p) (ids : parse with_ident_list) :=
 do cases (e.1,``(classical.indefinite_description _ %%(e.2))) ids
 
@@ -13,6 +16,8 @@ end interactive
 end tactic
 
 open topological_space
+--TODO -- find out whether this stuff is now in mathlib
+-- https://github.com/leanprover-community/mathlib/blob/9d743bbb864234821c4ec881d4dc930ac3631838/analysis/topology/continuity.lean#L401
 
 structure topological_space.open_immersion
   {α : Type u} [Tα : topological_space α]
