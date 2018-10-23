@@ -178,7 +178,7 @@ end ring_equiv
 
 def is_submodule.hom_preimage {α : Type u} {β : Type v} [comm_ring α] [comm_ring β]
 (f : α → β) [is_ring_hom f] (S : set β) [is_submodule S] : is_submodule (f ⁻¹' S) :=
-{ zero_ := by simpa [is_ring_hom.map_zero f]; exact @is_submodule.zero β β _ _ S _,
+{ zero_ := by simpa [is_ring_hom.map_zero f] using @is_submodule.zero β β _ _ S _,
   add_  := λ x y (hx : f x ∈ S) hy, by simp [is_ring_hom.map_add f, is_submodule.add hx hy],
   smul  := λ x y (hy : f y ∈ S), by simp [is_ring_hom.map_mul f]; exact is_submodule.smul _ hy }
 
@@ -197,15 +197,15 @@ variables (α : Type u) [comm_ring α] (S : set α) [is_submodule S]
 
 instance : setoid α := is_submodule.quotient_rel S
 
-infix ` /ᵣ `:100 := is_submodule.quotient
+infix ` /ᵣ `:100 := quotient_module.quotient
 include S
 
 instance quotient.has_mul : has_mul (α /ᵣ S) :=
-⟨quotient.lift₂ (λ m n, ⟦m * n⟧) (λ m₁ m₂ n₁ n₂ h₁ h₂, quot.sound $
+⟨quotient.lift₂ (λ m n, ⟦m * n⟧) (λ m₁ m₂ n₁ n₂ (h₁ : m₁ - n₁ ∈ S) (h₂ : m₂ - n₂ ∈ S), quot.sound $
 suffices (m₁ * m₂) - (n₁ * n₂) ∈ S, from this,
-by rw is_submodule.quotient_rel_eq at h₁ h₂; exact calc
-    (m₁ * m₂) - (n₁ * n₂) = m₁ * (m₂ - n₂) + n₂ * (m₁ - n₁) : by ring
-                      ... ∈ S : is_submodule.add (is_submodule.smul m₁ h₂) (is_submodule.smul n₂ h₁))⟩
+calc  (m₁ * m₂) - (n₁ * n₂)
+    = m₁ * (m₂ - n₂) + n₂ * (m₁ - n₁) : by ring
+... ∈ S : is_submodule.add (is_submodule.smul m₁ h₂) (is_submodule.smul n₂ h₁))⟩
 
 instance quotient.comm_ring (α : Type u) [comm_ring α] (S : set α) [is_submodule S] :
   comm_ring (α /ᵣ S) :=
@@ -218,7 +218,7 @@ by refine
   left_distrib   := λ m n k, quotient.induction_on₃ m n k _,
   right_distrib  := λ m n k, quotient.induction_on₃ m n k _,
   mul_comm       := quotient.ind₂ _,
-  ..is_submodule.quotient.add_comm_group S };
+  ..quotient_module.quotient.add_comm_group S };
 { intros; apply quotient.sound; ring }
 
 def mk' : α → α /ᵣ S := @quotient.mk _ (is_submodule.quotient_rel S)
@@ -282,6 +282,9 @@ instance : comm_ring S :=
   right_distrib  := λ ⟨x, hx⟩ ⟨y, hy⟩ ⟨z, hz⟩, subtype.eq $ right_distrib x y z,
   mul_comm       := λ ⟨x, hx⟩ ⟨y, hy⟩, subtype.eq $ mul_comm x y }
 
+instance : add_comm_group S := ring.to_add_comm_group S
+instance : has_add S := add_semigroup.to_has_add S
+
 @[simp] lemma add (x y : α) (hx : x ∈ S) (hy : y ∈ S) :
 (⟨x, hx⟩ : S) + ⟨y, hy⟩ = ⟨x + y, add_mem hx hy⟩ := rfl
 
@@ -321,7 +324,7 @@ noncomputable def first_isom (α : Type u) (β : Type v)
 { to_fun := λ x, quotient.lift_on x (λ x, ⟨f x, x, rfl⟩ : α → is_ring_hom.im f) (λ x y hxy, subtype.eq $ calc
     f x = f (y + (x - y)) : by norm_num
     ... = f y + f (x - y) : is_ring_hom.map_add f
-    ... = f y             : by simp [is_submodule.quotient_rel_eq] at hxy; simp [hxy]),
+    ... = f y             : by change f(x-y)∈_ at hxy; rw set.mem_singleton_iff at hxy; rw [hxy, add_zero]),
   is_ring_hom :=
     { map_add := λ x y, quotient.induction_on₂ x y (λ m n, by simp [is_ideal.coset_eq, is_ring_hom.map_add f]; refl),
       map_mul := λ x y, quotient.induction_on₂ x y (λ m n, by simp [is_ideal.coset_eq, is_ring_hom.map_mul f]; refl),
@@ -332,7 +335,8 @@ noncomputable def first_isom (α : Type u) (β : Type v)
       intro y,
       have hz := @classical.some_spec _ (λ z, f z = f y) ⟨y, rfl⟩,
       simp [first_isom._match_1, is_ideal.mk', -is_ideal.coset_eq],
-      simp [is_submodule.quotient_rel_eq, is_ring_hom.map_add f, hz, is_ring_hom.map_neg f]
+      change f _ ∈ _,
+      simp [is_ring_hom.map_add f, hz, is_ring_hom.map_neg f]
     end,
   right_inv := λ ⟨x, hx⟩, subtype.eq (by simp [first_isom._match_1]; simpa using classical.some_spec hx) }
 
