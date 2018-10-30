@@ -36,7 +36,7 @@ quotient.lift
   (λ r, f r.1 * classical.some (H r.2.1 r.2.2) : α × S → β)
   (λ ⟨r1, s1, hs1⟩ ⟨r2, s2, hs2⟩ ⟨t, hts, ht⟩,
      have h1 : f ((s1 * r2 - s2 * r1) * t) = 0,
-       by simpa using ht; simp [ht, is_ring_hom.map_zero f],
+       by rw ht; simp [ht, is_ring_hom.map_zero f],
      calc
           f r1 * classical.some (H s1 hs1)
         = (f r1 * 1) * classical.some (H s1 hs1) : by simp
@@ -45,7 +45,7 @@ quotient.lift
     ... = (f (s2 * r1 * t) * classical.some (H t hts)) * classical.some (H s1 hs1) * classical.some (H s2 hs2) :
             by simp [is_ring_hom.map_mul f, mul_assoc, mul_comm, mul_left_comm]
     ... = (f ((s1 * r2 - s2 * r1) * t + s2 * r1 * t) * classical.some (H t hts)) * classical.some (H s1 hs1) * classical.some (H s2 hs2) :
-            by simpa using ht; simp [ht]
+            by rw ht; simp [ht]
     ... = (f (s1 * r2 * t) * classical.some (H t hts)) * classical.some (H s1 hs1) * classical.some (H s2 hs2) :
             by rw [sub_mul, sub_add_cancel]
     ... = f r2 * classical.some (H s2 hs2) * (f s1 * classical.some (H s1 hs1)) * (f t * classical.some (H t hts)) :
