@@ -129,7 +129,6 @@ instance direct_limit.of.is_add_group_hom {i} : is_add_group_hom (direct_limit.o
    rw is_add_group_hom.add (f (i ⊔ i) i _),
    repeat { rw directed_system.Hcomp f },
    repeat { rw directed_system.Hid f },
-   refl,
    apply_instance
   end⟩⟩
 
