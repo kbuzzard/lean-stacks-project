@@ -10,13 +10,13 @@ variables {M : Type v} {N : Type w}
 variables [module R M] [module R N]
 variables (f : linear_map M N)
 
-def coim := is_submodule.quotient M (ker f)
+def coim := quotient_module.quotient M (ker f)
 
 instance coim.module : module R (coim f) :=
-is_submodule.quotient.module _
+quotient_module.quotient.module _
 
 def coim.to_im : coim f → N :=
-is_submodule.quotient.lift _ f.2 (λ x, id)
+quotient_module.quotient.lift _ f.2 (λ x, id)
 
 end linear_map
 
