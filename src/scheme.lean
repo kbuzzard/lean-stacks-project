@@ -331,11 +331,11 @@ definition scheme_of_affine_scheme (R : Type u) [comm_ring R] : scheme :=
           refl,
         },
         intros,constructor,
-        {intros x y,refl,
+        {refl,
         },
         { intros x y,refl,
         },
-        { refl
+        { intros x y,refl
         },
       },
     { existsi _,tactic.swap,
@@ -350,11 +350,11 @@ definition scheme_of_affine_scheme (R : Type u) [comm_ring R] : scheme :=
           refl,
         },
         intros,constructor,
-        {intros x y,refl,
+        {refl,
         },
         { intros x y,refl,
         },
-        { refl
+        { intros x y,refl
         }
       },
     constructor,
