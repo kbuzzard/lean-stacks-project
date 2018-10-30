@@ -5,6 +5,7 @@ variable {α : Type*}
 
 local notation f ` ∑ ` : 90 n : 90  := finset.sum (finset.range n) f
 
+/-
 theorem add_pow [comm_semiring α] (x y : α) : ∀ n : ℕ,
     (x + y)^n = (λ m, x^m * y^(n - m) * choose n m) ∑ succ n
 | 0        := by simp
@@ -25,5 +26,5 @@ have h₃ : (λ m, x * (x^m * y^(n - m) * choose n m) + y * (x^succ m * y^(n - s
     end,
 by rw [_root_.pow_succ, add_pow, add_mul, finset.mul_sum, finset.mul_sum, sum_range_succ, sum_range_succ',
     sum_range_succ, sum_range_succ', add_assoc, ← add_assoc (_ ∑ n), ← finset.sum_add_distrib, h₁, h₂, h₃]
-
+-/
 
