@@ -49,15 +49,19 @@ private def to_be_named_aux1 : α × S → (α /ᵣ I) [1/(S ₑ)] :=
 
 private def to_be_named_aux2 : α [1/S] → (α /ᵣ I) [1/(S ₑ)] :=
 quotient.lift (to_be_named_aux1 S I) $ λ ⟨r₁, s₁, hs₁⟩ ⟨r₂, s₂, hs₂⟩ ⟨w, hws, hw⟩,
-quotient.sound $ ⟨⟦w⟧, ⟨w, hws, rfl⟩, quotient.sound $ by simpa using hw; rw hw⟩
+quotient.sound $ ⟨⟦w⟧, ⟨w, hws, rfl⟩, quotient.sound $ begin simp at hw ⊢,rw hw,end⟩
 
+--set_option pp.notation false
 private def to_be_named_aux3 : α [1/S] /ᵣ (S⁻¹ I) → (α /ᵣ I) [1/(S ₑ)] :=
 quotient.lift (to_be_named_aux2 S I) $ λ x y, quotient.induction_on₂ x y $
 λ ⟨r₁, s₁, hs₁⟩ ⟨r₂, s₂, hs₂⟩ ⟨v, w, hv, hw, h⟩, quotient.sound $
 let ⟨t, hts, hsv⟩ := quotient.exact h in
 ⟨⟦w * t⟧, ⟨w * t, is_submonoid.mul_mem hw hts, rfl⟩,
  quotient.sound $ suffices (s₁ * r₂ - s₂ * r₁) * (w * t) ∈ I,
- by simpa [is_submodule.quotient_rel_eq] using this,
+ begin simp at this ⊢, 
+   show (s₁ * r₂ + -(s₂ * r₁)) * (w * t) - 0 ∈ I,
+   simp [this],
+  end,
  have (-(s₁ * s₂ * v) + w * (s₂ * r₁ + -(s₁ * r₂))) * t = 0,
  by simpa using hsv, calc
          (s₁ * r₂ - s₂ * r₁) * (w * t)
@@ -97,7 +101,7 @@ private def to_be_named_aux5 :
     λ m n, quotient.induction_on₂ m n $
     λ ⟨b, c, d⟩ ⟨e, f, g⟩ h,
     begin
-      rw is_submodule.quotient_rel_eq at h,
+      change _ - _ ∈ _ at h,
       simp [is_ideal.coset_eq, to_be_named_aux3,
       to_be_named_aux2, to_be_named_aux1, localization.mk_eq] at h,
       replace h := quotient.exact h,
@@ -105,7 +109,7 @@ private def to_be_named_aux5 :
       rcases s with ⟨p, q, hp⟩,
       rw ← hp at h,
       replace h := quotient.exact h,
-      rw is_submodule.quotient_rel_eq at h,
+      change _ - _ ∈ _ at h,
       apply quotient.sound,
       existsi p * (f * b - c * e),
       existsi p * (c * f),
