@@ -32,7 +32,7 @@ lemma exists_sum_iff_mem_span_finset {x : β} [ring α] [module α β] {s : fins
 ⟨λ ⟨r, hr⟩, ⟨r, hr.2.symm ▸ sum_bij_ne_zero (λ a _ _, a)
   (λ a has ha, classical.by_contradiction (λ h, ha (by simp [hr.1 _ h])))
   (λ _ _ _ _ _ _, id)
-  (λ b hbr hb, ⟨b, (finsupp.mem_support_iff _ _).2 (λ h, hb (by simp [h])), hb, rfl⟩)
+  (λ b hbr hb, ⟨b, (finsupp.mem_support_iff).2 (λ h, hb (by simp [h])), hb, rfl⟩)
   (λ _ _ _, rfl)⟩,
 λ ⟨r, hr⟩, hr.symm ▸ is_submodule.sum (λ c hc, is_submodule.smul _ (subset_span hc))⟩
 
