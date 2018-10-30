@@ -502,7 +502,8 @@ begin
   refl
 end
 
-private lemma sum_zero_index' [add_comm_group α₁] (f : β × γ → ℤ → α₁) :
+set_option pp.all true
+private lemma sum_zero_index' (f : β × γ → ℤ → α₁) :
   @finsupp.sum (β × γ) ℤ α₁ int.has_zero _ (0 : free_abelian_group β γ) f = 0 :=
 begin
   rw zero_eq_zero,
@@ -1127,10 +1128,10 @@ protected def prod_tensor : (β × γ) ⊗ α₁ ≃ₘ β ⊗ α₁ × γ ⊗ �
 let ha1 : β × γ → α₁ → β ⊗ α₁ × γ ⊗ α₁ :=
   λ z r, (z.fst ⊗ₛ r, z.snd ⊗ₛ r) in
 have ha2 : is_bilinear_map ha1, from
-{ add_pair  := λ x y z, prod.ext.2 ⟨add_tprod, add_tprod⟩,
-  pair_add  := λ x y z, prod.ext.2 ⟨tprod_add, tprod_add⟩,
-  smul_pair := λ r x y, prod.ext.2 ⟨smul_tprod, smul_tprod⟩ ,
-  pair_smul := λ r x y, prod.ext.2 ⟨tprod_smul, tprod_smul⟩ },
+{ add_pair  := λ x y z, prod.ext_iff.2 ⟨add_tprod, add_tprod⟩,
+  pair_add  := λ x y z, prod.ext_iff.2 ⟨tprod_add, tprod_add⟩,
+  smul_pair := λ r x y, prod.ext_iff.2 ⟨smul_tprod, smul_tprod⟩ ,
+  pair_smul := λ r x y, prod.ext_iff.2 ⟨tprod_smul, tprod_smul⟩ },
 let ha3 : (β × γ) ⊗ α₁ → β ⊗ α₁ × γ ⊗ α₁ :=
   universal_property.factor ha2 in
 have ha4 : _ := universal_property.factor_linear ha2,
