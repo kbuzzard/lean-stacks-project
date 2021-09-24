@@ -1,6 +1,6 @@
 # IMPORTANT
 
-This project is deprecated. It was my first attempt to do MSc level mathematics in Lean and I made some poor design decisions due to inexperience. Once I had understood better how to write this project, I supervised Ramon Fernandez Mir's [masters project](https://github.com/ramonfmir/lean-scheme) which achieved everything this repo achieved and more too, and better. I would look there instead.
+This project is deprecated. It was joint work by me (Kevin Buzzard), Kenny Lau and Chris Hughes. It was our first attempt to do MSc level mathematics in Lean (back in 2017/18) and we made some poor design decisions due to inexperience. Once I had understood better how to write this project, I supervised Ramon Fernandez Mir's [masters project](https://github.com/ramonfmir/lean-scheme) which achieved everything this repo achieved and more too, and better. I would look there instead.
 
 # lean-stacks-project
  Formal verification of parts of the Stacks Project in Lean 
